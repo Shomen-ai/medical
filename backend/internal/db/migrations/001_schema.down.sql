@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS tax_receipts;
+DROP TABLE IF EXISTS doctor_schedules;
+DROP TABLE IF EXISTS appointment_records;
+DROP TABLE IF EXISTS appointments;
+DROP TYPE IF EXISTS appointment_creator;
+DROP TYPE IF EXISTS appointment_status;
+DROP TABLE IF EXISTS promo_codes;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS staff;
+DROP TABLE IF EXISTS doctors;
+DROP TABLE IF EXISTS specialties;
+DROP EXTENSION IF EXISTS "uuid-ossp";
