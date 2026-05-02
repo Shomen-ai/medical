@@ -1,0 +1,7 @@
+.env
+*.env.local
+backend/vendor/
+__debug_bin
+*.test
+.DS_Store
+.superpowers/
