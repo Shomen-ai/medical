@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     public: {
       clinicName: 'BeautyMed',
       clinicPhone: '+7 (4212) XX-XX-XX',
-      clinicAddress: 'г. Хабаровск, ул. Примерная, 1',
+      clinicAddress: 'г. Ульяновск, ул. Примерная, 1',
       clinicHours: 'Пн–Сб: 9:00–20:00, Вс: выходной',
     },
   },

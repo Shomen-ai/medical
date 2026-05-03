@@ -13,6 +13,10 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      boxShadow: {
+        card:    '0 4px 24px rgba(0, 110, 115, 0.12)',
+        'card-lg': '0 6px 32px rgba(0, 0, 0, 0.10)',
+      },
     },
   },
 } satisfies Config
