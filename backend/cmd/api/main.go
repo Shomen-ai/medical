@@ -26,6 +26,10 @@ func main() {
 	rdb := redis.NewClient(opt)
 
 	svc := service.New(database, rdb, cfg)
+
+	svc.Scheduler.Start()
+	defer svc.Scheduler.Stop()
+
 	r := router.New(svc, cfg)
 
 	log.Printf("starting server on :%s", cfg.Port)

@@ -14,8 +14,10 @@ type Services struct {
 	JWT       *JWTService
 	Booking   *BookingService
 	Schedule  *ScheduleService
-	Admin     *AdminService
+	SMS       *SMSService
 	PDF       *PDFService
+	Admin     *repository.AdminRepo
+	Scheduler *CronScheduler
 	Repos     *Repos
 }
 
@@ -27,9 +29,6 @@ type Repos struct {
 	Appointments *repository.AppointmentRepo
 }
 
-// AdminService wraps AdminRepo — replaced by direct *repository.AdminRepo in Task 9.
-type AdminService struct{ *repository.AdminRepo }
-
 func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 	repos := &Repos{
 		Users:        repository.NewUserRepo(db),
@@ -38,16 +37,20 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 		Services:     repository.NewServiceRepo(db),
 		Appointments: repository.NewAppointmentRepo(db),
 	}
+	adminRepo := repository.NewAdminRepo(db)
 	otp := NewOTPService(rdb)
 	j := NewJWTService(cfg.JWTSecret)
+	sms := NewSMSService(cfg.SMSCLogin, cfg.SMSCPassword)
 	return &Services{
-		OTP:      otp,
-		JWT:      j,
-		Auth:     NewAuthService(repos, otp, j),
-		Booking:  NewBookingService(repos),
-		Schedule: &ScheduleService{},
-		Admin:    &AdminService{repository.NewAdminRepo(db)},
-		PDF:      NewPDFService(),
-		Repos:    repos,
+		OTP:       otp,
+		JWT:       j,
+		Auth:      NewAuthService(repos, otp, j),
+		Booking:   NewBookingService(repos),
+		Schedule:  &ScheduleService{},
+		SMS:       sms,
+		PDF:       NewPDFService(),
+		Admin:     adminRepo,
+		Scheduler: NewCronScheduler(adminRepo, sms),
+		Repos:     repos,
 	}
 }
