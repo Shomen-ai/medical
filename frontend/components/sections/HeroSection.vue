@@ -20,6 +20,7 @@ const booking = useBookingStore()
           </p>
           <div class="flex gap-3">
             <button
+              type="button"
               class="bg-white text-[#005A5F] px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:shadow-xl transition-shadow"
               @click="booking.openModal()"
             >
