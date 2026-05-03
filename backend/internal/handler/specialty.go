@@ -10,7 +10,7 @@ import (
 
 type SpecialtyHandler struct{ svc *service.Services }
 
-func NewSpecialtyHandler(svc *service.Services) *SpecialtyHandler { return &SpecialtyHandler{svc} }
+func NewSpecialtyHandler(svc *service.Services) *SpecialtyHandler { return &SpecialtyHandler{svc: svc} }
 
 // GET /api/specialties
 func (h *SpecialtyHandler) List(c *gin.Context) {

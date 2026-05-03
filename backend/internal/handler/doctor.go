@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"beautymed/internal/service"
@@ -10,7 +12,7 @@ import (
 
 type DoctorHandler struct{ svc *service.Services }
 
-func NewDoctorHandler(svc *service.Services) *DoctorHandler { return &DoctorHandler{svc} }
+func NewDoctorHandler(svc *service.Services) *DoctorHandler { return &DoctorHandler{svc: svc} }
 
 // GET /api/doctors?specialty_id=uuid
 func (h *DoctorHandler) List(c *gin.Context) {
@@ -36,7 +38,11 @@ func (h *DoctorHandler) List(c *gin.Context) {
 func (h *DoctorHandler) Get(c *gin.Context) {
 	d, err := h.svc.Repos.Doctors.FindByID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "doctor not found"})
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "doctor not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, d)

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"beautymed/internal/service"
@@ -10,7 +12,7 @@ import (
 
 type ServiceHandler struct{ svc *service.Services }
 
-func NewServiceHandler(svc *service.Services) *ServiceHandler { return &ServiceHandler{svc} }
+func NewServiceHandler(svc *service.Services) *ServiceHandler { return &ServiceHandler{svc: svc} }
 
 // GET /api/services?specialty_id=uuid
 func (h *ServiceHandler) List(c *gin.Context) {
@@ -26,7 +28,11 @@ func (h *ServiceHandler) List(c *gin.Context) {
 func (h *ServiceHandler) Get(c *gin.Context) {
 	s, err := h.svc.Repos.Services.FindByID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "service not found"})
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "service not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, s)
