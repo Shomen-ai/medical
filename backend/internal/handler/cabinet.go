@@ -41,7 +41,14 @@ func (h *CabinetHandler) GetAppointment(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
-	record, _ := h.svc.Repos.Appointments.GetRecord(a.ID)
+	record, err := h.svc.Repos.Appointments.GetRecord(a.ID)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		record = nil
+	}
 	c.JSON(http.StatusOK, gin.H{"appointment": a, "record": record})
 }
 
@@ -87,6 +94,10 @@ func (h *CabinetHandler) Reschedule(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if a.Status != "scheduled" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only scheduled appointments can be rescheduled"})
+		return
+	}
 	if time.Until(a.StartsAt) < 2*time.Hour {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot reschedule less than 2 hours before appointment"})
 		return
@@ -124,7 +135,11 @@ func (h *CabinetHandler) Reschedule(c *gin.Context) {
 func (h *CabinetHandler) GetProfile(c *gin.Context) {
 	u, err := h.svc.Repos.Users.FindByID(c.GetString("user_id"))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, u)
