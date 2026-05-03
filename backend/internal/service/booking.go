@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -22,7 +23,10 @@ func (s *BookingService) GetSlots(doctorID, serviceID, dateStr string) ([]model.
 	}
 	sched, err := s.repos.Appointments.GetSchedule(doctorID, dateStr)
 	if err != nil {
-		return nil, ErrDayOff
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrDayOff
+		}
+		return nil, fmt.Errorf("get schedule: %w", err)
 	}
 	if sched.IsDayOff {
 		return nil, ErrDayOff
