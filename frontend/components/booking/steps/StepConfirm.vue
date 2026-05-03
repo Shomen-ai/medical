@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const booking = useBookingStore()
 const { post } = useApi()
+const config = useRuntimeConfig()
 
 const submittingOtp = ref(false)
 const submittingBooking = ref(false)
@@ -56,7 +57,7 @@ const confirmBooking = async () => {
     } else if (msg?.includes('taken') || msg?.includes('conflict')) {
       bookingError.value = 'Это время уже занято. Выберите другой слот.'
     } else {
-      bookingError.value = 'Ошибка записи. Позвоните нам: ' + useRuntimeConfig().public.clinicPhone
+      bookingError.value = 'Ошибка записи. Позвоните нам: ' + config.public.clinicPhone
     }
   } finally {
     submittingBooking.value = false
