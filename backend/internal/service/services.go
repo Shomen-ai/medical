@@ -43,7 +43,3 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 	}
 }
 
-// BookingService is a stub — replaced in Task 10.
-type BookingService struct{}
-
-func NewBookingService(_ *Repos) *BookingService { return &BookingService{} }
