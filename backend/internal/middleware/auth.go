@@ -21,6 +21,10 @@ func Auth(jwt *service.JWTService, roles ...string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
+		if claims.TokenType != "access" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			return
+		}
 		if len(roles) > 0 {
 			allowed := false
 			for _, r := range roles {

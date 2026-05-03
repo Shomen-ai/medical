@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"beautymed/internal/config"
@@ -71,7 +72,11 @@ func (h *AuthHandler) SendStaffOTP(c *gin.Context) {
 	}
 	code, err := h.svc.Auth.SendStaffOTP(c.Request.Context(), req.Phone)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "staff not found"})
+		if strings.Contains(err.Error(), "staff not found") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "staff not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	resp := gin.H{"message": "OTP sent"}
@@ -122,6 +127,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 func (h *AuthHandler) setRefreshCookie(c *gin.Context, token string) {
 	secure := !h.devMode
+	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", token, int(30*24*time.Hour/time.Second),
 		"/api/auth", "", secure, true)
 }

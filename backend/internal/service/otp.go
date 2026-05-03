@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"fmt"
 	"math/big"
 	"time"
@@ -35,5 +36,5 @@ func (s *OTPService) Verify(ctx context.Context, phone, role, code string) (bool
 	if err != nil {
 		return false, err
 	}
-	return stored == code, nil
+	return subtle.ConstantTimeCompare([]byte(stored), []byte(code)) == 1, nil
 }
