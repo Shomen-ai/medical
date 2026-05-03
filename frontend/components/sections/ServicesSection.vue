@@ -19,19 +19,23 @@ const formatPrice = (price: number) =>
 </script>
 
 <template>
-  <section id="services" class="py-12 bg-gray-50">
+  <section id="services" class="py-14 bg-[#F0FAFB]">
     <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-xl font-bold text-slate mb-8 text-center">Наши услуги</h2>
+      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Наши услуги</h2>
 
       <!-- Specialty tabs -->
       <div class="flex gap-2 mb-6 flex-wrap">
         <button
           v-for="sp in specialties"
           :key="sp.id"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          type="button"
+          class="px-4 py-2 rounded-full text-sm font-semibold transition-all"
           :class="activeSpecialty === sp.id
-            ? 'bg-primary text-white'
+            ? 'text-white shadow-md'
             : 'bg-white border border-border text-muted hover:border-primary hover:text-primary'"
+          :style="activeSpecialty === sp.id
+            ? 'background: linear-gradient(135deg, #005A5F, #00959D)'
+            : ''"
           @click="activeSpecialty = sp.id"
         >
           {{ getSpecialtyMeta(sp.name).icon }} {{ sp.name }}
@@ -39,11 +43,11 @@ const formatPrice = (price: number) =>
       </div>
 
       <!-- Service list -->
-      <div class="bg-white rounded-xl border border-border overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden">
         <div
           v-for="(svc, i) in activeServices"
           :key="svc.id"
-          class="flex items-center justify-between px-5 py-4"
+          class="flex items-center justify-between px-5 py-4 hover:bg-[#F0FAFB] transition-colors"
           :class="i < activeServices.length - 1 ? 'border-b border-border' : ''"
         >
           <div class="flex-1 pr-4">
@@ -53,7 +57,8 @@ const formatPrice = (price: number) =>
           <div class="flex items-center gap-4">
             <span class="text-sm font-semibold text-primary">{{ formatPrice(svc.price) }}</span>
             <button
-              class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-colors whitespace-nowrap"
+              type="button"
+              class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
               @click="booking.openModal(activeSpecialty ?? undefined)"
             >
               Записаться
