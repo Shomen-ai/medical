@@ -1,40 +1,84 @@
 <script setup lang="ts">
 import type { Doctor } from '~/types'
 
-defineProps<{ doctors: Doctor[] }>()
+const props = defineProps<{ doctors: Doctor[] }>()
 const booking = useBookingStore()
+
+const STOCK_PHOTOS = [
+  '/doctors/doctor-1.jpg',
+  '/doctors/doctor-2.jpg',
+  '/doctors/doctor-3.jpg',
+  '/doctors/doctor-4.jpg',
+]
+
+const photoSrc = (doc: Doctor, index: number) =>
+  doc.photo_url || STOCK_PHOTOS[index % STOCK_PHOTOS.length]
 </script>
 
 <template>
-  <section class="py-12 bg-white">
+  <section class="py-14 bg-white">
     <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-xl font-bold text-slate mb-8 text-center">Наши врачи</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Наши врачи</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
         <div
-          v-for="doc in doctors"
+          v-for="(doc, i) in doctors"
           :key="doc.id"
-          class="bg-white border border-border rounded-xl overflow-hidden"
+          class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
-          <!-- Photo with specialty badge -->
-          <div class="relative h-40 bg-primary/10 flex items-center justify-center overflow-hidden">
+          <!-- Photo with specialty badge bar -->
+          <div class="relative h-48 overflow-hidden">
             <img
-              v-if="doc.photo_url"
-              :src="doc.photo_url"
+              :src="photoSrc(doc, i)"
               :alt="doc.full_name"
               class="w-full h-full object-cover object-top"
             >
-            <span v-else class="text-5xl">👩‍⚕️</span>
-            <span class="absolute bottom-2 left-2 bg-primary text-white text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full">
+            <div
+              class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
+              style="background: linear-gradient(135deg, #005A5F, #00959D)"
+            >
               {{ doc.specialty_name }}
-            </span>
+            </div>
           </div>
           <!-- Info -->
-          <div class="p-3">
-            <div class="text-xs font-semibold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
-            <div class="text-[11px] text-muted mb-3">Стаж {{ doc.experience_years }} лет</div>
+          <div class="p-4">
+            <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
+            <div class="text-xs text-muted mb-3">Стаж {{ doc.experience_years }} лет</div>
             <button
-              class="w-full bg-primary/10 text-primary text-[11px] font-semibold py-1.5 rounded-lg hover:bg-primary/20 transition-colors"
+              type="button"
+              class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
+              style="background: linear-gradient(135deg, #005A5F, #00959D)"
               @click="booking.openModal(doc.specialty_id)"
+            >
+              Записаться
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fallback when no doctors from backend -->
+      <div v-if="doctors.length === 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+        <div
+          v-for="(photo, i) in STOCK_PHOTOS"
+          :key="i"
+          class="bg-white rounded-2xl overflow-hidden shadow-card"
+        >
+          <div class="relative h-48 overflow-hidden">
+            <img :src="photo" alt="Врач клиники" class="w-full h-full object-cover object-top">
+            <div
+              class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
+              style="background: linear-gradient(135deg, #005A5F, #00959D)"
+            >
+              Специалист клиники
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="text-sm font-bold text-slate mb-1">Врач BeautyMed</div>
+            <div class="text-xs text-muted mb-3">Опытный специалист</div>
+            <button
+              type="button"
+              class="w-full text-white text-[11px] font-bold py-2 rounded-lg hover:opacity-90 transition-opacity"
+              style="background: linear-gradient(135deg, #005A5F, #00959D)"
+              @click="booking.openModal()"
             >
               Записаться
             </button>
