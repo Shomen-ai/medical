@@ -43,7 +43,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
         />
 
         <!-- Modal box -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 pt-5 pb-0">
             <span class="text-sm font-bold text-slate">Онлайн-запись</span>

@@ -20,48 +20,53 @@ const formatPrice = (price: number) =>
 </script>
 
 <template>
-  <div>
-    <!-- Specialty options -->
-    <div class="text-xs font-semibold text-slate mb-2">Выберите специальность</div>
-    <div class="flex flex-col gap-2 mb-4">
+  <div class="flex gap-4 min-h-[280px]">
+    <!-- Left: specialty list -->
+    <div class="w-1/2 flex flex-col gap-2">
+      <div class="text-xs font-semibold text-slate mb-1">Специальность</div>
       <button
         v-for="sp in specialties"
         :key="sp.id"
-        class="flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-colors"
+        type="button"
+        class="flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-colors text-left"
         :class="booking.specialtyId === sp.id
           ? 'border-primary bg-primary/5 text-primary font-semibold'
           : 'border-border text-slate hover:border-primary'"
         @click="selectSpecialty(sp.id)"
       >
         <span>{{ getSpecialtyMeta(sp.name).icon }} {{ sp.name }}</span>
-        <span>{{ booking.specialtyId === sp.id ? '✓' : '›' }}</span>
+        <span class="ml-2 flex-shrink-0">{{ booking.specialtyId === sp.id ? '✓' : '›' }}</span>
       </button>
     </div>
 
-    <!-- Service options (appear after specialty selected) -->
-    <Transition name="slide-down">
-      <div v-if="booking.specialtyId && servicesForSelected.length">
-        <div class="text-xs font-semibold text-slate mb-2">Выберите услугу</div>
-        <div class="flex flex-col gap-1.5">
+    <!-- Right: service list (appears when specialty selected) -->
+    <div class="w-1/2 flex flex-col">
+      <Transition name="fade-right">
+        <div v-if="booking.specialtyId && servicesForSelected.length" class="flex flex-col gap-1.5">
+          <div class="text-xs font-semibold text-slate mb-1">Услуга</div>
           <button
             v-for="svc in servicesForSelected"
             :key="svc.id"
-            class="flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-colors"
+            type="button"
+            class="flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-colors text-left"
             :class="booking.serviceId === svc.id
               ? 'border-primary bg-primary/5 text-primary font-semibold'
               : 'border-border text-slate hover:border-primary'"
             @click="booking.serviceId = svc.id"
           >
-            <span class="text-left">{{ svc.name }}</span>
-            <span class="ml-3 whitespace-nowrap text-xs">{{ formatPrice(svc.price) }}</span>
+            <span class="text-left leading-snug">{{ svc.name }}</span>
+            <span class="ml-2 whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>
           </button>
         </div>
-      </div>
-    </Transition>
+        <div v-else-if="!booking.specialtyId" class="flex items-center justify-center h-full text-sm text-muted text-center pt-8">
+          Выберите<br>специальность
+        </div>
+      </Transition>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.slide-down-enter-active { transition: all 0.2s ease; }
-.slide-down-enter-from { opacity: 0; transform: translateY(-6px); }
+.fade-right-enter-active { transition: all 0.2s ease; }
+.fade-right-enter-from { opacity: 0; transform: translateX(-8px); }
 </style>

@@ -9,6 +9,10 @@ const STOCK_PHOTOS = [
   '/doctors/doctor-2.jpg',
   '/doctors/doctor-3.jpg',
   '/doctors/doctor-4.jpg',
+  '/doctors/doctor-5.jpg',
+  '/doctors/doctor-6.jpg',
+  '/doctors/doctor-7.jpg',
+  '/doctors/doctor-8.jpg',
 ]
 
 const photoSrc = (doc: Doctor, index: number) =>

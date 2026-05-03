@@ -6,17 +6,17 @@ import { ADVANTAGES } from '~/data/advantages'
   <section class="py-14 bg-white">
     <div class="max-w-5xl mx-auto px-8">
       <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Почему выбирают нас</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div
           v-for="adv in ADVANTAGES"
           :key="adv.title"
-          class="bg-white rounded-2xl shadow-card p-6 text-center hover:shadow-card-lg transition-shadow"
+          class="bg-white rounded-2xl shadow-card p-8 text-center hover:shadow-card-lg transition-shadow"
         >
-          <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl mx-auto mb-4">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-3xl mx-auto mb-5">
             {{ adv.icon }}
           </div>
-          <div class="text-sm font-bold text-slate mb-1">{{ adv.title }}</div>
-          <div class="text-xs text-muted leading-relaxed">{{ adv.text }}</div>
+          <div class="text-base font-bold text-slate mb-2">{{ adv.title }}</div>
+          <div class="text-sm text-muted leading-relaxed">{{ adv.text }}</div>
         </div>
       </div>
     </div>
