@@ -15,6 +15,7 @@ type Services struct {
 	Booking   *BookingService
 	Schedule  *ScheduleService
 	Admin     *AdminService
+	PDF       *PDFService
 	Repos     *Repos
 }
 
@@ -46,6 +47,7 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 		Booking:  NewBookingService(repos),
 		Schedule: &ScheduleService{},
 		Admin:    &AdminService{repository.NewAdminRepo(db)},
+		PDF:      NewPDFService(),
 		Repos:    repos,
 	}
 }

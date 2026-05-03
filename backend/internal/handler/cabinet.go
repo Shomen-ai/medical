@@ -3,7 +3,9 @@ package handler
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"beautymed/internal/service"
@@ -171,6 +173,35 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, u)
+}
+
+// GET /api/cabinet/receipts?year=2026
+func (h *CabinetHandler) Receipts(c *gin.Context) {
+	year := time.Now().Year()
+	if y := c.Query("year"); y != "" {
+		if v, err := strconv.Atoi(y); err == nil {
+			year = v
+		}
+	}
+	patientID := c.GetString("user_id")
+	patient, err := h.svc.Repos.Users.FindByID(patientID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	appts, err := h.svc.Repos.Appointments.ListCompletedByPatientYear(patientID, year)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	pdfBytes, err := h.svc.PDF.GenerateTaxReceipt(patient, year, appts)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate PDF"})
+		return
+	}
+	filename := fmt.Sprintf("receipt_%d.pdf", year)
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
 
 func (h *CabinetHandler) validateSlot(doctorID, serviceID string, newStart time.Time) error {
