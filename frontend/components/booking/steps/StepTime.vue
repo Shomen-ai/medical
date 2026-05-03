@@ -24,7 +24,7 @@ const fetchSlots = async () => {
   }
 }
 
-watch(() => booking.date, fetchSlots, { immediate: true })
+watch([() => booking.date, () => booking.doctorId], fetchSlots, { immediate: true })
 
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })

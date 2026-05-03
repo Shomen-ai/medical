@@ -24,11 +24,9 @@ const handleNext = () => {
 const handleBack = () => booking.prevStep()
 
 // Close on Escape
-onMounted(() => {
-  const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') booking.closeModal() }
-  window.addEventListener('keydown', handler)
-  onUnmounted(() => window.removeEventListener('keydown', handler))
-})
+const escHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') booking.closeModal() }
+onMounted(() => window.addEventListener('keydown', escHandler))
+onUnmounted(() => window.removeEventListener('keydown', escHandler))
 </script>
 
 <template>

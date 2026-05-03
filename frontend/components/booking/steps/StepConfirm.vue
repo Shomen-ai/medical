@@ -7,18 +7,7 @@ const submittingBooking = ref(false)
 const otpCode = ref('')
 const otpError = ref('')
 const bookingError = ref('')
-const cooldownInterval = ref<ReturnType<typeof setInterval> | null>(null)
-const cooldownDisplay = ref(0)
-
-// Tick cooldown display every second
-onMounted(() => {
-  cooldownInterval.value = setInterval(() => {
-    cooldownDisplay.value = booking.otpCooldownSecs
-  }, 1000)
-})
-onUnmounted(() => {
-  if (cooldownInterval.value) clearInterval(cooldownInterval.value)
-})
+const cooldownDisplay = computed(() => booking.otpCooldownSecs)
 
 const sendOtp = async () => {
   if (!booking.phone) return
@@ -28,7 +17,6 @@ const sendOtp = async () => {
     await post('/api/auth/otp', { phone: booking.phone })
     booking.otpSent = true
     booking.startOtpCooldown()
-    cooldownDisplay.value = 60
   } catch {
     otpError.value = 'Не удалось отправить код. Проверьте номер.'
   } finally {
