@@ -49,14 +49,12 @@ func (s *AuthService) VerifyPatientOTP(ctx context.Context, phone, code string) 
 }
 
 func (s *AuthService) SendStaffOTP(ctx context.Context, phone string) (string, error) {
-	st, err := s.repos.Doctors.FindStaffByPhone(phone)
-	if err != nil {
-		return "", errors.New("staff not found")
+	if _, err := s.repos.Doctors.FindStaffByPhone(phone); err != nil {
+		return "", fmt.Errorf("staff not found: %w", err)
 	}
-	_ = st
 	code, err := s.otp.Generate(ctx, phone, "staff")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("generate otp: %w", err)
 	}
 	return code, nil
 }
@@ -71,14 +69,14 @@ func (s *AuthService) VerifyStaffOTP(ctx context.Context, phone, code string) (*
 	}
 	st, err := s.repos.Doctors.FindStaffByPhone(phone)
 	if err != nil {
-		return nil, "", "", errors.New("staff not found")
+		return nil, "", "", fmt.Errorf("staff not found: %w", err)
 	}
 	pair, err := s.issuePair(st.ID, st.Role)
 	return pair, st.ID, st.Role, err
 }
 
 func (s *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*TokenPair, error) {
-	claims, err := s.jwt.Parse(refreshToken)
+	claims, err := s.jwt.ParseRefresh(refreshToken)
 	if err != nil {
 		return nil, errors.New("invalid refresh token")
 	}

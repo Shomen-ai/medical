@@ -5,14 +5,20 @@ import (
 	"net/http"
 	"time"
 
+	"beautymed/internal/config"
 	"beautymed/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-type AuthHandler struct{ svc *service.Services }
+type AuthHandler struct {
+	svc     *service.Services
+	devMode bool
+}
 
-func NewAuthHandler(svc *service.Services) *AuthHandler { return &AuthHandler{svc} }
+func NewAuthHandler(svc *service.Services, cfg *config.Config) *AuthHandler {
+	return &AuthHandler{svc: svc, devMode: cfg.Env != "production"}
+}
 
 // POST /api/auth/otp  body: {"phone":"+79001234567"}
 func (h *AuthHandler) SendOTP(c *gin.Context) {
@@ -27,7 +33,7 @@ func (h *AuthHandler) SendOTP(c *gin.Context) {
 		return
 	}
 	resp := gin.H{"message": "OTP sent"}
-	if c.GetHeader("X-Dev-Mode") == "1" {
+	if h.devMode && c.GetHeader("X-Dev-Mode") == "1" {
 		resp["code"] = code
 	}
 	c.JSON(http.StatusOK, resp)
@@ -52,7 +58,7 @@ func (h *AuthHandler) VerifyOTP(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	setRefreshCookie(c, pair.RefreshToken)
+	h.setRefreshCookie(c, pair.RefreshToken)
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken})
 }
 
@@ -65,11 +71,11 @@ func (h *AuthHandler) SendStaffOTP(c *gin.Context) {
 	}
 	code, err := h.svc.Auth.SendStaffOTP(c.Request.Context(), req.Phone)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "staff not found"})
 		return
 	}
 	resp := gin.H{"message": "OTP sent"}
-	if c.GetHeader("X-Dev-Mode") == "1" {
+	if h.devMode && c.GetHeader("X-Dev-Mode") == "1" {
 		resp["code"] = code
 	}
 	c.JSON(http.StatusOK, resp)
@@ -91,10 +97,10 @@ func (h *AuthHandler) VerifyStaffOTP(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired OTP"})
 			return
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	setRefreshCookie(c, pair.RefreshToken)
+	h.setRefreshCookie(c, pair.RefreshToken)
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken, "role": role})
 }
 
@@ -110,11 +116,12 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	setRefreshCookie(c, pair.RefreshToken)
+	h.setRefreshCookie(c, pair.RefreshToken)
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken})
 }
 
-func setRefreshCookie(c *gin.Context, token string) {
+func (h *AuthHandler) setRefreshCookie(c *gin.Context, token string) {
+	secure := !h.devMode
 	c.SetCookie("refresh_token", token, int(30*24*time.Hour/time.Second),
-		"/api/auth", "", true, true)
+		"/api/auth", "", secure, true)
 }
