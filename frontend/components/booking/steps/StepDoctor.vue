@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Doctor } from '~/types'
+import { DoctorsKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
-const doctors = inject<Ref<Doctor[]>>('doctors', ref([]))
+const doctors = inject(DoctorsKey, computed(() => []))
 
 const filteredDoctors = computed(() =>
   doctors.value.filter(d => d.specialty_id === booking.specialtyId)

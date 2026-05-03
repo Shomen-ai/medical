@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Specialty, Service } from '~/types'
 import { getSpecialtyMeta } from '~/data/specialtyMeta'
+import { SpecialtiesKey, ServicesKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
-const specialties = inject<Ref<Specialty[]>>('specialties', ref([]))
-const services = inject<Ref<Service[]>>('services', ref([]))
+const specialties = inject(SpecialtiesKey, computed(() => []))
+const services = inject(ServicesKey, computed(() => []))
 
 const servicesForSelected = computed(() =>
   services.value.filter(s => s.specialty_id === booking.specialtyId)

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { Specialty, Doctor, Service } from '~/types'
+import { SpecialtiesKey, DoctorsKey, ServicesKey } from '~/composables/injectionKeys'
 
 // useApi handles base URL: server → config.apiBase (http://api:8080), client → '' (through nginx)
 const { get } = useApi()
+
+const config = useRuntimeConfig()
 
 // SSR: parallel data fetch — fetcher runs server-side, result hydrated to client
 const [
@@ -21,11 +24,9 @@ const safeDoctors     = computed(() => doctors.value ?? [])
 const safeServices    = computed(() => services.value ?? [])
 
 // Provide to booking step components
-provide('specialties', safeSpecialties)
-provide('doctors', safeDoctors)
-provide('services', safeServices)
-
-const config = useRuntimeConfig()
+provide(SpecialtiesKey, safeSpecialties)
+provide(DoctorsKey, safeDoctors)
+provide(ServicesKey, safeServices)
 
 // SEO
 useHead({
