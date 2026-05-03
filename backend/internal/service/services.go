@@ -2,6 +2,7 @@ package service
 
 import (
 	"beautymed/internal/config"
+	"beautymed/internal/model"
 	"beautymed/internal/repository"
 
 	"github.com/jmoiron/sqlx"
@@ -9,11 +10,13 @@ import (
 )
 
 type Services struct {
-	Auth    *AuthService
-	OTP     *OTPService
-	JWT     *JWTService
-	Booking *BookingService
-	Repos   *Repos
+	Auth      *AuthService
+	OTP       *OTPService
+	JWT       *JWTService
+	Booking   *BookingService
+	Schedule  *ScheduleService
+	Admin     *AdminService
+	Repos     *Repos
 }
 
 type Repos struct {
@@ -22,6 +25,24 @@ type Repos struct {
 	Specialties  *repository.SpecialtyRepo
 	Services     *repository.ServiceRepo
 	Appointments *repository.AppointmentRepo
+}
+
+// AdminService wraps AdminRepo — replaced by direct *repository.AdminRepo in Task 9.
+type AdminService struct{ *repository.AdminRepo }
+
+// ScheduleService stub — replaced by real implementation in Task 5.
+type ScheduleService struct{}
+
+// SpecialtyGroup stub — moved to schedule.go in Task 5.
+type SpecialtyGroup struct {
+	SpecialtyID string
+	DoctorIDs   []string
+	StartTime   string
+	EndTime     string
+}
+
+func (s *ScheduleService) Generate(year, month int, groups []SpecialtyGroup) []model.ScheduleRow {
+	return nil
 }
 
 func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
@@ -35,11 +56,12 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 	otp := NewOTPService(rdb)
 	j := NewJWTService(cfg.JWTSecret)
 	return &Services{
-		OTP:     otp,
-		JWT:     j,
-		Auth:    NewAuthService(repos, otp, j),
-		Booking: NewBookingService(repos),
-		Repos:   repos,
+		OTP:      otp,
+		JWT:      j,
+		Auth:     NewAuthService(repos, otp, j),
+		Booking:  NewBookingService(repos),
+		Schedule: &ScheduleService{},
+		Admin:    &AdminService{repository.NewAdminRepo(db)},
+		Repos:    repos,
 	}
 }
-
