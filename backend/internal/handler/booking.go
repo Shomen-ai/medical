@@ -28,6 +28,16 @@ func (h *BookingHandler) GetSlots(c *gin.Context) {
 	c.JSON(http.StatusOK, slots)
 }
 
+// GET /api/doctors/:id/available-dates?month=2026-05
+func (h *BookingHandler) GetAvailableDates(c *gin.Context) {
+	dates, err := h.svc.Booking.GetAvailableDates(c.Param("id"), c.Query("month"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dates)
+}
+
 // POST /api/appointments
 // body: {"doctor_id":"uuid","service_id":"uuid","starts_at":"2026-05-10T10:00:00Z","promo_code":""}
 func (h *BookingHandler) Create(c *gin.Context) {

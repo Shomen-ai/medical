@@ -50,6 +50,14 @@ func (s *BookingService) GetSlots(doctorID, serviceID, dateStr string) ([]model.
 	return CalcSlots(workStart, workEnd, svc.DurationMin, taken), nil
 }
 
+func (s *BookingService) GetAvailableDates(doctorID, monthStr string) ([]string, error) {
+	t, err := time.Parse("2006-01", monthStr)
+	if err != nil {
+		return nil, errors.New("invalid month, use YYYY-MM")
+	}
+	return s.repos.Appointments.ListWorkDates(doctorID, t.Year(), int(t.Month()))
+}
+
 type BookRequest struct {
 	PatientID string
 	DoctorID  string

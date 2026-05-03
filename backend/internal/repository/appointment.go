@@ -169,6 +169,26 @@ func (r *AppointmentRepo) DoctorStats(doctorID string) (*model.DoctorStats, erro
 	return &s, err
 }
 
+// ListWorkDates returns dates where the doctor is not on day-off for the given month.
+func (r *AppointmentRepo) ListWorkDates(doctorID string, year, month int) ([]string, error) {
+	var dates []string
+	err := r.db.Select(&dates, `
+		SELECT work_date::text
+		FROM doctor_schedules
+		WHERE doctor_id=$1
+		  AND EXTRACT(YEAR  FROM work_date) = $2
+		  AND EXTRACT(MONTH FROM work_date) = $3
+		  AND is_day_off = false
+		ORDER BY work_date`, doctorID, year, month)
+	if err != nil {
+		return nil, err
+	}
+	if dates == nil {
+		dates = []string{}
+	}
+	return dates, nil
+}
+
 // ListScheduleByDoctor returns the month's schedule rows for a single doctor.
 func (r *AppointmentRepo) ListScheduleByDoctor(doctorID string, year, month int) ([]map[string]interface{}, error) {
 	rows, err := r.db.Queryx(`

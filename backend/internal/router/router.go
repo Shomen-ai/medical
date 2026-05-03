@@ -46,6 +46,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 		api.GET("/services", svcH.List)
 		api.GET("/services/:id", svcH.Get)
 		api.GET("/doctors/:id/slots", bookH.GetSlots)
+		api.GET("/doctors/:id/available-dates", bookH.GetAvailableDates)
 
 		// Booking (patient)
 		api.POST("/appointments", patientMw, bookH.Create)
