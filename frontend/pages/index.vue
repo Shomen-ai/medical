@@ -30,14 +30,14 @@ provide(ServicesKey, safeServices)
 
 // SEO
 useHead({
-  title: 'BeautyMed — Клиника красоты и здоровья в Хабаровске',
+  title: 'BeautyMed — Клиника красоты и здоровья в Ульяновске',
   meta: [
     {
       name: 'description',
       content: 'Косметология, дерматология, трихология и эстетическая медицина. Онлайн-запись к врачу за 2 минуты.',
     },
     { property: 'og:title', content: 'BeautyMed — Клиника красоты и здоровья' },
-    { property: 'og:description', content: 'Профессиональная косметология и эстетическая медицина в Хабаровске.' },
+    { property: 'og:description', content: 'Профессиональная косметология и эстетическая медицина в Ульяновске.' },
     { property: 'og:image', content: '/clinic_3.png' },
   ],
   script: [
@@ -49,7 +49,7 @@ useHead({
         name: 'BeautyMed',
         address: {
           '@type': 'PostalAddress',
-          addressLocality: 'Хабаровск',
+          addressLocality: 'Ульяновск',
           streetAddress: config.public.clinicAddress,
           addressCountry: 'RU',
         },
