@@ -12,14 +12,14 @@ const STOCK_PHOTOS = [
 ]
 
 const photoSrc = (doc: Doctor, index: number) =>
-  doc.photo_url || STOCK_PHOTOS[index % STOCK_PHOTOS.length]
+  (doc.photo_url && doc.photo_url.trim()) || STOCK_PHOTOS[index % STOCK_PHOTOS.length]
 </script>
 
 <template>
   <section class="py-14 bg-white">
     <div class="max-w-5xl mx-auto px-8">
       <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Наши врачи</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+      <div v-if="doctors.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
         <div
           v-for="(doc, i) in doctors"
           :key="doc.id"
@@ -58,9 +58,9 @@ const photoSrc = (doc: Doctor, index: number) =>
       <!-- Fallback when no doctors from backend -->
       <div v-if="doctors.length === 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
         <div
-          v-for="(photo, i) in STOCK_PHOTOS"
-          :key="i"
-          class="bg-white rounded-2xl overflow-hidden shadow-card"
+          v-for="photo in STOCK_PHOTOS"
+          :key="photo"
+          class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
           <div class="relative h-48 overflow-hidden">
             <img :src="photo" alt="Врач клиники" class="w-full h-full object-cover object-top">
