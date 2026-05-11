@@ -38,12 +38,13 @@ type TimeSlot struct {
 }
 
 type PromoCode struct {
-	ID          string  `db:"id"           json:"id"`
-	Code        string  `db:"code"         json:"code"`
-	DiscountPct int     `db:"discount_pct" json:"discount_pct"`
-	MaxUses     *int    `db:"max_uses"     json:"max_uses,omitempty"`
-	UsedCount   int     `db:"used_count"   json:"used_count"`
-	ValidFrom   string  `db:"valid_from"   json:"valid_from"`
-	ValidUntil  *string `db:"valid_until"  json:"valid_until,omitempty"`
-	IsActive    bool    `db:"is_active"    json:"is_active"`
+	ID          string    `db:"id"           json:"id"`
+	Code        string    `db:"code"         json:"code"`
+	DiscountPct int       `db:"discount_pct" json:"discount_pct"`
+	MaxUses     *int      `db:"max_uses"     json:"max_uses,omitempty"`
+	UsedCount   int       `db:"used_count"   json:"used_count"`
+	ValidFrom   string    `db:"valid_from"   json:"valid_from"`
+	ValidUntil  *string   `db:"valid_until"  json:"valid_until,omitempty"`
+	IsActive    bool      `db:"is_active"    json:"is_active"`
+	CreatedAt   time.Time `db:"created_at"   json:"created_at"`
 }
