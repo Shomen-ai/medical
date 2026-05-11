@@ -13,7 +13,9 @@ onMounted(() => {
 // ── Types ────────────────────────────────────────────────────────────
 interface ScheduleCell {
   work_date: string; start_time: string; end_time: string
-  is_day_off: boolean; has_appointments: boolean
+  is_day_off: boolean
+  appointments_count: number
+  pending_records_count: number
 }
 interface Appointment {
   id: string; patient_name: string; patient_phone: string
@@ -63,6 +65,57 @@ watch([viewYear, viewMonth], () => refreshSchedule())
 const workDays = computed(() =>
   (schedule.value ?? []).sort((a, b) => a.work_date.localeCompare(b.work_date))
 )
+
+// ── Calendar grid: week-aligned month view (Mon-first), padded with nulls ──
+const calendarCells = computed<(ScheduleCell | null)[]>(() => {
+  const map = new Map<string, ScheduleCell>()
+  for (const c of workDays.value) map.set(c.work_date, c)
+
+  const first = new Date(viewYear.value, viewMonth.value - 1, 1)
+  const last = new Date(viewYear.value, viewMonth.value, 0)
+  // ISO week-day: Mon=0 ... Sun=6
+  const leadingBlanks = (first.getDay() + 6) % 7
+  const cells: (ScheduleCell | null)[] = []
+  for (let i = 0; i < leadingBlanks; i++) cells.push(null)
+  for (let day = 1; day <= last.getDate(); day++) {
+    const y = viewYear.value
+    const m = String(viewMonth.value).padStart(2, '0')
+    const d = String(day).padStart(2, '0')
+    const dateStr = `${y}-${m}-${d}`
+    cells.push(map.get(dateStr) ?? {
+      work_date: dateStr,
+      start_time: '', end_time: '', is_day_off: true,
+      appointments_count: 0, pending_records_count: 0,
+    })
+  }
+  // Trailing pad so the grid ends on a Sunday
+  while (cells.length % 7 !== 0) cells.push(null)
+  return cells
+})
+
+// Heatmap intensity for the cell background: 0..4 buckets
+const cellTone = (c: ScheduleCell) => {
+  if (c.is_day_off && c.appointments_count === 0) return 'bg-gray-50 text-gray-300'
+  const n = c.appointments_count
+  if (n === 0) return 'bg-white text-slate'
+  if (n === 1) return 'bg-primary/15 text-slate'
+  if (n === 2) return 'bg-primary/30 text-slate'
+  if (n <= 4) return 'bg-primary/50 text-white'
+  return 'bg-primary/75 text-white'
+}
+
+// Day-of-week headers (Mon-first, in Russian short form)
+const weekDayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+// Month-wide tallies for the legend strip
+const monthTotals = computed(() => {
+  let appts = 0, pending = 0
+  for (const c of workDays.value) {
+    appts += c.appointments_count
+    pending += c.pending_records_count
+  }
+  return { appts, pending }
+})
 
 // ── Appointments per selected day ─────────────────────────────────────
 const selectedDate = ref('')
@@ -142,10 +195,10 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
 
-        <!-- Left: month work days list -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <!-- Left: month calendar grid -->
+        <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <!-- Month nav -->
           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <button type="button" class="text-gray-400 hover:text-primary p-1" @click="prevMonth">‹</button>
@@ -153,36 +206,71 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
             <button type="button" class="text-gray-400 hover:text-primary p-1" @click="nextMonth">›</button>
           </div>
 
-          <div v-if="!workDays.length" class="text-center py-8 text-gray-400 text-sm">Нет записей в расписании</div>
+          <!-- Weekday header -->
+          <div class="grid grid-cols-7 gap-1 px-3 pt-3">
+            <div
+              v-for="(w, i) in weekDayLabels"
+              :key="w"
+              class="text-[10px] font-semibold text-center pb-1"
+              :class="i === 6 ? 'text-red-400' : 'text-gray-400'"
+            >{{ w }}</div>
+          </div>
 
-          <div v-else class="divide-y divide-gray-50">
-            <button
-              v-for="cell in workDays"
-              :key="cell.work_date"
-              type="button"
-              class="w-full text-left px-4 py-3 flex items-center justify-between transition-colors"
-              :class="[
-                selectedDate === cell.work_date
-                  ? 'bg-primary/5 border-l-2 border-primary'
-                  : 'hover:bg-gray-50 border-l-2 border-transparent',
-                cell.is_day_off ? 'opacity-50' : ''
-              ]"
-              @click="loadDay(cell.work_date)"
-            >
-              <div>
-                <div class="text-sm font-medium" :class="cell.is_day_off ? 'text-gray-400' : 'text-slate'">
-                  {{ formatDate(cell.work_date) }}
-                  <span v-if="isToday(cell.work_date)" class="ml-1 text-xs text-primary font-semibold">(сегодня)</span>
-                  <span v-if="cell.is_day_off" class="ml-1 text-xs text-gray-400">(выходной)</span>
-                </div>
-                <div v-if="!cell.is_day_off" class="text-xs text-gray-400">{{ cell.start_time.slice(0, 5) }} – {{ cell.end_time.slice(0, 5) }}</div>
-              </div>
-            </button>
+          <!-- Calendar cells -->
+          <div class="grid grid-cols-7 gap-1 px-3 pb-3">
+            <template v-for="(cell, idx) in calendarCells" :key="idx">
+              <div v-if="!cell" class="aspect-square"></div>
+              <button
+                v-else
+                type="button"
+                class="aspect-square relative rounded-md text-xs font-semibold flex items-start justify-end p-1 transition-all"
+                :class="[
+                  cellTone(cell),
+                  selectedDate === cell.work_date ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/40',
+                  isToday(cell.work_date) ? 'outline outline-2 outline-offset-1 outline-amber-400' : ''
+                ]"
+                :title="cell.is_day_off
+                  ? 'Выходной'
+                  : `${cell.appointments_count} приём(ов), ${cell.pending_records_count} к заполнению`"
+                @click="loadDay(cell.work_date)"
+              >
+                <span>{{ Number(cell.work_date.slice(-2)) }}</span>
+                <span
+                  v-if="cell.pending_records_count > 0"
+                  class="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-amber-500"
+                ></span>
+              </button>
+            </template>
+          </div>
+
+          <!-- Legend -->
+          <div class="px-4 py-3 border-t border-gray-100 text-xs text-gray-500 space-y-2">
+            <div class="flex items-center gap-2">
+              <span>Меньше</span>
+              <span class="inline-block w-3 h-3 rounded-sm bg-white border border-gray-200"></span>
+              <span class="inline-block w-3 h-3 rounded-sm bg-primary/15"></span>
+              <span class="inline-block w-3 h-3 rounded-sm bg-primary/30"></span>
+              <span class="inline-block w-3 h-3 rounded-sm bg-primary/50"></span>
+              <span class="inline-block w-3 h-3 rounded-sm bg-primary/75"></span>
+              <span>Больше приёмов</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span>Есть незаполненные записи</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-3 h-3 rounded-sm border-2 border-amber-400"></span>
+              <span>Сегодня</span>
+            </div>
+            <div class="flex items-center justify-between text-slate font-medium pt-1">
+              <span>За месяц: {{ monthTotals.appts }} приём(ов)</span>
+              <span v-if="monthTotals.pending > 0" class="text-amber-600">К заполнению: {{ monthTotals.pending }}</span>
+            </div>
           </div>
         </div>
 
         <!-- Right: appointments for selected day -->
-        <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="md:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-100">
             <div class="font-semibold text-slate">
               {{ selectedDate ? formatDate(selectedDate) : 'Выберите дату' }}

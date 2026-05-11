@@ -251,15 +251,36 @@ func (r *AppointmentRepo) ListWorkDates(doctorID string, year, month int) ([]str
 	return dates, nil
 }
 
-// ListScheduleByDoctor returns the month's schedule rows for a single doctor.
+// ListScheduleByDoctor returns the month's schedule rows for a single doctor,
+// enriched with per-day appointment counts (excluding cancelled) and a
+// "pending" count of appointments still needing the doctor's attention —
+// either still scheduled or completed but missing/drafted record.
 func (r *AppointmentRepo) ListScheduleByDoctor(doctorID string, year, month int) ([]map[string]interface{}, error) {
 	rows, err := r.db.Queryx(`
-		SELECT work_date::text, start_time::text, end_time::text, is_day_off
-		FROM doctor_schedules
-		WHERE doctor_id = $1
-		  AND EXTRACT(YEAR  FROM work_date) = $2
-		  AND EXTRACT(MONTH FROM work_date) = $3
-		ORDER BY work_date`, doctorID, year, month)
+		SELECT
+		  ds.work_date::text,
+		  ds.start_time::text,
+		  ds.end_time::text,
+		  ds.is_day_off,
+		  COALESCE(stats.appointments_count,    0) AS appointments_count,
+		  COALESCE(stats.pending_records_count, 0) AS pending_records_count
+		FROM doctor_schedules ds
+		LEFT JOIN LATERAL (
+		  SELECT
+		    COUNT(*) FILTER (WHERE a.status <> 'cancelled') AS appointments_count,
+		    COUNT(*) FILTER (
+		      WHERE a.status <> 'cancelled'
+		        AND (a.status = 'scheduled' OR ar.id IS NULL OR ar.is_draft = true)
+		    ) AS pending_records_count
+		  FROM appointments a
+		  LEFT JOIN appointment_records ar ON ar.appointment_id = a.id
+		  WHERE a.doctor_id = ds.doctor_id
+		    AND (a.starts_at AT TIME ZONE 'UTC')::date = ds.work_date
+		) stats ON true
+		WHERE ds.doctor_id = $1
+		  AND EXTRACT(YEAR  FROM ds.work_date) = $2
+		  AND EXTRACT(MONTH FROM ds.work_date) = $3
+		ORDER BY ds.work_date`, doctorID, year, month)
 	if err != nil {
 		return nil, err
 	}
