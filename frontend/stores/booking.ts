@@ -69,6 +69,20 @@ export const useBookingStore = defineStore('booking', {
         this.step = 1
       }
     },
+    // Open the modal pre-filling specialty + doctor + service in code,
+    // landing directly on the Date step. The user can still revisit the
+    // earlier steps via the Back button and change any of these.
+    openModalForDoctor(specialtyId: string, doctorId: string, serviceId: string, servicePrice: number) {
+      this.open = true
+      this.specialtyId = specialtyId
+      this.doctorId = doctorId
+      this.serviceId = serviceId
+      this.servicePrice = servicePrice
+      this.finalPrice = servicePrice
+      this.promoValid = null
+      this.promoDiscountPct = 0
+      this.step = 3
+    },
     closeModal() {
       this.$reset()
     },

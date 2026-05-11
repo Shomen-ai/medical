@@ -1,8 +1,25 @@
 <script setup lang="ts">
-import type { Doctor } from '~/types'
+import type { Doctor, Service } from '~/types'
+import { ServicesKey } from '~/composables/injectionKeys'
 
 const props = defineProps<{ doctors: Doctor[] }>()
 const booking = useBookingStore()
+
+// Services are provided by pages/index.vue; default to empty list if not present.
+const services = inject(ServicesKey, computed(() => [] as Service[]))
+
+// Pre-select specialty + doctor + first service of that specialty in code,
+// then open the booking modal on the Date step.
+const startBooking = (doc: Doctor) => {
+  const svc = services.value.find(s => s.specialty_id === doc.specialty_id)
+  if (!svc) {
+    // No service available for this specialty — fall back to legacy flow
+    // (opens at Doctor step with specialty pre-set).
+    booking.openModal(doc.specialty_id)
+    return
+  }
+  booking.openModalForDoctor(doc.specialty_id, doc.id, svc.id, svc.price)
+}
 
 const STOCK_PHOTOS = [
   '/doctors/doctor-1.jpg',
@@ -51,7 +68,7 @@ const photoSrc = (doc: Doctor, index: number) =>
               type="button"
               class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
-              @click="booking.openModal(doc.specialty_id)"
+              @click="startBooking(doc)"
             >
               Записаться
             </button>
