@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const booking = useBookingStore()
+const { t } = useI18n()
 
 const scrollToServices = () => {
   const el = document.getElementById('services')
@@ -18,15 +19,15 @@ const scrollToServices = () => {
         <!-- Text block -->
         <div class="flex-1 px-5 sm:px-8 py-7 sm:py-10 flex flex-col justify-center">
           <div class="inline-flex items-center bg-white/15 text-white text-[10px] sm:text-xs font-semibold tracking-[2px] uppercase px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full mb-3 sm:mb-4 w-fit">
-            Клиника красоты · Туркменабад
+            {{ t('heroBadge') }}
           </div>
           <h1 class="text-2xl sm:text-3xl font-black text-white leading-tight mb-2 sm:mb-3">
-            <span class="sm:inline">Красота и здоровье</span>
+            <span class="sm:inline">{{ t('heroTitleLine1') }}</span>
             <span class="hidden sm:inline"><br></span>
-            <span class="sm:inline"> в надёжных руках</span>
+            <span class="sm:inline"> {{ t('heroTitleLine2') }}</span>
           </h1>
           <p class="text-white/75 text-sm leading-relaxed mb-5 sm:mb-6">
-            Косметология, дерматология, трихология и эстетическая медицина
+            {{ t('heroSubtitle') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-3">
             <button
@@ -34,14 +35,14 @@ const scrollToServices = () => {
               class="bg-white text-[#005A5F] px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:shadow-xl transition-shadow"
               @click="booking.openModal()"
             >
-              Записаться онлайн
+              {{ t('bookOnline') }}
             </button>
             <button
               type="button"
               class="border border-white/50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors"
               @click="scrollToServices"
             >
-              Наши услуги
+              {{ t('heroOurServices') }}
             </button>
           </div>
         </div>

@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const booking = useBookingStore()
+const { t } = useI18n()
 const activeSpecialty = ref<string | null>(props.specialties[0]?.id ?? null)
 
 const activeServices = computed(() =>
@@ -21,7 +22,7 @@ const formatPrice = (price: number) =>
 <template>
   <section id="services" class="py-10 sm:py-14 bg-[#F0FAFB]">
     <div class="max-w-5xl mx-auto px-4 sm:px-8">
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Наши услуги</h2>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">{{ t('servicesTitle') }}</h2>
 
       <!-- Specialty tabs — scrollable on mobile -->
       <div class="flex gap-2 mb-5 sm:mb-6 overflow-x-auto sm:flex-wrap -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 sm:pb-0">
@@ -54,7 +55,7 @@ const formatPrice = (price: number) =>
             <NuxtLink :to="`/services/${svc.id}`" class="text-sm font-medium text-slate hover:text-primary transition-colors">
               {{ svc.name }}
             </NuxtLink>
-            <div class="text-xs text-muted mt-0.5">{{ svc.duration_min }} мин</div>
+            <div class="text-xs text-muted mt-0.5">{{ t('serviceDuration', { n: svc.duration_min }) }}</div>
           </div>
           <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
             <span class="text-sm font-semibold text-primary">{{ formatPrice(svc.price) }}</span>
@@ -69,12 +70,12 @@ const formatPrice = (price: number) =>
               class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
               @click="booking.openModal(activeSpecialty ?? undefined)"
             >
-              Записаться
+              {{ t('bookShort') }}
             </button>
           </div>
         </div>
         <div v-if="activeServices.length === 0" class="px-5 py-8 text-center text-muted text-sm">
-          Услуги не найдены
+          {{ t('servicesNone') }}
         </div>
       </div>
     </div>

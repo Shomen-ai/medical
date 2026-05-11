@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const booking = useBookingStore()
+const { t } = useI18n()
 
 const stepComponents = {
   1: resolveComponent('StepSpecialty'),
@@ -9,13 +10,7 @@ const stepComponents = {
   5: resolveComponent('StepConfirm'),
 }
 
-const stepTitles: Record<number, string> = {
-  1: 'Специальность',
-  2: 'Врач',
-  3: 'Дата',
-  4: 'Время',
-  5: 'Подтверждение',
-}
+const stepTitle = (n: number) => t(`step${n}` as 'step1' | 'step2' | 'step3' | 'step4' | 'step5')
 
 const handleNext = () => {
   if (booking.step < 5 && booking.canProceed) booking.nextStep()
@@ -46,7 +41,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
         <div class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
           <!-- Header -->
           <div class="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-0">
-            <span class="text-sm font-bold text-slate">Онлайн-запись</span>
+            <span class="text-sm font-bold text-slate">{{ t('bookingTitle') }}</span>
             <button class="text-muted hover:text-slate transition-colors text-lg p-1 -m-1" @click="booking.closeModal()">✕</button>
           </div>
 
@@ -68,7 +63,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
 
             <!-- Step title -->
             <div class="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
-              Шаг {{ booking.step }} — {{ stepTitles[booking.step] }}
+              {{ t('bookingStep', { n: booking.step }) }} — {{ stepTitle(booking.step) }}
             </div>
 
             <!-- Dynamic step component -->
@@ -82,7 +77,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
               class="text-sm text-muted hover:text-slate transition-colors"
               @click="handleBack"
             >
-              ← Назад
+              {{ t('back') }}
             </button>
             <span v-else />
             <button
@@ -91,7 +86,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
               :disabled="!booking.canProceed"
               @click="handleNext"
             >
-              Далее →
+              {{ t('next') }}
             </button>
           </div>
         </div>

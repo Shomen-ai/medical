@@ -4,6 +4,7 @@ import { ServicesKey } from '~/composables/injectionKeys'
 
 const props = defineProps<{ doctors: Doctor[] }>()
 const booking = useBookingStore()
+const { t } = useI18n()
 
 // Services are provided by pages/index.vue; default to empty list if not present.
 const services = inject(ServicesKey, computed(() => [] as Service[]))
@@ -39,7 +40,7 @@ const photoSrc = (doc: Doctor, index: number) =>
 <template>
   <section class="py-10 sm:py-14 bg-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-8">
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Наши врачи</h2>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">{{ t('doctorsTitle') }}</h2>
       <div v-if="doctors.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
         <div
           v-for="(doc, i) in doctors"
@@ -63,14 +64,14 @@ const photoSrc = (doc: Doctor, index: number) =>
           <!-- Info -->
           <div class="p-3 sm:p-4">
             <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
-            <div class="text-xs text-muted mb-3">Стаж {{ doc.experience_years }} лет</div>
+            <div class="text-xs text-muted mb-3">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
             <button
               type="button"
               class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
               @click="startBooking(doc)"
             >
-              Записаться
+              {{ t('bookShort') }}
             </button>
           </div>
         </div>
@@ -101,7 +102,7 @@ const photoSrc = (doc: Doctor, index: number) =>
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
               @click="booking.openModal()"
             >
-              Записаться
+              {{ t('bookShort') }}
             </button>
           </div>
         </div>

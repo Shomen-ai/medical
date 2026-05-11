@@ -3,6 +3,7 @@ const config = useRuntimeConfig()
 const auth = useAuthStore()
 const booking = useBookingStore()
 const router = useRouter()
+const { locale, setLocale, t } = useI18n()
 
 const showLogin = ref(false)
 
@@ -41,22 +42,41 @@ const handleCabinetClick = () => {
         <span>{{ config.public.clinicHours }}</span>
       </div>
 
-      <!-- Right: buttons -->
+      <!-- Right: locale + buttons -->
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <!-- Locale switcher -->
+        <div class="flex items-center text-xs font-semibold text-muted border border-border rounded-full overflow-hidden">
+          <button
+            type="button"
+            class="px-2.5 py-1 transition-colors"
+            :class="locale === 'ru' ? 'bg-primary text-white' : 'hover:text-primary'"
+            @click="setLocale('ru')"
+          >
+            RU
+          </button>
+          <button
+            type="button"
+            class="px-2.5 py-1 transition-colors"
+            :class="locale === 'tk' ? 'bg-primary text-white' : 'hover:text-primary'"
+            @click="setLocale('tk')"
+          >
+            TK
+          </button>
+        </div>
         <button
           type="button"
           class="hidden sm:block text-sm font-semibold text-white px-5 py-2.5 rounded-xl transition-opacity hover:opacity-90"
           style="background: linear-gradient(135deg, #005A5F, #00959D)"
           @click="booking.openModal()"
         >
-          Записаться
+          {{ t('bookShort') }}
         </button>
         <button
           type="button"
           class="text-xs sm:text-sm font-semibold text-primary border-2 border-primary px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-primary/5 transition-colors whitespace-nowrap"
           @click="handleCabinetClick"
         >
-          {{ auth.isLoggedIn ? 'Кабинет' : 'Войти' }}
+          {{ auth.isLoggedIn ? t('cabinet') : t('signIn') }}
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ADVANTAGES, type Advantage } from '~/data/advantages'
 
+const { t } = useI18n()
 const activeAdvantage = ref<Advantage | null>(null)
 </script>
 
@@ -8,7 +9,7 @@ const activeAdvantage = ref<Advantage | null>(null)
   <section class="py-10 sm:py-14 bg-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-8">
       <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">
-        Почему выбирают нас
+        {{ t('advantagesTitle') }}
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
         <button
@@ -27,7 +28,7 @@ const activeAdvantage = ref<Advantage | null>(null)
           <div class="text-xs sm:text-sm text-muted leading-relaxed text-center">
             {{ adv.text }}
           </div>
-          <div class="text-xs text-primary font-semibold mt-2 sm:mt-3 text-center">Подробнее →</div>
+          <div class="text-xs text-primary font-semibold mt-2 sm:mt-3 text-center">{{ t('more') }}</div>
         </button>
       </div>
     </div>

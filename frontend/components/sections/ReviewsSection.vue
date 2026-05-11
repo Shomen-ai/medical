@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { REVIEWS } from '~/data/reviews'
 
-// "2026-03-15" → "15 марта 2026". Parsed manually to avoid timezone shifts.
+const { t, locale } = useI18n()
+
+// "2026-03-15" → "15 марта 2026" (ru) or "15 mart 2026 ý." (tk).
+// Parsed manually to avoid timezone shifts. tk uses tk-TM locale.
 const formatReviewDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
+  const tag = locale.value === 'tk' ? 'tk-TM' : 'ru-RU'
+  return new Date(y, m - 1, d).toLocaleDateString(tag, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -15,7 +19,7 @@ const formatReviewDate = (iso: string) => {
 <template>
   <section class="py-10 sm:py-14 bg-[#F0FAFB]">
     <div class="max-w-5xl mx-auto px-4 sm:px-8">
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Отзывы пациентов</h2>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">{{ t('reviewsTitle') }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
         <div
           v-for="review in REVIEWS"

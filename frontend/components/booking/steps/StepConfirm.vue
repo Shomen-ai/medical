@@ -50,8 +50,16 @@ const startTimer = () => {
 
 onUnmounted(() => { if (timer) clearInterval(timer) })
 
+const phoneCheck = computed(() => validatePhone(booking.phone))
+
 const sendOtp = async () => {
   if (!booking.phone || !consent.value) return
+  if (!phoneCheck.value.valid) {
+    otpError.value = 'Введите телефон в формате +7XXXXXXXXXX (Россия) или +993XXXXXXXX (Туркменистан)'
+    return
+  }
+  // Canonical form sent to API and stored for OTP verification.
+  booking.phone = phoneCheck.value.e164
   submittingOtp.value = true
   otpError.value = ''
   try {
@@ -209,9 +217,12 @@ const formattedDate = computed(() => {
           <input
             v-model="booking.phone"
             type="tel"
-            placeholder="+79001234567"
+            inputmode="tel"
+            autocomplete="tel"
             :disabled="booking.otpSent"
-            class="flex-1 border border-border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary disabled:bg-gray-50"
+            class="flex-1 border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary disabled:bg-gray-50"
+            :class="otpError ? 'border-red-400' : 'border-border'"
+            @input="otpError = ''"
           >
           <button
             class="px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"

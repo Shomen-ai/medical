@@ -6,10 +6,18 @@ const router = useRouter()
 const phone = ref('')
 const code = ref('')
 const consent = ref(false)
+const phoneError = ref('')
+
+const phoneCheck = computed(() => validatePhone(phone.value))
 
 const handleSendOTP = () => {
   if (!consent.value) return
-  auth.sendOTP(phone.value, false)
+  if (!phoneCheck.value.valid) {
+    phoneError.value = 'Введите телефон в формате +7XXXXXXXXXX (Россия) или +993XXXXXXXX (Туркменистан)'
+    return
+  }
+  phoneError.value = ''
+  auth.sendOTP(phoneCheck.value.e164, false)
 }
 
 const handleVerify = async () => {
@@ -38,10 +46,15 @@ const handleVerify = async () => {
           <input
             v-model="phone"
             type="tel"
-            placeholder="+7 (___) ___-__-__"
-            class="w-full border border-border rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:border-primary"
+            inputmode="tel"
+            autocomplete="tel"
+            class="w-full border rounded-xl px-4 py-2.5 text-sm mb-1 focus:outline-none focus:border-primary"
+            :class="phoneError ? 'border-red-400' : 'border-border'"
             @keydown.enter="handleSendOTP"
+            @input="phoneError = ''"
           >
+          <div v-if="phoneError" class="text-xs text-red-500 mb-3">{{ phoneError }}</div>
+          <div v-else class="mb-3" />
           <label class="flex items-start gap-2 text-xs text-muted mb-3 cursor-pointer">
             <input v-model="consent" type="checkbox" class="mt-0.5 flex-shrink-0 accent-primary">
             <span>
