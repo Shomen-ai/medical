@@ -1,5 +1,15 @@
 <script setup lang="ts">
 import { REVIEWS } from '~/data/reviews'
+
+// "2026-03-15" → "15 марта 2026". Parsed manually to avoid timezone shifts.
+const formatReviewDate = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
 </script>
 
 <template>
@@ -21,7 +31,7 @@ import { REVIEWS } from '~/data/reviews'
           <p class="text-sm text-slate leading-relaxed mb-5">{{ review.text }}</p>
           <div class="flex items-center justify-between pt-3 border-t border-border">
             <span class="text-xs font-bold text-slate">{{ review.author }}</span>
-            <span class="text-xs text-muted">{{ review.date }}</span>
+            <span class="text-xs text-muted">{{ formatReviewDate(review.date) }}</span>
           </div>
         </div>
       </div>

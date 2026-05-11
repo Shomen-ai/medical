@@ -50,7 +50,7 @@ useHead({
         address: {
           '@type': 'PostalAddress',
           addressLocality: 'Туркменабад',
-          streetAddress: config.public.clinicAddress,
+          streetAddress: 'ул. Парахат 25/31',
           addressCountry: 'TM',
         },
         telephone: config.public.clinicPhone,
