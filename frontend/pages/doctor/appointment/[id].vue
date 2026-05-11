@@ -224,6 +224,7 @@ useHead({ title: 'Приём — BeautyMed' })
 
           <div class="flex flex-wrap gap-3 pt-2">
             <button
+              v-if="appointment.status !== 'completed'"
               type="button"
               class="bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-opacity"
               :class="(!canSubmit || saving) ? 'opacity-50 cursor-not-allowed' : ''"
@@ -239,7 +240,7 @@ useHead({ title: 'Приём — BeautyMed' })
               :disabled="!canSubmit || saving"
               @click="saveRecord(true)"
             >
-              Сохранить черновик
+              {{ appointment.status === 'completed' ? 'Сохранить изменения' : 'Сохранить черновик' }}
             </button>
           </div>
         </div>
