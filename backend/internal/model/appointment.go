@@ -23,13 +23,15 @@ type Appointment struct {
 }
 
 type AppointmentRecord struct {
-	ID              string  `db:"id"               json:"id"`
-	AppointmentID   string  `db:"appointment_id"   json:"appointment_id"`
-	Complaints      string  `db:"complaints"       json:"complaints"`
-	Diagnosis       string  `db:"diagnosis"        json:"diagnosis"`
-	Prescription    *string `db:"prescription"     json:"prescription,omitempty"`
-	Recommendations *string `db:"recommendations"  json:"recommendations,omitempty"`
-	IsDraft         bool    `db:"is_draft"         json:"is_draft"`
+	ID              string    `db:"id"               json:"id"`
+	AppointmentID   string    `db:"appointment_id"   json:"appointment_id"`
+	Complaints      string    `db:"complaints"       json:"complaints"`
+	Diagnosis       string    `db:"diagnosis"        json:"diagnosis"`
+	Prescription    *string   `db:"prescription"     json:"prescription,omitempty"`
+	Recommendations *string   `db:"recommendations"  json:"recommendations,omitempty"`
+	IsDraft         bool      `db:"is_draft"         json:"is_draft"`
+	CreatedAt       time.Time `db:"created_at"       json:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"       json:"updated_at"`
 }
 
 type TimeSlot struct {
