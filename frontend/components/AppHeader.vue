@@ -21,11 +21,11 @@ const handleCabinetClick = () => {
 
 <template>
   <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-    <div class="max-w-6xl mx-auto px-6 h-16 grid grid-cols-3 items-center">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
       <!-- Left: logo -->
-      <NuxtLink to="/" class="flex items-center gap-2">
+      <NuxtLink to="/" class="flex items-center gap-2 flex-shrink-0">
         <span
-          class="text-xl font-extrabold"
+          class="text-lg sm:text-xl font-extrabold"
           style="background: linear-gradient(135deg,#005A5F,#00959D); -webkit-background-clip:text; -webkit-text-fill-color:transparent;"
         >
           {{ config.public.clinicName }}
@@ -33,16 +33,16 @@ const handleCabinetClick = () => {
         <span class="hidden sm:block text-sm text-gray-400 font-medium">· Туркменабад</span>
       </NuxtLink>
 
-      <!-- Center: hours -->
-      <div class="flex items-center justify-center gap-2 text-sm text-gray-500">
+      <!-- Center: hours (only desktop) -->
+      <div class="hidden md:flex items-center justify-center gap-2 text-sm text-gray-500 flex-1">
         <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
         </svg>
-        <span class="hidden md:block">{{ config.public.clinicHours }}</span>
+        <span>{{ config.public.clinicHours }}</span>
       </div>
 
       <!-- Right: buttons -->
-      <div class="flex items-center justify-end gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <button
           type="button"
           class="hidden sm:block text-sm font-semibold text-white px-5 py-2.5 rounded-xl transition-opacity hover:opacity-90"
@@ -53,7 +53,7 @@ const handleCabinetClick = () => {
         </button>
         <button
           type="button"
-          class="text-sm font-semibold text-primary border-2 border-primary px-5 py-2.5 rounded-xl hover:bg-primary/5 transition-colors"
+          class="text-xs sm:text-sm font-semibold text-primary border-2 border-primary px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-primary/5 transition-colors whitespace-nowrap"
           @click="handleCabinetClick"
         >
           {{ auth.isLoggedIn ? 'Кабинет' : 'Войти' }}

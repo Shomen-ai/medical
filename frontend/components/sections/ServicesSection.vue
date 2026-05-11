@@ -19,17 +19,17 @@ const formatPrice = (price: number) =>
 </script>
 
 <template>
-  <section id="services" class="py-14 bg-[#F0FAFB]">
-    <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Наши услуги</h2>
+  <section id="services" class="py-10 sm:py-14 bg-[#F0FAFB]">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Наши услуги</h2>
 
-      <!-- Specialty tabs -->
-      <div class="flex gap-2 mb-6 flex-wrap">
+      <!-- Specialty tabs — scrollable on mobile -->
+      <div class="flex gap-2 mb-5 sm:mb-6 overflow-x-auto sm:flex-wrap -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 sm:pb-0">
         <button
           v-for="sp in specialties"
           :key="sp.id"
           type="button"
-          class="px-4 py-2 rounded-full text-sm font-semibold transition-all"
+          class="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0"
           :class="activeSpecialty === sp.id
             ? 'text-white shadow-md'
             : 'bg-white border border-border text-muted hover:border-primary hover:text-primary'"
@@ -47,16 +47,16 @@ const formatPrice = (price: number) =>
         <div
           v-for="(svc, i) in activeServices"
           :key="svc.id"
-          class="flex items-center justify-between px-5 py-4 hover:bg-[#F0FAFB] transition-colors"
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-4 hover:bg-[#F0FAFB] transition-colors"
           :class="i < activeServices.length - 1 ? 'border-b border-border' : ''"
         >
-          <div class="flex-1 pr-4">
+          <div class="flex-1 sm:pr-4">
             <NuxtLink :to="`/services/${svc.id}`" class="text-sm font-medium text-slate hover:text-primary transition-colors">
               {{ svc.name }}
             </NuxtLink>
             <div class="text-xs text-muted mt-0.5">{{ svc.duration_min }} мин</div>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
             <span class="text-sm font-semibold text-primary">{{ formatPrice(svc.price) }}</span>
             <NuxtLink
               :to="`/services/${svc.id}`"

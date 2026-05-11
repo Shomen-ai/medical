@@ -3,10 +3,10 @@ const config = useRuntimeConfig()
 </script>
 
 <template>
-  <section class="py-14 bg-white">
-    <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Контакты</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <section class="py-10 sm:py-14 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Контакты</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         <!-- Info -->
         <div class="space-y-5">
           <div class="flex items-start gap-4">

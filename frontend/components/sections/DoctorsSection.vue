@@ -20,17 +20,17 @@ const photoSrc = (doc: Doctor, index: number) =>
 </script>
 
 <template>
-  <section class="py-14 bg-white">
-    <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Наши врачи</h2>
-      <div v-if="doctors.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+  <section class="py-10 sm:py-14 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Наши врачи</h2>
+      <div v-if="doctors.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
         <div
           v-for="(doc, i) in doctors"
           :key="doc.id"
           class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
           <!-- Photo with specialty badge bar -->
-          <div class="relative h-48 overflow-hidden">
+          <div class="relative h-36 sm:h-48 overflow-hidden">
             <img
               :src="photoSrc(doc, i)"
               :alt="doc.full_name"
@@ -44,7 +44,7 @@ const photoSrc = (doc: Doctor, index: number) =>
             </div>
           </div>
           <!-- Info -->
-          <div class="p-4">
+          <div class="p-3 sm:p-4">
             <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
             <div class="text-xs text-muted mb-3">Стаж {{ doc.experience_years }} лет</div>
             <button
@@ -60,13 +60,13 @@ const photoSrc = (doc: Doctor, index: number) =>
       </div>
 
       <!-- Fallback when no doctors from backend -->
-      <div v-if="doctors.length === 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+      <div v-if="doctors.length === 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
         <div
           v-for="photo in STOCK_PHOTOS"
           :key="photo"
           class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
-          <div class="relative h-48 overflow-hidden">
+          <div class="relative h-36 sm:h-48 overflow-hidden">
             <img :src="photo" alt="Врач клиники" class="w-full h-full object-cover object-top">
             <div
               class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
@@ -75,7 +75,7 @@ const photoSrc = (doc: Doctor, index: number) =>
               Специалист клиники
             </div>
           </div>
-          <div class="p-4">
+          <div class="p-3 sm:p-4">
             <div class="text-sm font-bold text-slate mb-1">Врач BeautyMed</div>
             <div class="text-xs text-muted mb-3">Опытный специалист</div>
             <button

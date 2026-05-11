@@ -34,7 +34,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
     <Transition name="modal">
       <div
         v-if="booking.open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       >
         <!-- Backdrop -->
         <div
@@ -43,15 +43,15 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
         />
 
         <!-- Modal box -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 pt-5 pb-0">
+          <div class="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-0">
             <span class="text-sm font-bold text-slate">Онлайн-запись</span>
-            <button class="text-muted hover:text-slate transition-colors text-lg" @click="booking.closeModal()">✕</button>
+            <button class="text-muted hover:text-slate transition-colors text-lg p-1 -m-1" @click="booking.closeModal()">✕</button>
           </div>
 
           <!-- Body -->
-          <div class="flex-1 overflow-y-auto px-6 py-4">
+          <div class="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
             <!-- Dot indicator -->
             <div class="flex items-center gap-1.5 mb-5">
               <div
@@ -76,7 +76,7 @@ onUnmounted(() => window.removeEventListener('keydown', escHandler))
           </div>
 
           <!-- Footer (hidden on step 5, which has its own submit) -->
-          <div v-if="booking.step < 5" class="px-6 py-4 border-t border-border flex justify-between items-center">
+          <div v-if="booking.step < 5" class="px-4 sm:px-6 py-3 sm:py-4 border-t border-border flex justify-between items-center">
             <button
               v-if="booking.step > 1"
               class="text-sm text-muted hover:text-slate transition-colors"

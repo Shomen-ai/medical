@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     apiBase: 'http://localhost:8080',   // overridden by NUXT_API_BASE in docker
     public: {
       clinicName: 'BeautyMed',
-      clinicPhone: '+993 422 XX-XX-XX',
+      clinicPhone: '+993 422 35-17-82',
       clinicAddress: 'г. Туркменабад, ул. Парахат 25/31',
       clinicHours: 'Пн–Сб: 9:00–20:00, Вс: выходной',
     },

@@ -32,15 +32,15 @@ const formatPrice = (price: number) =>
 </script>
 
 <template>
-  <div class="flex gap-4 min-h-[280px]">
+  <div class="flex flex-col sm:flex-row gap-4 sm:min-h-[280px]">
     <!-- Left: specialty list -->
-    <div class="w-1/2 flex flex-col gap-2">
+    <div class="w-full sm:w-1/2 flex flex-col gap-2">
       <div class="text-xs font-semibold text-slate mb-1">Специальность</div>
       <button
         v-for="sp in specialties"
         :key="sp.id"
         type="button"
-        class="flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-colors text-left"
+        class="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border text-sm transition-colors text-left"
         :class="booking.specialtyId === sp.id
           ? 'border-primary bg-primary/5 text-primary font-semibold'
           : 'border-border text-slate hover:border-primary'"
@@ -52,7 +52,7 @@ const formatPrice = (price: number) =>
     </div>
 
     <!-- Right: service list (appears when specialty selected) -->
-    <div class="w-1/2 flex flex-col">
+    <div class="w-full sm:w-1/2 flex flex-col">
       <Transition name="fade-right">
         <div v-if="booking.specialtyId && servicesForSelected.length" class="flex flex-col gap-1.5">
           <div class="text-xs font-semibold text-slate mb-1">Услуга</div>
@@ -60,17 +60,17 @@ const formatPrice = (price: number) =>
             v-for="svc in servicesForSelected"
             :key="svc.id"
             type="button"
-            class="flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-colors text-left"
+            class="flex items-center justify-between px-3 sm:px-4 py-2.5 rounded-lg border text-sm transition-colors text-left gap-2"
             :class="booking.serviceId === svc.id
               ? 'border-primary bg-primary/5 text-primary font-semibold'
               : 'border-border text-slate hover:border-primary'"
             @click="selectService(svc)"
           >
             <span class="text-left leading-snug">{{ svc.name }}</span>
-            <span class="ml-2 whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>
+            <span class="whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>
           </button>
         </div>
-        <div v-else-if="!booking.specialtyId" class="flex items-center justify-center h-full text-sm text-muted text-center pt-8">
+        <div v-else-if="!booking.specialtyId" class="hidden sm:flex items-center justify-center h-full text-sm text-muted text-center pt-8">
           Выберите<br>специальность
         </div>
       </Transition>

@@ -3,10 +3,10 @@ import { REVIEWS } from '~/data/reviews'
 </script>
 
 <template>
-  <section class="py-14 bg-[#F0FAFB]">
-    <div class="max-w-5xl mx-auto px-8">
-      <h2 class="text-3xl font-extrabold text-slate mb-10 text-center">Отзывы пациентов</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+  <section class="py-10 sm:py-14 bg-[#F0FAFB]">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">Отзывы пациентов</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
         <div
           v-for="review in REVIEWS"
           :key="review.author"
