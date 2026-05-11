@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var ErrInvalidOTP = errors.New("invalid or expired OTP")
@@ -71,8 +73,35 @@ func (s *AuthService) VerifyStaffOTP(ctx context.Context, phone, code string) (*
 	if err != nil {
 		return nil, "", "", fmt.Errorf("staff not found: %w", err)
 	}
-	pair, err := s.issuePair(st.ID, st.Role)
-	return pair, st.ID, st.Role, err
+	// For doctors, JWT user_id must equal doctors.id (used in appointment queries)
+	userID := st.ID
+	if st.Role == "doctor" && st.DoctorID != nil {
+		userID = *st.DoctorID
+	}
+	pair, err := s.issuePair(userID, st.Role)
+	return pair, userID, st.Role, err
+}
+
+var ErrInvalidCredentials = errors.New("invalid username or password")
+
+// StaffLogin authenticates staff by username + plain-text password.
+func (s *AuthService) StaffLogin(username, password string) (*TokenPair, string, string, error) {
+	st, err := s.repos.Doctors.FindStaffByUsername(username)
+	if err != nil {
+		return nil, "", "", ErrInvalidCredentials
+	}
+	if st.PasswordHash == nil {
+		return nil, "", "", ErrInvalidCredentials
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(*st.PasswordHash), []byte(password)); err != nil {
+		return nil, "", "", ErrInvalidCredentials
+	}
+	userID := st.ID
+	if st.Role == "doctor" && st.DoctorID != nil {
+		userID = *st.DoctorID
+	}
+	pair, err := s.issuePair(userID, st.Role)
+	return pair, userID, st.Role, err
 }
 
 func (s *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*TokenPair, error) {

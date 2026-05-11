@@ -5,3 +5,6 @@ __debug_bin
 *.test
 .DS_Store
 .superpowers/
+dump.rdb
+frontend/test-results/
+*.rdb

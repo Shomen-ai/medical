@@ -4,7 +4,10 @@ export const useApi = () => {
   const config = useRuntimeConfig()
   const base = import.meta.server ? config.apiBase : ''
 
-  const get = <T>(path: string) => $fetch<T>(`${base}${path}`)
+  const get = <T>(path: string, token?: string) =>
+    $fetch<T>(`${base}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
 
   const post = <T>(path: string, body: unknown, token?: string) =>
     $fetch<T>(`${base}${path}`, {

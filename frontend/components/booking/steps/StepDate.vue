@@ -40,7 +40,13 @@ const fetchAvailableDates = async () => {
 
 watch([() => booking.doctorId, viewDate], fetchAvailableDates, { immediate: true })
 
-const toISODate = (d: Date) => d.toISOString().slice(0, 10)
+// Use local date parts to avoid UTC timezone shift
+const toISODate = (d: Date) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
 const calendarDays = computed(() => {
   const year = viewDate.value.getFullYear()
@@ -90,12 +96,12 @@ const isSelected = (d: Date) => booking.date === toISODate(d)
     </div>
 
     <!-- Calendar grid -->
-    <div class="grid grid-cols-7 gap-0.5">
+    <div class="grid grid-cols-7 gap-1">
       <div v-for="(cell, i) in calendarDays" :key="i" class="aspect-square flex items-center justify-center">
         <button
           v-if="cell.date"
           type="button"
-          class="w-8 h-8 rounded-full text-xs font-medium transition-colors"
+          class="w-9 h-9 rounded-full text-sm font-medium transition-colors"
           :class="{
             'bg-primary text-white': isSelected(cell.date),
             'text-muted cursor-not-allowed opacity-40': cell.disabled,

@@ -81,3 +81,10 @@ func (r *DoctorRepo) CreateStaff(doctorID, phone, role string) error {
 		doctorID, phone, role)
 	return err
 }
+
+// FindStaffByUsername looks up a staff record by username.
+func (r *DoctorRepo) FindStaffByUsername(username string) (*model.Staff, error) {
+	var st model.Staff
+	err := r.db.Get(&st, `SELECT * FROM staff WHERE username = $1 AND is_active = true`, username)
+	return &st, err
+}

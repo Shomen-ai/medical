@@ -15,7 +15,7 @@ const activeServices = computed(() =>
 )
 
 const formatPrice = (price: number) =>
-  new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price)
+  new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(price)
 </script>
 
 <template>
@@ -51,11 +51,19 @@ const formatPrice = (price: number) =>
           :class="i < activeServices.length - 1 ? 'border-b border-border' : ''"
         >
           <div class="flex-1 pr-4">
-            <div class="text-sm font-medium text-slate">{{ svc.name }}</div>
+            <NuxtLink :to="`/services/${svc.id}`" class="text-sm font-medium text-slate hover:text-primary transition-colors">
+              {{ svc.name }}
+            </NuxtLink>
             <div class="text-xs text-muted mt-0.5">{{ svc.duration_min }} мин</div>
           </div>
           <div class="flex items-center gap-4">
             <span class="text-sm font-semibold text-primary">{{ formatPrice(svc.price) }}</span>
+            <NuxtLink
+              :to="`/services/${svc.id}`"
+              class="text-xs font-semibold text-muted hover:text-primary transition-colors hidden sm:block"
+            >
+              Подробнее
+            </NuxtLink>
             <button
               type="button"
               class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors whitespace-nowrap"

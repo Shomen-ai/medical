@@ -1,25 +1,78 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"beautymed/internal/model"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
+
+// ErrSlotTaken is returned when the exclusion constraint rejects an overlapping appointment.
+var ErrSlotTaken = errors.New("slot is already taken")
+
+// pgExclusionViolation is the Postgres SQLSTATE for exclusion_violation (23P01).
+const pgExclusionViolation = "23P01"
 
 type AppointmentRepo struct{ db *sqlx.DB }
 
 func NewAppointmentRepo(db *sqlx.DB) *AppointmentRepo { return &AppointmentRepo{db} }
 
 func (r *AppointmentRepo) Create(a *model.Appointment) error {
-	return r.db.Get(a, `
+	err := r.db.Get(a, `
 		INSERT INTO appointments
 			(patient_id, doctor_id, service_id, promo_code_id, starts_at, ends_at, final_price, created_by)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
 		RETURNING *`,
 		a.PatientID, a.DoctorID, a.ServiceID, a.PromoCodeID,
 		a.StartsAt, a.EndsAt, a.FinalPrice, a.CreatedBy)
+	if isSlotOverlap(err) {
+		return ErrSlotTaken
+	}
+	return err
+}
+
+// BookAtomic creates an appointment and (optionally) increments the promo code usage
+// in a single transaction. If the exclusion constraint rejects the insert because the
+// slot is already taken, ErrSlotTaken is returned and the promo counter is not touched.
+func (r *AppointmentRepo) BookAtomic(a *model.Appointment, promoID *string) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if promoID != nil {
+		if _, err := tx.Exec(
+			`UPDATE promo_codes SET used_count = used_count + 1 WHERE id = $1`,
+			*promoID,
+		); err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Get(a, `
+		INSERT INTO appointments
+			(patient_id, doctor_id, service_id, promo_code_id, starts_at, ends_at, final_price, created_by)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		RETURNING *`,
+		a.PatientID, a.DoctorID, a.ServiceID, a.PromoCodeID,
+		a.StartsAt, a.EndsAt, a.FinalPrice, a.CreatedBy,
+	); err != nil {
+		if isSlotOverlap(err) {
+			return ErrSlotTaken
+		}
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func isSlotOverlap(err error) bool {
+	var pqErr *pq.Error
+	return errors.As(err, &pqErr) && string(pqErr.Code) == pgExclusionViolation
 }
 
 func (r *AppointmentRepo) FindByID(id string) (*model.Appointment, error) {
@@ -38,15 +91,21 @@ func (r *AppointmentRepo) FindByID(id string) (*model.Appointment, error) {
 	return &a, err
 }
 
-func (r *AppointmentRepo) TakenSlots(doctorID string, date time.Time) ([]time.Time, error) {
-	var slots []time.Time
-	err := r.db.Select(&slots, `
-		SELECT starts_at FROM appointments
+// TakenRange represents an existing appointment as a [starts_at, ends_at) interval.
+type TakenRange struct {
+	StartsAt time.Time `db:"starts_at"`
+	EndsAt   time.Time `db:"ends_at"`
+}
+
+func (r *AppointmentRepo) TakenSlots(doctorID string, date time.Time) ([]TakenRange, error) {
+	var ranges []TakenRange
+	err := r.db.Select(&ranges, `
+		SELECT starts_at, ends_at FROM appointments
 		WHERE doctor_id = $1
 		  AND DATE(starts_at AT TIME ZONE 'UTC') = $2
 		  AND status NOT IN ('cancelled','rescheduled')`,
 		doctorID, date.Format("2006-01-02"))
-	return slots, err
+	return ranges, err
 }
 
 func (r *AppointmentRepo) ListByPatient(patientID string) ([]model.Appointment, error) {
@@ -90,6 +149,9 @@ func (r *AppointmentRepo) Reschedule(id string, startsAt, endsAt time.Time) erro
 	_, err := r.db.Exec(`
 		UPDATE appointments SET starts_at=$1, ends_at=$2, status='rescheduled'
 		WHERE id=$3`, startsAt, endsAt, id)
+	if isSlotOverlap(err) {
+		return ErrSlotTaken
+	}
 	return err
 }
 

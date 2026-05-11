@@ -10,16 +10,28 @@ import (
 )
 
 type CronScheduler struct {
-	c     *cron.Cron
-	admin *repository.AdminRepo
-	sms   *SMSService
+	c           *cron.Cron
+	admin       *repository.AdminRepo
+	specialties *repository.SpecialtyRepo
+	doctors     *repository.DoctorRepo
+	schedule    *ScheduleService
+	sms         *SMSService
 }
 
-func NewCronScheduler(admin *repository.AdminRepo, sms *SMSService) *CronScheduler {
+func NewCronScheduler(
+	admin *repository.AdminRepo,
+	specialties *repository.SpecialtyRepo,
+	doctors *repository.DoctorRepo,
+	schedule *ScheduleService,
+	sms *SMSService,
+) *CronScheduler {
 	return &CronScheduler{
-		c:     cron.New(cron.WithLocation(time.UTC)),
-		admin: admin,
-		sms:   sms,
+		c:           cron.New(cron.WithLocation(time.UTC)),
+		admin:       admin,
+		specialties: specialties,
+		doctors:     doctors,
+		schedule:    schedule,
+		sms:         sms,
 	}
 }
 
@@ -51,10 +63,54 @@ func (s *CronScheduler) sendReminders() {
 	log.Printf("scheduler: sent %d reminders", len(reminders))
 }
 
-// generateNextMonthSchedule logs a reminder — actual generation is done via admin panel.
+// generateNextMonthSchedule generates the 3/3 rotation schedule for the next calendar month
+// across all specialties. Already-existing schedule rows for the same (doctor, date) are
+// preserved with the new start/end/is_day_off via the ON CONFLICT upsert, but appointments
+// are NOT touched — booked slots remain valid since they reference the appointments table.
 func (s *CronScheduler) generateNextMonthSchedule() {
 	now := time.Now().UTC()
 	nextMonth := now.AddDate(0, 1, 0)
-	log.Printf("scheduler: reminder — generate schedule for %s %d via admin panel",
-		nextMonth.Month().String(), nextMonth.Year())
+	year, month := nextMonth.Year(), int(nextMonth.Month())
+
+	specialties, err := s.specialties.List()
+	if err != nil {
+		log.Printf("scheduler: list specialties: %v", err)
+		return
+	}
+
+	var groups []SpecialtyGroup
+	for _, sp := range specialties {
+		doctors, err := s.doctors.ListBySpecialty(sp.ID)
+		if err != nil {
+			log.Printf("scheduler: list doctors for specialty %s: %v", sp.ID, err)
+			continue
+		}
+		if len(doctors) == 0 {
+			continue
+		}
+		ids := make([]string, len(doctors))
+		for i, d := range doctors {
+			ids[i] = d.ID
+		}
+		groups = append(groups, SpecialtyGroup{
+			SpecialtyID: sp.ID,
+			DoctorIDs:   ids,
+			StartTime:   "09:00",
+			EndTime:     "18:00",
+		})
+	}
+
+	if len(groups) == 0 {
+		log.Printf("scheduler: no specialties with doctors, nothing to generate for %s %d",
+			nextMonth.Month(), year)
+		return
+	}
+
+	rows := s.schedule.Generate(year, month, groups)
+	if err := s.admin.BulkUpsertSchedule(rows); err != nil {
+		log.Printf("scheduler: upsert schedule for %s %d: %v", nextMonth.Month(), year, err)
+		return
+	}
+	log.Printf("scheduler: generated schedule for %s %d (%d rows, %d specialties)",
+		nextMonth.Month(), year, len(rows), len(groups))
 }

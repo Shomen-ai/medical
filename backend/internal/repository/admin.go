@@ -53,6 +53,20 @@ func (r *AdminRepo) ListAllAppointments(status, doctorID string, date *time.Time
 	return as, r.db.Select(&as, q, args...)
 }
 
+// PeriodStats returns appointment counts and revenue for the given time range.
+func (r *AdminRepo) PeriodStats(from, to time.Time) (*model.PeriodStats, error) {
+	var s model.PeriodStats
+	err := r.db.Get(&s, `
+		SELECT
+		  COUNT(*)                                                   AS appointments,
+		  COALESCE(SUM(final_price) FILTER (WHERE status='completed'), 0) AS revenue,
+		  COUNT(DISTINCT patient_id)                                 AS unique_patients,
+		  COUNT(*) FILTER (WHERE status='cancelled')                 AS cancelled
+		FROM appointments
+		WHERE starts_at >= $1 AND starts_at < $2`, from, to)
+	return &s, err
+}
+
 // Revenue returns the total final_price for completed appointments in [from, to).
 func (r *AdminRepo) Revenue(from, to time.Time) (float64, error) {
 	var total float64
@@ -69,7 +83,7 @@ func (r *AdminRepo) OverallStats() (*model.AdminStats, error) {
 	var s model.AdminStats
 	err := r.db.Get(&s, `
 		SELECT
-		  (SELECT COUNT(*) FROM users)                                    AS total_patients,
+		  (SELECT COUNT(DISTINCT patient_id) FROM appointments)           AS total_patients,
 		  (SELECT COUNT(*) FROM doctors WHERE is_active = true)           AS active_doctors,
 		  (SELECT COUNT(*) FROM appointments
 		     WHERE starts_at >= date_trunc('month', NOW())
@@ -207,4 +221,19 @@ func (r *AdminRepo) ListPromos() ([]model.PromoCode, error) {
 	var pcs []model.PromoCode
 	return pcs, r.db.Select(&pcs, `
 		SELECT * FROM promo_codes ORDER BY created_at DESC`)
+}
+
+// MonthlyStats returns appointment counts and revenue for the last 6 calendar months.
+func (r *AdminRepo) MonthlyStats() ([]model.MonthlyStatPoint, error) {
+	var pts []model.MonthlyStatPoint
+	err := r.db.Select(&pts, `
+		SELECT
+		  TO_CHAR(DATE_TRUNC('month', starts_at), 'YYYY-MM') AS month,
+		  COUNT(*)                                            AS appointments,
+		  COALESCE(SUM(final_price) FILTER (WHERE status = 'completed'), 0) AS revenue
+		FROM appointments
+		WHERE starts_at >= DATE_TRUNC('month', NOW()) - INTERVAL '5 months'
+		GROUP BY DATE_TRUNC('month', starts_at)
+		ORDER BY DATE_TRUNC('month', starts_at)`)
+	return pts, err
 }

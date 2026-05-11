@@ -41,16 +41,17 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 	otp := NewOTPService(rdb)
 	j := NewJWTService(cfg.JWTSecret)
 	sms := NewSMSService(cfg.SMSCLogin, cfg.SMSCPassword)
+	schedule := &ScheduleService{}
 	return &Services{
 		OTP:       otp,
 		JWT:       j,
 		Auth:      NewAuthService(repos, otp, j),
 		Booking:   NewBookingService(repos),
-		Schedule:  &ScheduleService{},
+		Schedule:  schedule,
 		SMS:       sms,
-		PDF:       NewPDFService(),
+		PDF:       NewPDFService(cfg.Clinic),
 		Admin:     adminRepo,
-		Scheduler: NewCronScheduler(adminRepo, sms),
+		Scheduler: NewCronScheduler(adminRepo, repos.Specialties, repos.Doctors, schedule, sms),
 		Repos:     repos,
 	}
 }

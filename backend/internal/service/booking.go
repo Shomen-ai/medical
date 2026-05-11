@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"beautymed/internal/model"
+	"beautymed/internal/repository"
 )
 
 type BookingService struct{ repos *Repos }
 
 func NewBookingService(repos *Repos) *BookingService { return &BookingService{repos} }
 
-var ErrSlotTaken = errors.New("slot is already taken")
+// ErrSlotTaken is re-exported from the repository so handlers can keep using service.ErrSlotTaken.
+var ErrSlotTaken = repository.ErrSlotTaken
 var ErrDayOff = errors.New("doctor does not work on this day")
 
 func (s *BookingService) GetSlots(doctorID, serviceID, dateStr string) ([]model.TimeSlot, error) {
@@ -58,6 +60,37 @@ func (s *BookingService) GetAvailableDates(doctorID, monthStr string) ([]string,
 	return s.repos.Appointments.ListWorkDates(doctorID, t.Year(), int(t.Month()))
 }
 
+type PromoCheckResult struct {
+	Valid         bool    `json:"valid"`
+	DiscountPct   int     `json:"discount_pct"`
+	OriginalPrice float64 `json:"original_price"`
+	FinalPrice    float64 `json:"final_price"`
+}
+
+// CheckPromo validates a promo code against a service and returns the recalculated price.
+// Returns a result with Valid=false if the code is missing, unknown, expired, or exhausted.
+func (s *BookingService) CheckPromo(code, serviceID string) (*PromoCheckResult, error) {
+	svc, err := s.repos.Services.FindByID(serviceID)
+	if err != nil {
+		return nil, fmt.Errorf("service not found: %w", err)
+	}
+	result := &PromoCheckResult{
+		OriginalPrice: svc.Price,
+		FinalPrice:    svc.Price,
+	}
+	if code == "" {
+		return result, nil
+	}
+	pc, err := s.repos.Appointments.FindPromoCode(code)
+	if err != nil {
+		return result, nil
+	}
+	result.Valid = true
+	result.DiscountPct = pc.DiscountPct
+	result.FinalPrice = svc.Price * float64(100-pc.DiscountPct) / 100
+	return result, nil
+}
+
 type BookRequest struct {
 	PatientID string
 	DoctorID  string
@@ -80,7 +113,6 @@ func (s *BookingService) Book(req BookRequest) (*model.Appointment, error) {
 		if err == nil {
 			price = price * float64(100-pc.DiscountPct) / 100
 			promoID = &pc.ID
-			_ = s.repos.Appointments.IncrementPromoUsage(pc.ID)
 		}
 	}
 
@@ -96,7 +128,10 @@ func (s *BookingService) Book(req BookRequest) (*model.Appointment, error) {
 		FinalPrice:  price,
 		CreatedBy:   req.CreatedBy,
 	}
-	if err := s.repos.Appointments.Create(a); err != nil {
+	if err := s.repos.Appointments.BookAtomic(a, promoID); err != nil {
+		if errors.Is(err, repository.ErrSlotTaken) {
+			return nil, ErrSlotTaken
+		}
 		return nil, fmt.Errorf("create appointment: %w", err)
 	}
 	return a, nil

@@ -1,23 +1,64 @@
 <script setup lang="ts">
 const booking = useBookingStore()
+const auth = useAuthStore()
 const { post } = useApi()
 const config = useRuntimeConfig()
 
 const submittingOtp = ref(false)
 const submittingBooking = ref(false)
+const submittingPromo = ref(false)
 const otpCode = ref('')
 const otpError = ref('')
 const bookingError = ref('')
-const cooldownDisplay = computed(() => booking.otpCooldownSecs)
+const consent = ref(false)
+
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(price)
+
+const applyPromo = async () => {
+  if (!booking.serviceId) return
+  submittingPromo.value = true
+  try {
+    const res = await post<{ valid: boolean; discount_pct: number; final_price: number }>(
+      '/api/promo/check',
+      { code: booking.promoCode.trim(), service_id: booking.serviceId }
+    )
+    booking.promoValid = booking.promoCode.trim() === '' ? null : res.valid
+    booking.promoDiscountPct = res.discount_pct
+    booking.finalPrice = res.final_price
+  } catch {
+    booking.promoValid = false
+    booking.promoDiscountPct = 0
+    booking.finalPrice = booking.servicePrice
+  } finally {
+    submittingPromo.value = false
+  }
+}
+
+// Reactive countdown — updated every second via interval
+const cooldownSecs = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
+
+const startTimer = () => {
+  if (timer) clearInterval(timer)
+  timer = setInterval(() => {
+    const until = booking.otpCooldownUntil
+    cooldownSecs.value = until ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0
+    if (cooldownSecs.value === 0 && timer) { clearInterval(timer); timer = null }
+  }, 500)
+}
+
+onUnmounted(() => { if (timer) clearInterval(timer) })
 
 const sendOtp = async () => {
-  if (!booking.phone) return
+  if (!booking.phone || !consent.value) return
   submittingOtp.value = true
   otpError.value = ''
   try {
     await post('/api/auth/otp', { phone: booking.phone })
     booking.otpSent = true
     booking.startOtpCooldown()
+    startTimer()
   } catch {
     otpError.value = 'Не удалось отправить код. Проверьте номер.'
   } finally {
@@ -36,25 +77,36 @@ const confirmBooking = async () => {
       { phone: booking.phone, code: otpCode.value }
     )
     booking.token = access_token
+    // Save to auth store so cabinet page is accessible
+    auth.token = access_token
+    auth.role = 'patient'
+    if (import.meta.client) {
+      localStorage.setItem('auth_token', access_token)
+      localStorage.setItem('auth_role', 'patient')
+    }
 
-    // 2. Create appointment
+    // 2. Build RFC3339 datetime: date "YYYY-MM-DD" + time "HH:MM" → "YYYY-MM-DDTHH:MM:00+04:00"
+    const startsAt = `${booking.date}T${booking.timeSlot}:00+04:00`
+
+    // 3. Create appointment
     await post(
       '/api/appointments',
       {
         doctor_id: booking.doctorId,
         service_id: booking.serviceId,
-        starts_at: booking.timeSlot,
-        promo_code: '',
+        starts_at: startsAt,
+        promo_code: booking.promoCode.trim(),
       },
       access_token
     )
 
     booking.success = true
   } catch (err: unknown) {
-    const msg = (err as { data?: { error?: string } })?.data?.error
-    if (msg?.includes('invalid') || msg?.includes('OTP')) {
+    const status = (err as { status?: number })?.status
+    const msg = (err as { data?: { error?: string } })?.data?.error ?? ''
+    if (status === 401 || msg.toLowerCase().includes('otp') || msg.toLowerCase().includes('invalid or expired')) {
       bookingError.value = 'Неверный или истёкший код. Попробуйте ещё раз.'
-    } else if (msg?.includes('taken') || msg?.includes('conflict')) {
+    } else if (msg.includes('taken') || msg.includes('conflict') || status === 409) {
       bookingError.value = 'Это время уже занято. Выберите другой слот.'
     } else {
       bookingError.value = 'Ошибка записи. Позвоните нам: ' + config.public.clinicPhone
@@ -64,8 +116,12 @@ const confirmBooking = async () => {
   }
 }
 
-const formatTime = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) : ''
+// Timezone-safe Russian date format
+const formattedDate = computed(() => {
+  if (!booking.date) return ''
+  const [y, m, d] = booking.date.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+})
 </script>
 
 <template>
@@ -74,7 +130,10 @@ const formatTime = (iso: string | null) =>
     <div v-if="booking.success" class="text-center py-4">
       <div class="text-4xl mb-3">✅</div>
       <div class="text-base font-bold text-slate mb-1">Вы записаны!</div>
-      <div class="text-sm text-muted mb-1">{{ booking.date }}, {{ formatTime(booking.timeSlot) }}</div>
+      <div class="text-sm text-muted mb-1">{{ formattedDate }}, {{ booking.timeSlot }}</div>
+      <div v-if="booking.finalPrice > 0" class="text-sm text-slate font-semibold mb-1">
+        К оплате: {{ formatPrice(booking.finalPrice) }}
+      </div>
       <div class="text-sm text-muted mb-6">Ждём вас в клинике BeautyMed</div>
       <button
         class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold"
@@ -87,8 +146,49 @@ const formatTime = (iso: string | null) =>
     <!-- Form state -->
     <div v-else class="space-y-4">
       <!-- Summary -->
-      <div class="bg-gray-50 rounded-xl p-4 text-sm space-y-1 text-slate">
-        <div>📅 {{ booking.date }}, {{ formatTime(booking.timeSlot) }}</div>
+      <div class="bg-gray-50 rounded-xl p-4 text-sm space-y-2 text-slate">
+        <div>📅 {{ formattedDate }}, {{ booking.timeSlot }}</div>
+        <div v-if="booking.servicePrice > 0" class="flex items-center justify-between border-t border-border/60 pt-2">
+          <span class="text-muted">Стоимость</span>
+          <span class="font-semibold">
+            <span
+              v-if="booking.promoDiscountPct > 0"
+              class="text-muted line-through mr-2 text-xs font-normal"
+            >{{ formatPrice(booking.servicePrice) }}</span>
+            {{ formatPrice(booking.finalPrice || booking.servicePrice) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Promo code -->
+      <div>
+        <label class="text-xs font-semibold text-slate block mb-1">Промокод (необязательно)</label>
+        <div class="flex gap-2">
+          <input
+            v-model="booking.promoCode"
+            type="text"
+            placeholder="SUMMER10"
+            class="flex-1 border border-border rounded-lg px-4 py-2.5 text-sm text-slate uppercase outline-none focus:border-primary"
+            @keyup.enter="applyPromo"
+          >
+          <button
+            type="button"
+            class="px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"
+            :class="submittingPromo || !booking.serviceId
+              ? 'bg-gray-100 text-muted cursor-not-allowed'
+              : 'bg-primary text-white hover:bg-primary/90'"
+            :disabled="submittingPromo || !booking.serviceId"
+            @click="applyPromo"
+          >
+            {{ submittingPromo ? '...' : 'Применить' }}
+          </button>
+        </div>
+        <div v-if="booking.promoValid === true" class="text-xs text-emerald-600 mt-1">
+          ✓ Промокод применён: скидка {{ booking.promoDiscountPct }}%
+        </div>
+        <div v-else-if="booking.promoValid === false" class="text-xs text-red-500 mt-1">
+          Промокод недействителен
+        </div>
       </div>
 
       <!-- Name -->
@@ -115,19 +215,31 @@ const formatTime = (iso: string | null) =>
           >
           <button
             class="px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"
-            :class="cooldownDisplay > 0 || submittingOtp
+            :class="(cooldownSecs > 0 || submittingOtp || !consent)
               ? 'bg-gray-100 text-muted cursor-not-allowed'
               : 'bg-primary text-white hover:bg-primary/90'"
-            :disabled="cooldownDisplay > 0 || submittingOtp || !booking.phone"
+            :disabled="cooldownSecs > 0 || submittingOtp || !booking.phone || !consent"
             @click="sendOtp"
           >
-            {{ cooldownDisplay > 0 ? `${cooldownDisplay}с` : booking.otpSent ? 'Повтор' : 'Код' }}
+            {{ cooldownSecs > 0 ? `${cooldownSecs}с` : booking.otpSent ? 'Повтор' : 'Код' }}
           </button>
         </div>
         <div v-if="otpError" class="text-xs text-red-500 mt-1">{{ otpError }}</div>
       </div>
 
-      <!-- OTP code input (appears after sending) -->
+      <!-- FZ-152 consent -->
+      <label v-if="!booking.otpSent" class="flex items-start gap-2 text-xs text-muted cursor-pointer">
+        <input v-model="consent" type="checkbox" class="mt-0.5 flex-shrink-0 accent-primary">
+        <span>
+          Я даю согласие на обработку информации о личной жизни в соответствии с
+          <NuxtLink to="/privacy" target="_blank" class="text-primary underline" @click.stop>
+            Политикой конфиденциальности
+          </NuxtLink>
+          (Закон Туркменистана от 20.03.2017).
+        </span>
+      </label>
+
+      <!-- OTP code input -->
       <Transition name="slide-down">
         <div v-if="booking.otpSent">
           <label class="text-xs font-semibold text-slate block mb-1">Код из SMS</label>
@@ -154,7 +266,6 @@ const formatTime = (iso: string | null) =>
         {{ submittingBooking ? 'Записываем...' : 'Подтвердить и записаться' }}
       </button>
 
-      <!-- Back button -->
       <div class="flex justify-start pt-1">
         <button class="text-sm text-muted hover:text-slate transition-colors" @click="booking.prevStep()">
           ← Назад

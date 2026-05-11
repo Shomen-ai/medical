@@ -7,6 +7,7 @@ interface BookingState {
   step: BookingStep
   specialtyId: string | null
   serviceId: string | null
+  servicePrice: number
   doctorId: string | null
   date: string | null
   timeSlot: string | null   // RFC3339 starts_at from slot
@@ -15,6 +16,10 @@ interface BookingState {
   otpSent: boolean
   otpCooldownUntil: number | null
   token: string | null
+  promoCode: string
+  promoValid: boolean | null   // null = not checked yet
+  promoDiscountPct: number
+  finalPrice: number
   success: boolean
 }
 
@@ -24,6 +29,7 @@ export const useBookingStore = defineStore('booking', {
     step: 1,
     specialtyId: null,
     serviceId: null,
+    servicePrice: 0,
     doctorId: null,
     date: null,
     timeSlot: null,
@@ -32,6 +38,10 @@ export const useBookingStore = defineStore('booking', {
     otpSent: false,
     otpCooldownUntil: null,
     token: null,
+    promoCode: '',
+    promoValid: null,
+    promoDiscountPct: 0,
+    finalPrice: 0,
     success: false,
   }),
   getters: {

@@ -155,8 +155,14 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	var req struct {
-		FullName string  `json:"full_name"`
-		Email    *string `json:"email"`
+		FullName         string  `json:"full_name"`
+		Email            *string `json:"email"`
+		BirthDate        *string `json:"birth_date"`
+		INN              *string `json:"inn"`
+		PassportSeries   *string `json:"passport_series"`
+		PassportNumber   *string `json:"passport_number"`
+		PassportIssuedAt *string `json:"passport_issued_at"`
+		PassportIssuedBy *string `json:"passport_issued_by"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -167,6 +173,28 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 	}
 	if req.Email != nil {
 		u.Email = req.Email
+	}
+	if req.BirthDate != nil && *req.BirthDate != "" {
+		if t, err := time.Parse("2006-01-02", *req.BirthDate); err == nil {
+			u.BirthDate = &t
+		}
+	}
+	if req.INN != nil {
+		u.INN = req.INN
+	}
+	if req.PassportSeries != nil {
+		u.PassportSeries = req.PassportSeries
+	}
+	if req.PassportNumber != nil {
+		u.PassportNumber = req.PassportNumber
+	}
+	if req.PassportIssuedAt != nil && *req.PassportIssuedAt != "" {
+		if t, err := time.Parse("2006-01-02", *req.PassportIssuedAt); err == nil {
+			u.PassportIssuedAt = &t
+		}
+	}
+	if req.PassportIssuedBy != nil {
+		u.PassportIssuedBy = req.PassportIssuedBy
 	}
 	if err := h.svc.Repos.Users.Update(u); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

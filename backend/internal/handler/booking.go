@@ -38,6 +38,25 @@ func (h *BookingHandler) GetAvailableDates(c *gin.Context) {
 	c.JSON(http.StatusOK, dates)
 }
 
+// POST /api/promo/check
+// body: {"code":"SUMMER10","service_id":"uuid"}
+func (h *BookingHandler) CheckPromo(c *gin.Context) {
+	var req struct {
+		Code      string `json:"code"`
+		ServiceID string `json:"service_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	result, err := h.svc.Booking.CheckPromo(req.Code, req.ServiceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}
+
 // POST /api/appointments
 // body: {"doctor_id":"uuid","service_id":"uuid","starts_at":"2026-05-10T10:00:00Z","promo_code":""}
 func (h *BookingHandler) Create(c *gin.Context) {

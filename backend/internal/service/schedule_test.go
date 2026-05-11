@@ -51,7 +51,7 @@ func TestGenerate3x3_Holiday(t *testing.T) {
 	groups := []service.SpecialtyGroup{
 		{SpecialtyID: "s", DoctorIDs: []string{"doc-A", "doc-B"}, StartTime: "09:00", EndTime: "18:00"},
 	}
-	holiday := time.Date(2026, 6, 12, 0, 0, 0, 0, time.UTC) // Friday = Russia Day
+	holiday := time.Date(2026, 6, 12, 0, 0, 0, 0, time.UTC) // arbitrary mid-month holiday
 	rows := service.Generate3x3(2026, 6, groups, []time.Time{holiday})
 
 	june12 := rowsFor(rows, "2026-06-12")

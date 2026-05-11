@@ -38,6 +38,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 		// Auth — staff
 		api.POST("/staff/auth/otp", authH.SendStaffOTP)
 		api.POST("/staff/auth/verify", authH.VerifyStaffOTP)
+		api.POST("/staff/auth/login", authH.StaffLogin)
 
 		// Public read
 		api.GET("/specialties", specH.List)
@@ -47,6 +48,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 		api.GET("/services/:id", svcH.Get)
 		api.GET("/doctors/:id/slots", bookH.GetSlots)
 		api.GET("/doctors/:id/available-dates", bookH.GetAvailableDates)
+		api.POST("/promo/check", bookH.CheckPromo)
 
 		// Booking (patient)
 		api.POST("/appointments", patientMw, bookH.Create)
@@ -89,6 +91,8 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			admin.POST("/promo", adminH.CreatePromo)
 			admin.GET("/revenue", adminH.Revenue)
 			admin.GET("/stats", adminH.Stats)
+			admin.GET("/stats/monthly", adminH.MonthlyStats)
+			admin.GET("/stats/period", adminH.PeriodStats)
 		}
 	}
 

@@ -37,6 +37,21 @@ type ScheduleCell struct {
 	HasAppointments bool   `db:"has_appointments" json:"has_appointments"`
 }
 
+// PeriodStats holds key metrics for a given time range.
+type PeriodStats struct {
+	Appointments   int     `db:"appointments"    json:"appointments"`
+	Revenue        float64 `db:"revenue"         json:"revenue"`
+	UniquePatients int     `db:"unique_patients" json:"unique_patients"`
+	Cancelled      int     `db:"cancelled"       json:"cancelled"`
+}
+
+// MonthlyStatPoint holds appointment count and revenue for one calendar month.
+type MonthlyStatPoint struct {
+	Month        string  `db:"month"        json:"month"`
+	Appointments int     `db:"appointments" json:"appointments"`
+	Revenue      float64 `db:"revenue"      json:"revenue"`
+}
+
 // AppointmentReminder holds the data needed to send a 24h reminder SMS.
 type AppointmentReminder struct {
 	ID           string    `db:"id"`

@@ -30,14 +30,14 @@ provide(ServicesKey, safeServices)
 
 // SEO
 useHead({
-  title: 'BeautyMed — Клиника красоты и здоровья в Ульяновске',
+  title: 'BeautyMed — Клиника красоты и здоровья в Туркменабаде',
   meta: [
     {
       name: 'description',
       content: 'Косметология, дерматология, трихология и эстетическая медицина. Онлайн-запись к врачу за 2 минуты.',
     },
     { property: 'og:title', content: 'BeautyMed — Клиника красоты и здоровья' },
-    { property: 'og:description', content: 'Профессиональная косметология и эстетическая медицина в Ульяновске.' },
+    { property: 'og:description', content: 'Профессиональная косметология и эстетическая медицина в Туркменабаде.' },
     { property: 'og:image', content: '/clinic_3.png' },
   ],
   script: [
@@ -49,9 +49,9 @@ useHead({
         name: 'BeautyMed',
         address: {
           '@type': 'PostalAddress',
-          addressLocality: 'Ульяновск',
+          addressLocality: 'Туркменабад',
           streetAddress: config.public.clinicAddress,
-          addressCountry: 'RU',
+          addressCountry: 'TM',
         },
         telephone: config.public.clinicPhone,
         openingHours: 'Mo-Sa 09:00-20:00',

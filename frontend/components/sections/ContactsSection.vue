@@ -39,10 +39,20 @@ const config = useRuntimeConfig()
             </div>
           </div>
         </div>
-        <!-- Map placeholder -->
-        <div class="rounded-2xl overflow-hidden shadow-card bg-gray-100 min-h-[200px] flex items-center justify-center">
-          <span class="text-muted text-sm">Карта (добавить Yandex Maps iframe)</span>
+        <!-- Map -->
+        <div class="rounded-2xl overflow-hidden shadow-card bg-gray-100 min-h-[200px]">
+          <iframe
+            src="https://maps.google.com/maps?q=Parahat%2025%2F31%20Turkmenabat&t=&z=14&ie=UTF8&iwloc=&output=embed"
+            class="w-full h-full min-h-[200px] border-0"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Карта клиники BeautyMed"
+          />
         </div>
+      </div>
+      <div class="mt-8 pt-6 border-t border-border text-center text-xs text-muted">
+        © {{ new Date().getFullYear() }} BeautyMed ·
+        <NuxtLink to="/privacy" class="underline hover:text-primary">Политика конфиденциальности</NuxtLink>
       </div>
     </div>
   </section>

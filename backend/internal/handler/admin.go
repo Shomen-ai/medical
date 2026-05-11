@@ -285,11 +285,10 @@ func (h *AdminHandler) CreatePromo(c *gin.Context) {
 	c.JSON(http.StatusCreated, pc)
 }
 
-// GET /api/admin/revenue?period=week  (day|week|month|quarter|year)
-func (h *AdminHandler) Revenue(c *gin.Context) {
-	period := c.DefaultQuery("period", "day")
+// periodRange returns [from, to) for the named period. Returns false if period is unknown.
+func periodRange(period string) (from, to time.Time, ok bool) {
 	now := time.Now().UTC()
-	var from, to time.Time
+	ok = true
 	switch period {
 	case "day":
 		from = now.Truncate(24 * time.Hour)
@@ -312,6 +311,16 @@ func (h *AdminHandler) Revenue(c *gin.Context) {
 		from = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 		to = from.AddDate(1, 0, 0)
 	default:
+		ok = false
+	}
+	return
+}
+
+// GET /api/admin/revenue?period=week  (day|week|month|quarter|year)
+func (h *AdminHandler) Revenue(c *gin.Context) {
+	period := c.DefaultQuery("period", "day")
+	from, to, ok := periodRange(period)
+	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period"})
 		return
 	}
@@ -323,6 +332,22 @@ func (h *AdminHandler) Revenue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"period": period, "from": from, "to": to, "total": total})
 }
 
+// GET /api/admin/stats/period?period=month  (day|week|month|quarter|year)
+func (h *AdminHandler) PeriodStats(c *gin.Context) {
+	period := c.DefaultQuery("period", "month")
+	from, to, ok := periodRange(period)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period"})
+		return
+	}
+	s, err := h.svc.Admin.PeriodStats(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, s)
+}
+
 // GET /api/admin/stats
 func (h *AdminHandler) Stats(c *gin.Context) {
 	s, err := h.svc.Admin.OverallStats()
@@ -331,4 +356,14 @@ func (h *AdminHandler) Stats(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, s)
+}
+
+// GET /api/admin/stats/monthly
+func (h *AdminHandler) MonthlyStats(c *gin.Context) {
+	pts, err := h.svc.Admin.MonthlyStats()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, pts)
 }

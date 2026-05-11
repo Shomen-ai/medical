@@ -13,10 +13,22 @@ const servicesForSelected = computed(() =>
 const selectSpecialty = (id: string) => {
   booking.specialtyId = id
   booking.serviceId = null
+  booking.servicePrice = 0
+  booking.finalPrice = 0
+  booking.promoValid = null
+  booking.promoDiscountPct = 0
+}
+
+const selectService = (svc: { id: string; price: number }) => {
+  booking.serviceId = svc.id
+  booking.servicePrice = svc.price
+  booking.finalPrice = svc.price
+  booking.promoValid = null
+  booking.promoDiscountPct = 0
 }
 
 const formatPrice = (price: number) =>
-  new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price)
+  new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(price)
 </script>
 
 <template>
@@ -52,7 +64,7 @@ const formatPrice = (price: number) =>
             :class="booking.serviceId === svc.id
               ? 'border-primary bg-primary/5 text-primary font-semibold'
               : 'border-border text-slate hover:border-primary'"
-            @click="booking.serviceId = svc.id"
+            @click="selectService(svc)"
           >
             <span class="text-left leading-snug">{{ svc.name }}</span>
             <span class="ml-2 whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>

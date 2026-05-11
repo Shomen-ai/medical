@@ -30,8 +30,20 @@ func (r *UserRepo) Create(phone string) (*model.User, error) {
 
 func (r *UserRepo) Update(u *model.User) error {
 	_, err := r.db.Exec(`
-		UPDATE users SET full_name=$1, birth_date=$2, email=$3 WHERE id=$4`,
-		u.FullName, u.BirthDate, u.Email, u.ID)
+		UPDATE users SET
+		    full_name           = $1,
+		    birth_date          = $2,
+		    email               = $3,
+		    inn                 = $4,
+		    passport_series     = $5,
+		    passport_number     = $6,
+		    passport_issued_at  = $7,
+		    passport_issued_by  = $8
+		WHERE id = $9`,
+		u.FullName, u.BirthDate, u.Email,
+		u.INN, u.PassportSeries, u.PassportNumber,
+		u.PassportIssuedAt, u.PassportIssuedBy,
+		u.ID)
 	return err
 }
 

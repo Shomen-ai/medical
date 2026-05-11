@@ -26,21 +26,25 @@ const fetchSlots = async () => {
 
 watch([() => booking.date, () => booking.doctorId], fetchSlots, { immediate: true })
 
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+// booking.date is "YYYY-MM-DD" — format to Russian locale without timezone issues
+const formattedDate = computed(() => {
+  if (!booking.date) return ''
+  const [y, m, d] = booking.date.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+})
 </script>
 
 <template>
   <div>
     <div class="text-xs font-semibold text-slate mb-3">
-      Выберите время — {{ booking.date }}
+      Выберите время — {{ formattedDate }}
     </div>
 
     <div v-if="loading" class="text-sm text-muted text-center py-6">Загружаем расписание...</div>
 
     <div v-else-if="error" class="text-center py-6">
       <div class="text-sm text-red-500 mb-3">{{ error }}</div>
-      <button class="text-xs text-primary underline" @click="fetchSlots">Попробовать снова</button>
+      <button type="button" class="text-xs text-primary underline" @click="fetchSlots">Попробовать снова</button>
     </div>
 
     <div v-else-if="slots.length === 0" class="text-sm text-muted text-center py-6">
@@ -51,13 +55,14 @@ const formatTime = (iso: string) =>
       <button
         v-for="slot in slots"
         :key="slot.starts_at"
-        class="py-2 rounded-lg border text-sm font-medium transition-colors"
+        type="button"
+        class="py-2.5 rounded-lg border text-sm font-medium transition-colors"
         :class="booking.timeSlot === slot.starts_at
           ? 'bg-primary text-white border-primary'
           : 'border-border text-slate hover:border-primary'"
         @click="booking.timeSlot = slot.starts_at"
       >
-        {{ formatTime(slot.starts_at) }}
+        {{ slot.starts_at }}
       </button>
     </div>
   </div>

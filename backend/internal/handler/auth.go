@@ -109,6 +109,29 @@ func (h *AuthHandler) VerifyStaffOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken, "role": role})
 }
 
+// POST /api/staff/auth/login  body: {"username":"admin","password":"..."}
+func (h *AuthHandler) StaffLogin(c *gin.Context) {
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pair, _, role, err := h.svc.Auth.StaffLogin(req.Username, req.Password)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "неверный логин или пароль"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	h.setRefreshCookie(c, pair.RefreshToken)
+	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken, "role": role})
+}
+
 // POST /api/auth/refresh
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	refresh, err := c.Cookie("refresh_token")

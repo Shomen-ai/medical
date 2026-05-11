@@ -94,7 +94,7 @@ func Generate3x3(year, month int, groups []SpecialtyGroup, holidays []time.Time)
 
 // Generate converts ScheduleGenRow results to model.ScheduleRow for DB insertion.
 func (s *ScheduleService) Generate(year, month int, groups []SpecialtyGroup) []model.ScheduleRow {
-	genRows := Generate3x3(year, month, groups, russianHolidays(year))
+	genRows := Generate3x3(year, month, groups, turkmenHolidays(year))
 	result := make([]model.ScheduleRow, len(genRows))
 	for i, r := range genRows {
 		result[i] = model.ScheduleRow{
@@ -108,24 +108,26 @@ func (s *ScheduleService) Generate(year, month int, groups []SpecialtyGroup) []m
 	return result
 }
 
-// russianHolidays returns the fixed Russian public holidays for the given year.
-func russianHolidays(year int) []time.Time {
+// turkmenHolidays returns the fixed public holidays of Turkmenistan for the given year.
+// Movable Islamic holidays (Ораза байрам, Курбан байрам) are determined yearly by
+// presidential decree and are NOT included here — they should be added manually
+// to doctor_schedules when their dates are announced.
+func turkmenHolidays(year int) []time.Time {
 	dates := []string{
-		// New Year block
-		"%d-01-01", "%d-01-02", "%d-01-03", "%d-01-04",
-		"%d-01-05", "%d-01-06", "%d-01-07", "%d-01-08",
-		// Defender of the Fatherland Day
-		"%d-02-23",
-		// International Women's Day
+		// Новый год
+		"%d-01-01",
+		// Международный женский день
 		"%d-03-08",
-		// Spring and Labor Day
-		"%d-05-01",
-		// Victory Day
-		"%d-05-09",
-		// Russia Day
-		"%d-06-12",
-		// National Unity Day
-		"%d-11-04",
+		// Национальный праздник весны (Новруз)
+		"%d-03-21", "%d-03-22",
+		// День Конституции и Государственного флага Туркменистана
+		"%d-05-18",
+		// День независимости Туркменистана
+		"%d-09-27",
+		// День поминовения
+		"%d-10-06",
+		// Международный день нейтралитета
+		"%d-12-12",
 	}
 	holidays := make([]time.Time, 0, len(dates))
 	for _, f := range dates {
