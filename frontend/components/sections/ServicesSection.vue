@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 const booking = useBookingStore()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 const activeSpecialty = ref<string | null>(props.specialties[0]?.id ?? null)
 
 const activeServices = computed(() =>
@@ -39,7 +39,7 @@ const formatPrice = (price: number) =>
             : ''"
           @click="activeSpecialty = sp.id"
         >
-          {{ getSpecialtyMeta(sp.name).icon }} {{ sp.name }}
+          {{ getSpecialtyMeta(sp.name).icon }} {{ tMed(sp.name) }}
         </button>
       </div>
 
@@ -53,7 +53,7 @@ const formatPrice = (price: number) =>
         >
           <div class="flex-1 sm:pr-4">
             <NuxtLink :to="`/services/${svc.id}`" class="text-sm font-medium text-slate hover:text-primary transition-colors">
-              {{ svc.name }}
+              {{ tMed(svc.name) }}
             </NuxtLink>
             <div class="text-xs text-muted mt-0.5">{{ t('serviceDuration', { n: svc.duration_min }) }}</div>
           </div>

@@ -2,6 +2,7 @@
 const emit = defineEmits<{ close: [] }>()
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const phone = ref('')
 const code = ref('')
@@ -13,7 +14,7 @@ const phoneCheck = computed(() => validatePhone(phone.value))
 const handleSendOTP = () => {
   if (!consent.value) return
   if (!phoneCheck.value.valid) {
-    phoneError.value = 'Введите телефон в формате +7XXXXXXXXXX (Россия) или +993XXXXXXXX (Туркменистан)'
+    phoneError.value = t('confirmPhoneErr')
     return
   }
   phoneError.value = ''
@@ -36,13 +37,13 @@ const handleVerify = async () => {
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-5">
-          <h3 class="text-base font-bold text-slate">Вход в личный кабинет</h3>
+          <h3 class="text-base font-bold text-slate">{{ t('loginTitle') }}</h3>
           <button type="button" class="text-muted hover:text-slate text-xl leading-none" @click="emit('close')">✕</button>
         </div>
 
         <!-- Phone step -->
         <div v-if="!auth.otpSent">
-          <label class="text-xs font-semibold text-slate block mb-1.5">Номер телефона</label>
+          <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('loginPhoneLabel') }}</label>
           <input
             v-model="phone"
             type="tel"
@@ -58,11 +59,11 @@ const handleVerify = async () => {
           <label class="flex items-start gap-2 text-xs text-muted mb-3 cursor-pointer">
             <input v-model="consent" type="checkbox" class="mt-0.5 flex-shrink-0 accent-primary">
             <span>
-              Я даю согласие на обработку информации о личной жизни в соответствии с
+              {{ t('confirmConsent') }}
               <NuxtLink to="/privacy" target="_blank" class="text-primary underline" @click.stop>
-                Политикой конфиденциальности
+                {{ t('confirmConsentLink') }}
               </NuxtLink>
-              (Закон Туркменистана от 20.03.2017).
+              {{ t('confirmConsentLaw') }}
             </span>
           </label>
           <div v-if="auth.error" class="text-xs text-red-500 mb-3">{{ auth.error }}</div>
@@ -74,25 +75,24 @@ const handleVerify = async () => {
             :disabled="auth.loading || !consent"
             @click="handleSendOTP"
           >
-            {{ auth.loading ? 'Отправляем...' : 'Получить код' }}
+            {{ auth.loading ? t('loginSending') : t('loginGetCode') }}
           </button>
           <div class="mt-4 text-center">
             <NuxtLink to="/staff-login" class="text-xs text-muted underline" @click="emit('close')">
-              Вход для персонала клиники
+              {{ t('loginStaffLink') }}
             </NuxtLink>
           </div>
         </div>
 
         <!-- OTP step -->
         <div v-else>
-          <p class="text-xs text-muted mb-4">Код отправлен на {{ auth.phone }}</p>
-          <label class="text-xs font-semibold text-slate block mb-1.5">Код из SMS</label>
+          <p class="text-xs text-muted mb-4">{{ t('loginCodeSentTo', { phone: auth.phone }) }}</p>
+          <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('loginCodeLabel') }}</label>
           <input
             v-model="code"
             type="text"
             inputmode="numeric"
             maxlength="6"
-            placeholder="_ _ _ _ _ _"
             class="w-full border border-border rounded-xl px-4 py-2.5 text-sm mb-4 text-center tracking-[0.5em] focus:outline-none focus:border-primary"
             @keydown.enter="handleVerify"
           >
@@ -105,10 +105,10 @@ const handleVerify = async () => {
             :disabled="auth.loading"
             @click="handleVerify"
           >
-            {{ auth.loading ? 'Проверяем...' : 'Войти' }}
+            {{ auth.loading ? t('loginChecking') : t('loginSubmit') }}
           </button>
           <button type="button" class="w-full text-xs text-muted underline" @click="auth.otpSent = false">
-            Изменить номер
+            {{ t('loginChangeNumber') }}
           </button>
         </div>
       </div>

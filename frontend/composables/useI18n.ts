@@ -1,5 +1,6 @@
 import ru from '~/locales/ru'
 import tk from '~/locales/tk'
+import { medicalDict } from '~/locales/medical'
 
 export type Locale = 'ru' | 'tk'
 
@@ -29,9 +30,16 @@ export function useI18n() {
     return interpolate(tpl, params)
   }
 
+  // Look up a medical term (specialty / service name) in the current locale.
+  // Falls back to the original Russian name if no translation exists.
+  const tMed = (name: string): string => {
+    const dict = medicalDict[locale.value as Locale] ?? {}
+    return dict[name] ?? name
+  }
+
   const setLocale = (next: Locale) => {
     locale.value = next
   }
 
-  return { locale, t, setLocale }
+  return { locale, t, tMed, setLocale }
 }

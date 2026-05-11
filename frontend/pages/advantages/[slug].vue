@@ -3,19 +3,20 @@ import { ADVANTAGES } from '~/data/advantages'
 
 const route = useRoute()
 const booking = useBookingStore()
+const { t, locale } = useI18n()
 
 const advantage = computed(() => ADVANTAGES.find(a => a.slug === route.params.slug))
 
 if (!advantage.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Преимущество не найдено', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Not found', fatal: true })
 }
 
 useHead({
-  title: `${advantage.value!.title} — BeautyMed`,
+  title: computed(() => `${advantage.value!.title[locale.value]} — BeautyMed`),
   meta: [
-    { name: 'description', content: advantage.value!.body[0].slice(0, 160) },
-    { property: 'og:title', content: `${advantage.value!.title} — BeautyMed` },
-    { property: 'og:description', content: advantage.value!.body[0].slice(0, 200) },
+    { name: 'description', content: computed(() => advantage.value!.body[locale.value][0].slice(0, 160)) },
+    { property: 'og:title', content: computed(() => `${advantage.value!.title[locale.value]} — BeautyMed`) },
+    { property: 'og:description', content: computed(() => advantage.value!.body[locale.value][0].slice(0, 200)) },
   ],
 })
 </script>
@@ -23,7 +24,7 @@ useHead({
 <template>
   <div class="max-w-3xl mx-auto px-4 py-12">
     <NuxtLink to="/" class="inline-flex items-center text-sm text-muted hover:text-primary mb-6">
-      ← На главную
+      {{ t('back') }}
     </NuxtLink>
 
     <div v-if="advantage" class="space-y-6">
@@ -32,13 +33,13 @@ useHead({
           {{ advantage.icon }}
         </div>
         <div>
-          <h1 class="text-3xl font-extrabold text-slate">{{ advantage.title }}</h1>
-          <p class="text-sm text-muted mt-1">{{ advantage.text }}</p>
+          <h1 class="text-3xl font-extrabold text-slate">{{ advantage.title[locale] }}</h1>
+          <p class="text-sm text-muted mt-1">{{ advantage.text[locale] }}</p>
         </div>
       </div>
 
       <article class="prose prose-slate max-w-none space-y-4">
-        <p v-for="(para, i) in advantage.body" :key="i" class="text-slate leading-relaxed">
+        <p v-for="(para, i) in advantage.body[locale]" :key="i" class="text-slate leading-relaxed">
           {{ para }}
         </p>
       </article>
@@ -49,7 +50,7 @@ useHead({
           class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
           @click="booking.openModal()"
         >
-          Записаться онлайн
+          {{ t('bookOnline') }}
         </button>
       </div>
     </div>

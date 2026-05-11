@@ -10,8 +10,22 @@ export default {
   more: 'Подробнее →',
   loading: 'Загружаем...',
 
-  // Header
+  // Header / contacts shared values
+  cityName: 'Туркменабад',
   workingHours: 'Часы работы',
+  workingHoursValue: 'Пн–Сб: 9:00–20:00, Вс: выходной',
+
+  // Login modal
+  loginTitle: 'Вход в личный кабинет',
+  loginPhoneLabel: 'Номер телефона',
+  loginGetCode: 'Получить код',
+  loginSending: 'Отправляем...',
+  loginCodeLabel: 'Код из SMS',
+  loginCodeSentTo: 'Код отправлен на {phone}',
+  loginSubmit: 'Войти',
+  loginChecking: 'Проверяем...',
+  loginChangeNumber: 'Изменить номер',
+  loginStaffLink: 'Вход для персонала клиники',
 
   // Hero
   heroBadge: 'Клиника красоты · Туркменабад',

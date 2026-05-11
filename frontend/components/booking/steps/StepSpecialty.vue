@@ -3,6 +3,7 @@ import { getSpecialtyMeta } from '~/data/specialtyMeta'
 import { SpecialtiesKey, ServicesKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
+const { tMed } = useI18n()
 const specialties = inject(SpecialtiesKey, computed(() => []))
 const services = inject(ServicesKey, computed(() => []))
 
@@ -46,7 +47,7 @@ const formatPrice = (price: number) =>
           : 'border-border text-slate hover:border-primary'"
         @click="selectSpecialty(sp.id)"
       >
-        <span>{{ getSpecialtyMeta(sp.name).icon }} {{ sp.name }}</span>
+        <span>{{ getSpecialtyMeta(sp.name).icon }} {{ tMed(sp.name) }}</span>
         <span class="ml-2 flex-shrink-0">{{ booking.specialtyId === sp.id ? '✓' : '›' }}</span>
       </button>
     </div>
@@ -66,7 +67,7 @@ const formatPrice = (price: number) =>
               : 'border-border text-slate hover:border-primary'"
             @click="selectService(svc)"
           >
-            <span class="text-left leading-snug">{{ svc.name }}</span>
+            <span class="text-left leading-snug">{{ tMed(svc.name) }}</span>
             <span class="whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>
           </button>
         </div>

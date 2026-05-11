@@ -4,7 +4,7 @@ import { ServicesKey } from '~/composables/injectionKeys'
 
 const props = defineProps<{ doctors: Doctor[] }>()
 const booking = useBookingStore()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 
 // Services are provided by pages/index.vue; default to empty list if not present.
 const services = inject(ServicesKey, computed(() => [] as Service[]))
@@ -58,7 +58,7 @@ const photoSrc = (doc: Doctor, index: number) =>
               class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
             >
-              {{ doc.specialty_name }}
+              {{ tMed(doc.specialty_name) }}
             </div>
           </div>
           <!-- Info -->

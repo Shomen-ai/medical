@@ -5,6 +5,7 @@ const props = defineProps<{ advantage: Advantage | null }>()
 const emit = defineEmits<{ close: [] }>()
 
 const booking = useBookingStore()
+const { t, locale } = useI18n()
 
 const handleBooking = () => {
   emit('close')
@@ -59,15 +60,15 @@ onUnmounted(() => {
               {{ advantage.icon }}
             </div>
             <div>
-              <h2 class="text-xl font-extrabold text-slate leading-tight">{{ advantage.title }}</h2>
-              <p class="text-xs text-muted mt-0.5">{{ advantage.text }}</p>
+              <h2 class="text-xl font-extrabold text-slate leading-tight">{{ advantage.title[locale] }}</h2>
+              <p class="text-xs text-muted mt-0.5">{{ advantage.text[locale] }}</p>
             </div>
           </div>
 
           <!-- Body -->
           <div class="px-6 pb-4 space-y-3">
             <p
-              v-for="(para, i) in advantage.body"
+              v-for="(para, i) in advantage.body[locale]"
               :key="i"
               class="text-sm text-slate leading-relaxed"
             >
@@ -82,7 +83,7 @@ onUnmounted(() => {
               class="w-full bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
               @click="handleBooking"
             >
-              Записаться онлайн
+              {{ t('bookOnline') }}
             </button>
           </div>
         </div>

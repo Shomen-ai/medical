@@ -32,7 +32,7 @@ export interface TimeSlot {
 
 export interface Review {
   author: string
-  text: string
+  text: { ru: string; tk: string }
   rating: number
   date: string
 }

@@ -3,16 +3,10 @@ import { REVIEWS } from '~/data/reviews'
 
 const { t, locale } = useI18n()
 
-// "2026-03-15" → "15 марта 2026" (ru) or "15 mart 2026 ý." (tk).
-// Parsed manually to avoid timezone shifts. tk uses tk-TM locale.
+// "2026-03-15" → "15.03.2026". Universal format, locale-independent.
 const formatReviewDate = (iso: string) => {
-  const [y, m, d] = iso.split('-').map(Number)
-  const tag = locale.value === 'tk' ? 'tk-TM' : 'ru-RU'
-  return new Date(y, m - 1, d).toLocaleDateString(tag, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const [y, m, d] = iso.split('-')
+  return `${d}.${m}.${y}`
 }
 </script>
 
@@ -32,7 +26,7 @@ const formatReviewDate = (iso: string) => {
               {{ i <= review.rating ? '★' : '☆' }}
             </span>
           </div>
-          <p class="text-sm text-slate leading-relaxed mb-5">{{ review.text }}</p>
+          <p class="text-sm text-slate leading-relaxed mb-5">{{ review.text[locale] }}</p>
           <div class="flex items-center justify-between pt-3 border-t border-border">
             <span class="text-xs font-bold text-slate">{{ review.author }}</span>
             <span class="text-xs text-muted">{{ formatReviewDate(review.date) }}</span>

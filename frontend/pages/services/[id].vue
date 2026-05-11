@@ -4,6 +4,7 @@ import type { Service, Specialty } from '~/types'
 const route = useRoute()
 const { get } = useApi()
 const booking = useBookingStore()
+const { tMed } = useI18n()
 
 const serviceId = computed(() => route.params.id as string)
 
@@ -60,9 +61,9 @@ useHead({
     <div v-if="service" class="space-y-6">
       <div>
         <div v-if="specialty" class="text-xs uppercase tracking-wide text-primary font-bold mb-2">
-          {{ specialty.name }}
+          {{ tMed(specialty.name) }}
         </div>
-        <h1 class="text-3xl font-extrabold text-slate mb-3">{{ service.name }}</h1>
+        <h1 class="text-3xl font-extrabold text-slate mb-3">{{ tMed(service.name) }}</h1>
         <div class="flex items-center gap-4 flex-wrap">
           <span class="text-xl font-bold text-primary">{{ formatPrice(service.price) }}</span>
           <span class="text-sm text-muted">Длительность: {{ service.duration_min }} мин</span>
@@ -79,7 +80,7 @@ useHead({
           class="bg-primary text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
           @click="startBooking"
         >
-          Записаться на «{{ service.name }}»
+          Записаться на «{{ tMed(service.name) }}»
         </button>
       </div>
     </div>

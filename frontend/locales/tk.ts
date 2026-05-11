@@ -14,8 +14,22 @@ const tk: typeof ru = {
   more: 'Has giňişleýin →',
   loading: 'Ýüklenýär...',
 
-  // Header
+  // Header / contacts shared values
+  cityName: 'Türkmenabat',
   workingHours: 'Iş wagty',
+  workingHoursValue: 'Du–Şe: 9:00–20:00, Ýe: dynç güni',
+
+  // Login modal
+  loginTitle: 'Hasaba girmek',
+  loginPhoneLabel: 'Telefon belgisi',
+  loginGetCode: 'Kod almak',
+  loginSending: 'Iberilýär...',
+  loginCodeLabel: 'SMS-den kod',
+  loginCodeSentTo: 'Kod {phone} belgä iberildi',
+  loginSubmit: 'Girmek',
+  loginChecking: 'Barlanýar...',
+  loginChangeNumber: 'Belgini üýtgetmek',
+  loginStaffLink: 'Klinikanyň işgärleri üçin giriş',
 
   // Hero
   heroBadge: 'Gözellik kliniki · Türkmenabat',

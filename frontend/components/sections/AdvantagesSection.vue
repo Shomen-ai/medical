@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ADVANTAGES, type Advantage } from '~/data/advantages'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const activeAdvantage = ref<Advantage | null>(null)
 </script>
 
@@ -23,10 +23,10 @@ const activeAdvantage = ref<Advantage | null>(null)
             {{ adv.icon }}
           </div>
           <div class="text-sm sm:text-base font-bold text-slate mb-1 sm:mb-2 text-center">
-            {{ adv.title }}
+            {{ adv.title[locale] }}
           </div>
           <div class="text-xs sm:text-sm text-muted leading-relaxed text-center">
-            {{ adv.text }}
+            {{ adv.text[locale] }}
           </div>
           <div class="text-xs text-primary font-semibold mt-2 sm:mt-3 text-center">{{ t('more') }}</div>
         </button>

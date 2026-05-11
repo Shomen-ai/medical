@@ -31,7 +31,7 @@ const handleCabinetClick = () => {
         >
           {{ config.public.clinicName }}
         </span>
-        <span class="hidden sm:block text-sm text-gray-400 font-medium">· Туркменабад</span>
+        <span class="hidden sm:block text-sm text-gray-400 font-medium">· {{ t('cityName') }}</span>
       </NuxtLink>
 
       <!-- Center: hours (only desktop) -->
@@ -39,7 +39,7 @@ const handleCabinetClick = () => {
         <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
         </svg>
-        <span>{{ config.public.clinicHours }}</span>
+        <span>{{ t('workingHoursValue') }}</span>
       </div>
 
       <!-- Right: locale + buttons -->

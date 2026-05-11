@@ -36,7 +36,7 @@ const { t } = useI18n()
             </div>
             <div>
               <div class="text-sm font-bold text-slate mb-0.5">{{ t('contactsHours') }}</div>
-              <div class="text-sm text-muted">{{ config.public.clinicHours }}</div>
+              <div class="text-sm text-muted">{{ t('workingHoursValue') }}</div>
             </div>
           </div>
         </div>
