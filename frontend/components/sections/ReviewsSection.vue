@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/ReviewsSection.vue
+  Назначение: секция главной страницы с отзывами пациентов клиники из локального датасета REVIEWS.
+-->
 <script setup lang="ts">
 import { REVIEWS } from '~/data/reviews'
 

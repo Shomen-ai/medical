@@ -1,3 +1,5 @@
+// Файл: internal/service/schedule.go
+// Назначение: генерация месячного расписания врачей по схеме 3/3 с учётом выходных и государственных праздников Туркменистана.
 package service
 
 import (
@@ -7,6 +9,7 @@ import (
 	"beautymed/internal/model"
 )
 
+// SpecialtyGroup описывает группу врачей одной специальности и их рабочие часы для генерации расписания.
 // SpecialtyGroup describes one specialty's doctors for schedule generation.
 type SpecialtyGroup struct {
 	SpecialtyID string
@@ -15,9 +18,11 @@ type SpecialtyGroup struct {
 	EndTime     string // "18:00"
 }
 
+// ScheduleService — обёртка для функции Generate3x3, удобная для включения в общий контейнер Services.
 // ScheduleService wraps the Generate3x3 function for use in the Services struct.
 type ScheduleService struct{}
 
+// ScheduleGenRow — одна строка результата Generate3x3 (расписание врача на конкретную дату).
 // ScheduleGenRow is the output of Generate3x3 — one row per (doctor, date).
 type ScheduleGenRow struct {
 	DoctorID  string
@@ -27,6 +32,7 @@ type ScheduleGenRow struct {
 	IsDayOff  bool
 }
 
+// Generate3x3 строит расписание 3/3 на месяц: в специальности с 2+ врачами они чередуются блоками по 3 рабочих дня.
 // Generate3x3 generates a 3/3 rotation schedule for the given month.
 // For specialties with 2+ doctors, doctors alternate in blocks of 3 working days.
 // Sundays and dates in holidays are always day-off for every doctor.
@@ -92,6 +98,7 @@ func Generate3x3(year, month int, groups []SpecialtyGroup, holidays []time.Time)
 	return rows
 }
 
+// Generate готовит строки расписания на месяц для вставки в БД, добавляя праздники Туркменистана.
 // Generate converts ScheduleGenRow results to model.ScheduleRow for DB insertion.
 func (s *ScheduleService) Generate(year, month int, groups []SpecialtyGroup) []model.ScheduleRow {
 	genRows := Generate3x3(year, month, groups, turkmenHolidays(year))

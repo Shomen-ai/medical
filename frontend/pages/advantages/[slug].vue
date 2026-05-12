@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/advantages/[slug].vue
+  Назначение: детальная страница преимущества клиники, выбираемого по slug в URL; показывает развёрнутое описание и CTA на запись.
+-->
 <script setup lang="ts">
 import { ADVANTAGES } from '~/data/advantages'
 

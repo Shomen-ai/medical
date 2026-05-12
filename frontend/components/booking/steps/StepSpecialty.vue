@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/steps/StepSpecialty.vue
+  Назначение: первый шаг мастера записи — выбор специальности врача из списка с иконками и краткими описаниями.
+-->
 <script setup lang="ts">
 import { getSpecialtyMeta } from '~/data/specialtyMeta'
 import { SpecialtiesKey, ServicesKey } from '~/composables/injectionKeys'

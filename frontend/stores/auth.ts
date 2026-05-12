@@ -1,3 +1,5 @@
+// Файл: stores/auth.ts
+// Назначение: Pinia-стор авторизации — хранит JWT-токен и роль пользователя, выполняет отправку/проверку OTP-кода и выход из системы.
 import { defineStore } from 'pinia'
 
 type Role = 'patient' | 'admin' | 'doctor' | null
@@ -11,6 +13,7 @@ interface AuthState {
   error: string | null
 }
 
+// Стор авторизации: токен, роль, состояние формы OTP и действия sendOTP/verifyOTP/logout.
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     token: null,

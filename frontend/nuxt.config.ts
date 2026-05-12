@@ -1,3 +1,5 @@
+// Файл: nuxt.config.ts
+// Назначение: главная конфигурация Nuxt — модули (Tailwind, Pinia), runtime config с API base и публичными данными клиники, head-теги и SSR-настройки.
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
@@ -11,7 +13,7 @@ export default defineNuxtConfig({
     apiBase: 'http://localhost:8080',   // overridden by NUXT_API_BASE in docker
     public: {
       clinicName: 'BeautyMed',
-      clinicPhone: '+993 422 35-17-82',
+      clinicPhone: '+993 63 05-06-04',
       clinicAddress: 'Туркменабад, ул. Парахат 25/31',
       clinicHours: 'Пн–Сб: 9:00–20:00, Вс: выходной',
     },

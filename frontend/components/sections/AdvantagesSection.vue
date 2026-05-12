@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/AdvantagesSection.vue
+  Назначение: секция главной страницы со списком преимуществ клиники; по клику открывает модалку AdvantageModal с подробностями.
+-->
 <script setup lang="ts">
 import { ADVANTAGES, type Advantage } from '~/data/advantages'
 

@@ -1,7 +1,10 @@
+// Файл: internal/model/doctor.go
+// Назначение: модель врача (запись таблицы doctors) с прикреплённой специальностью.
 package model
 
 import "time"
 
+// Doctor — врач клиники с биографией, фото, опытом и принадлежностью к специальности.
 type Doctor struct {
 	ID              string    `db:"id"               json:"id"`
 	FullName        string    `db:"full_name"        json:"full_name"`

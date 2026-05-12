@@ -1,3 +1,5 @@
+// Файл: internal/service/booking.go
+// Назначение: бизнес-логика бронирования — расчёт свободных слотов, проверка промокода, атомарное создание записи.
 package service
 
 import (
@@ -10,14 +12,20 @@ import (
 	"beautymed/internal/repository"
 )
 
+// BookingService — сервис бронирования приёмов.
 type BookingService struct{ repos *Repos }
 
+// NewBookingService создаёт сервис бронирования поверх набора репозиториев.
 func NewBookingService(repos *Repos) *BookingService { return &BookingService{repos} }
 
+// ErrSlotTaken — реэкспорт ошибки занятого слота из repository для использования в хендлерах.
 // ErrSlotTaken is re-exported from the repository so handlers can keep using service.ErrSlotTaken.
 var ErrSlotTaken = repository.ErrSlotTaken
+
+// ErrDayOff сигнализирует, что у врача в выбранный день нет рабочей смены.
 var ErrDayOff = errors.New("doctor does not work on this day")
 
+// GetSlots возвращает свободные временные слоты у врача на дату с учётом длительности услуги.
 func (s *BookingService) GetSlots(doctorID, serviceID, dateStr string) ([]model.TimeSlot, error) {
 	svc, err := s.repos.Services.FindByID(serviceID)
 	if err != nil {
@@ -52,6 +60,7 @@ func (s *BookingService) GetSlots(doctorID, serviceID, dateStr string) ([]model.
 	return CalcSlots(workStart, workEnd, svc.DurationMin, taken), nil
 }
 
+// GetAvailableDates возвращает рабочие даты врача в указанном месяце (формат YYYY-MM).
 func (s *BookingService) GetAvailableDates(doctorID, monthStr string) ([]string, error) {
 	t, err := time.Parse("2006-01", monthStr)
 	if err != nil {
@@ -60,6 +69,7 @@ func (s *BookingService) GetAvailableDates(doctorID, monthStr string) ([]string,
 	return s.repos.Appointments.ListWorkDates(doctorID, t.Year(), int(t.Month()))
 }
 
+// PromoCheckResult — результат проверки промокода с пересчитанной ценой услуги.
 type PromoCheckResult struct {
 	Valid         bool    `json:"valid"`
 	DiscountPct   int     `json:"discount_pct"`
@@ -67,6 +77,7 @@ type PromoCheckResult struct {
 	FinalPrice    float64 `json:"final_price"`
 }
 
+// CheckPromo проверяет промокод применительно к услуге и возвращает итоговую цену со скидкой.
 // CheckPromo validates a promo code against a service and returns the recalculated price.
 // Returns a result with Valid=false if the code is missing, unknown, expired, or exhausted.
 func (s *BookingService) CheckPromo(code, serviceID string) (*PromoCheckResult, error) {
@@ -91,6 +102,7 @@ func (s *BookingService) CheckPromo(code, serviceID string) (*PromoCheckResult, 
 	return result, nil
 }
 
+// BookRequest — входные параметры для создания записи на приём.
 type BookRequest struct {
 	PatientID string
 	DoctorID  string
@@ -100,6 +112,7 @@ type BookRequest struct {
 	CreatedBy string
 }
 
+// Book создаёт запись на приём, применяя скидку и инкрементируя счётчик промокода в одной транзакции.
 func (s *BookingService) Book(req BookRequest) (*model.Appointment, error) {
 	svc, err := s.repos.Services.FindByID(req.ServiceID)
 	if err != nil {

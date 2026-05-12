@@ -1,3 +1,6 @@
+// Файл: locales/medical.ts
+// Назначение: медицинский глоссарий — отображает русские названия специальностей и услуг из БД в туркменские эквиваленты для UI; используется через tMed().
+
 // Medical glossary: specialty + service names that come from the DB in Russian
 // and need a Turkmen counterpart for the UI. Used via tMed() in components.
 //
@@ -42,6 +45,7 @@ const medicalTk: Record<string, string> = {
   'Объёмное моделирование лица': 'Ýüzüň göwrümli modelirlemesi',
 }
 
+// Словарь медицинских терминов по локалям: ru — тождество (исходные названия), tk — переводы.
 export const medicalDict: Record<'ru' | 'tk', Record<string, string>> = {
   ru: {},     // identity map
   tk: medicalTk,

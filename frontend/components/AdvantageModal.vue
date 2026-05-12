@@ -1,3 +1,7 @@
+<!--
+  Файл: components/AdvantageModal.vue
+  Назначение: модальное окно с подробным описанием выбранного преимущества клиники, открываемое из секции преимуществ на главной.
+-->
 <script setup lang="ts">
 import type { Advantage } from '~/data/advantages'
 

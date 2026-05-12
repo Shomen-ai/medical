@@ -1,3 +1,5 @@
+// Файл: internal/service/jwt.go
+// Назначение: выпуск и валидация JWT-токенов (access на 15 минут и refresh на 30 дней) для API.
 package service
 
 import (
@@ -7,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Claims — полезная нагрузка JWT с идентификатором пользователя, ролью и типом токена.
 type Claims struct {
 	UserID    string `json:"user_id"`
 	Role      string `json:"role"`
@@ -14,22 +17,28 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// JWTService подписывает и проверяет JWT-токены симметричным ключом HS256.
 type JWTService struct{ secret []byte }
 
+// NewJWTService создаёт сервис JWT с заданным секретным ключом.
 func NewJWTService(secret string) *JWTService { return &JWTService{[]byte(secret)} }
 
+// IssueAccess выпускает access-токен (срок жизни 15 минут).
 func (s *JWTService) IssueAccess(userID, role string) (string, error) {
 	return s.issue(userID, role, "access", 15*time.Minute)
 }
 
+// IssueRefresh выпускает refresh-токен (срок жизни 30 дней).
 func (s *JWTService) IssueRefresh(userID, role string) (string, error) {
 	return s.issue(userID, role, "refresh", 30*24*time.Hour)
 }
 
+// Parse валидирует любой токен (access или refresh) и возвращает его claims.
 func (s *JWTService) Parse(tokenStr string) (*Claims, error) {
 	return s.parse(tokenStr)
 }
 
+// ParseRefresh валидирует токен и убеждается, что это именно refresh-токен.
 func (s *JWTService) ParseRefresh(tokenStr string) (*Claims, error) {
 	c, err := s.parse(tokenStr)
 	if err != nil {

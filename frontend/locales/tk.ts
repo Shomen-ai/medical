@@ -1,3 +1,6 @@
+// Файл: locales/tk.ts
+// Назначение: туркменские переводы UI — латиница, повторяет структуру ru.ts; типизирован через `typeof ru`, чтобы гарантировать полноту ключей.
+
 // Türkmen dili (latyn elipbiýi).
 // Resmi terjime; käbir kosmetologiya/medisinanyň terminleri iňlis/rus dilinden alynan.
 import type ru from './ru'
@@ -34,7 +37,7 @@ const tk: typeof ru = {
   // Hero
   heroBadge: 'Gözellik kliniki · Türkmenabat',
   heroTitleLine1: 'Gözellik we saglyk',
-  heroTitleLine2: 'ynamdar elde',
+  heroTitleLine2: 'ynamdar ellerde',
   heroSubtitle: 'Kosmetologiýa, dermatologiýa, trihologiýa we estetiki lukmançylyk',
   heroOurServices: 'Hyzmatlarymyz',
 
@@ -98,4 +101,5 @@ const tk: typeof ru = {
   footerPrivacy: 'Maglumat goragy syýasaty',
 }
 
+// Экспорт словаря туркменских переводов.
 export default tk

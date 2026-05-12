@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/ServicesSection.vue
+  Назначение: секция главной страницы со списком услуг, сгруппированных по специальностям; ведёт на детальные страницы услуг и в мастер записи.
+-->
 <script setup lang="ts">
 import type { Specialty, Service } from '~/types'
 import { getSpecialtyMeta } from '~/data/specialtyMeta'

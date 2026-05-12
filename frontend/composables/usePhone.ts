@@ -1,3 +1,6 @@
+// Файл: composables/usePhone.ts
+// Назначение: валидация и нормализация номеров телефона для России (+7) и Туркменистана (+993) — приведение к каноническому формату E.164.
+
 // Phone validation + normalization for RU (+7) and TM (+993).
 //
 // Accepted forms (digits only after country code):
@@ -5,14 +8,17 @@
 //   TM:  +993 followed by 8 digits → 11 digits total starting with 993
 // Russian "8XXXXXXXXXX" is also normalized to "+7XXXXXXXXXX".
 
+// Код страны телефона, поддерживаемый формой записи.
 export type PhoneCountry = 'ru' | 'tm'
 
+// Результат валидации телефона: флаг корректности, канонический E.164 и определённая страна.
 export interface PhoneCheck {
   valid: boolean
   e164: string        // canonical form starting with +
   country: PhoneCountry | null
 }
 
+// Приводит произвольный пользовательский ввод к каноническому виду «+<цифры>».
 export function normalizePhoneInput(raw: string): string {
   const digits = raw.replace(/\D+/g, '')
   if (digits.startsWith('8') && digits.length === 11) return '+7' + digits.slice(1)
@@ -22,6 +28,7 @@ export function normalizePhoneInput(raw: string): string {
   return digits ? '+' + digits : ''
 }
 
+// Валидирует номер: возвращает признак valid, нормализованную форму и определённый код страны.
 export function validatePhone(raw: string): PhoneCheck {
   const e164 = normalizePhoneInput(raw)
   const digits = e164.replace(/\D+/g, '')

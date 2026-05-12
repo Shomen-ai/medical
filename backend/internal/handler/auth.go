@@ -1,3 +1,5 @@
+// Файл: internal/handler/auth.go
+// Назначение: HTTP-обработчики аутентификации — отправка и проверка OTP-кодов для пациентов и сотрудников, логин персонала по паролю и обновление пары JWT-токенов.
 package handler
 
 import (
@@ -12,15 +14,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AuthHandler — обработчик запросов аутентификации и обновления токенов.
 type AuthHandler struct {
 	svc     *service.Services
 	devMode bool
 }
 
+// NewAuthHandler создаёт AuthHandler; в нелайв-окружениях включает режим отладки (возврат OTP в ответе).
 func NewAuthHandler(svc *service.Services, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{svc: svc, devMode: cfg.Env != "production"}
 }
 
+// SendOTP отправляет одноразовый код пациенту по номеру телефона.
 // POST /api/auth/otp  body: {"phone":"+79001234567"}
 func (h *AuthHandler) SendOTP(c *gin.Context) {
 	var req struct{ Phone string `json:"phone" binding:"required"` }
@@ -40,6 +45,7 @@ func (h *AuthHandler) SendOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// VerifyOTP проверяет OTP пациента, выдаёт пару JWT и ставит refresh-токен в httpOnly cookie.
 // POST /api/auth/verify  body: {"phone":"+79001234567","code":"123456"}
 func (h *AuthHandler) VerifyOTP(c *gin.Context) {
 	var req struct {
@@ -63,6 +69,7 @@ func (h *AuthHandler) VerifyOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken})
 }
 
+// SendStaffOTP отправляет одноразовый код сотруднику (врачу или администратору) по номеру телефона.
 // POST /api/staff/auth/otp
 func (h *AuthHandler) SendStaffOTP(c *gin.Context) {
 	var req struct{ Phone string `json:"phone" binding:"required"` }
@@ -86,6 +93,7 @@ func (h *AuthHandler) SendStaffOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// VerifyStaffOTP проверяет OTP сотрудника и выдаёт JWT-токены с указанием его роли.
 // POST /api/staff/auth/verify
 func (h *AuthHandler) VerifyStaffOTP(c *gin.Context) {
 	var req struct {
@@ -109,6 +117,7 @@ func (h *AuthHandler) VerifyStaffOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken, "role": role})
 }
 
+// StaffLogin аутентифицирует сотрудника по логину и паролю и выдаёт пару JWT-токенов.
 // POST /api/staff/auth/login  body: {"username":"admin","password":"..."}
 func (h *AuthHandler) StaffLogin(c *gin.Context) {
 	var req struct {
@@ -132,6 +141,7 @@ func (h *AuthHandler) StaffLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": pair.AccessToken, "role": role})
 }
 
+// Refresh обновляет пару access/refresh токенов по refresh-токену из cookie.
 // POST /api/auth/refresh
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	refresh, err := c.Cookie("refresh_token")

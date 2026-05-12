@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/admin.vue
+  Назначение: админ-панель клиники со сводкой записей, графиками (Bar/Doughnut) и управлением справочниками; использует layout 'staff'.
+-->
 <script setup lang="ts">
 import { Bar, Doughnut } from 'vue-chartjs'
 

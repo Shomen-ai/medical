@@ -1,3 +1,5 @@
+// Файл: internal/handler/booking.go
+// Назначение: HTTP-обработчики бронирования — выдача свободных слотов и доступных дат, проверка промокода и создание записи на приём от имени пациента.
 package handler
 
 import (
@@ -10,10 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// BookingHandler — обработчик запросов, связанных с записью пациента на приём.
 type BookingHandler struct{ svc *service.Services }
 
+// NewBookingHandler создаёт новый BookingHandler с подключённым сервисным слоем.
 func NewBookingHandler(svc *service.Services) *BookingHandler { return &BookingHandler{svc: svc} }
 
+// GetSlots возвращает список свободных временных слотов выбранного врача на дату для конкретной услуги.
 // GET /api/doctors/:id/slots?service_id=uuid&date=2026-05-10
 func (h *BookingHandler) GetSlots(c *gin.Context) {
 	slots, err := h.svc.Booking.GetSlots(
@@ -28,6 +33,7 @@ func (h *BookingHandler) GetSlots(c *gin.Context) {
 	c.JSON(http.StatusOK, slots)
 }
 
+// GetAvailableDates возвращает список дат месяца, в которые у врача есть свободные слоты.
 // GET /api/doctors/:id/available-dates?month=2026-05
 func (h *BookingHandler) GetAvailableDates(c *gin.Context) {
 	dates, err := h.svc.Booking.GetAvailableDates(c.Param("id"), c.Query("month"))
@@ -38,6 +44,7 @@ func (h *BookingHandler) GetAvailableDates(c *gin.Context) {
 	c.JSON(http.StatusOK, dates)
 }
 
+// CheckPromo проверяет валидность промокода для услуги и возвращает рассчитанную скидку.
 // POST /api/promo/check
 // body: {"code":"SUMMER10","service_id":"uuid"}
 func (h *BookingHandler) CheckPromo(c *gin.Context) {
@@ -57,6 +64,7 @@ func (h *BookingHandler) CheckPromo(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// Create создаёт новую запись на приём от лица аутентифицированного пациента.
 // POST /api/appointments
 // body: {"doctor_id":"uuid","service_id":"uuid","starts_at":"2026-05-10T10:00:00Z","promo_code":""}
 func (h *BookingHandler) Create(c *gin.Context) {

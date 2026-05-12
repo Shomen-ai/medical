@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/steps/StepConfirm.vue
+  Назначение: финальный шаг мастера записи — сводка по записи, ввод телефона и подтверждение SMS-кодом (OTP), создание записи в БД.
+-->
 <script setup lang="ts">
 const booking = useBookingStore()
 const auth = useAuthStore()

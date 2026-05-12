@@ -1,13 +1,17 @@
+// Файл: internal/model/admin.go
+// Назначение: вспомогательные DTO/модели для админ-кабинета: статистика, ячейки расписания, напоминания.
 package model
 
 import "time"
 
+// DoctorStats хранит KPI врача за текущий календарный месяц.
 type DoctorStats struct {
 	AppointmentsThisMonth int     `db:"appointments_this_month" json:"appointments_this_month"`
 	UniquePatients        int     `db:"unique_patients"         json:"unique_patients"`
 	FilledRecordsPct      float64 `db:"filled_records_pct"      json:"filled_records_pct"`
 }
 
+// AdminStats хранит сводные KPI для главной страницы админ-кабинета.
 type AdminStats struct {
 	TotalPatients     int     `db:"total_patients"      json:"total_patients"`
 	ActiveDoctors     int     `db:"active_doctors"      json:"active_doctors"`
@@ -16,6 +20,7 @@ type AdminStats struct {
 	TopService        string  `db:"top_service"         json:"top_service"`
 }
 
+// ScheduleRow описывает одну строку расписания (врач+дата) для массовой вставки.
 // ScheduleRow is the input type for BulkUpsertSchedule.
 type ScheduleRow struct {
 	DoctorID  string    `db:"doctor_id"`
@@ -25,6 +30,7 @@ type ScheduleRow struct {
 	IsDayOff  bool      `db:"is_day_off"`
 }
 
+// ScheduleCell — одна ячейка месячного расписания (врач+дата) с информацией о наличии записей.
 // ScheduleCell is returned by ListScheduleForMonth — one cell per (doctor, date).
 type ScheduleCell struct {
 	DoctorID        string `db:"doctor_id"        json:"doctor_id"`
@@ -37,6 +43,7 @@ type ScheduleCell struct {
 	HasAppointments bool   `db:"has_appointments" json:"has_appointments"`
 }
 
+// PeriodStats хранит ключевые метрики (записи, выручка, пациенты) за произвольный период.
 // PeriodStats holds key metrics for a given time range.
 type PeriodStats struct {
 	Appointments   int     `db:"appointments"    json:"appointments"`
@@ -45,6 +52,7 @@ type PeriodStats struct {
 	Cancelled      int     `db:"cancelled"       json:"cancelled"`
 }
 
+// MonthlyStatPoint — точка месячной статистики (число записей и выручка) для графиков.
 // MonthlyStatPoint holds appointment count and revenue for one calendar month.
 type MonthlyStatPoint struct {
 	Month        string  `db:"month"        json:"month"`
@@ -52,6 +60,7 @@ type MonthlyStatPoint struct {
 	Revenue      float64 `db:"revenue"      json:"revenue"`
 }
 
+// AppointmentReminder — минимально достаточные данные для отправки SMS-напоминания за сутки.
 // AppointmentReminder holds the data needed to send a 24h reminder SMS.
 type AppointmentReminder struct {
 	ID           string    `db:"id"`

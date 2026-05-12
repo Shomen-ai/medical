@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/staff-login.vue
+  Назначение: страница входа сотрудников (администратора и врача) по логину и паролю; после успешного входа перенаправляет в соответствующий портал.
+-->
 <script setup lang="ts">
 const auth = useAuthStore()
 const router = useRouter()

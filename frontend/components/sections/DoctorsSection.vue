@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/DoctorsSection.vue
+  Назначение: секция главной страницы с карточками врачей клиники (фото, специализация, опыт) и быстрой записью к конкретному специалисту.
+-->
 <script setup lang="ts">
 import type { Doctor, Service } from '~/types'
 import { ServicesKey } from '~/composables/injectionKeys'

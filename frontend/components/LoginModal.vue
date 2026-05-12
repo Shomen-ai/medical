@@ -1,3 +1,7 @@
+<!--
+  Файл: components/LoginModal.vue
+  Назначение: модальное окно входа пациента по номеру телефона с подтверждением через SMS-код (OTP).
+-->
 <script setup lang="ts">
 const emit = defineEmits<{ close: [] }>()
 const auth = useAuthStore()

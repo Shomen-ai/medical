@@ -1,3 +1,5 @@
+// Файл: internal/repository/admin.go
+// Назначение: SQL-запросы для админ-кабинета — статистика, расписание, промокоды, KPI, напоминания.
 package repository
 
 import (
@@ -10,10 +12,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// AdminRepo — репозиторий админских операций над всеми записями и расписанием.
 type AdminRepo struct{ db *sqlx.DB }
 
+// NewAdminRepo создаёт AdminRepo, обёрнутый вокруг переданного пула sqlx.
 func NewAdminRepo(db *sqlx.DB) *AdminRepo { return &AdminRepo{db} }
 
+// ListAllAppointments возвращает все записи на приём с опциональными фильтрами по статусу/врачу/дате.
 // ListAllAppointments returns all appointments with optional filters.
 // status: "" | "scheduled" | "completed" | "cancelled" | "rescheduled"
 // doctorID: "" means all doctors
@@ -53,6 +58,7 @@ func (r *AdminRepo) ListAllAppointments(status, doctorID string, date *time.Time
 	return as, r.db.Select(&as, q, args...)
 }
 
+// PeriodStats возвращает агрегированную статистику записей и выручки за интервал [from, to).
 // PeriodStats returns appointment counts and revenue for the given time range.
 func (r *AdminRepo) PeriodStats(from, to time.Time) (*model.PeriodStats, error) {
 	var s model.PeriodStats
@@ -67,6 +73,7 @@ func (r *AdminRepo) PeriodStats(from, to time.Time) (*model.PeriodStats, error) 
 	return &s, err
 }
 
+// Revenue возвращает суммарную выручку (final_price) по завершённым приёмам за интервал [from, to).
 // Revenue returns the total final_price for completed appointments in [from, to).
 func (r *AdminRepo) Revenue(from, to time.Time) (float64, error) {
 	var total float64
@@ -78,6 +85,7 @@ func (r *AdminRepo) Revenue(from, to time.Time) (float64, error) {
 	return total, err
 }
 
+// OverallStats возвращает сводные KPI для главной страницы админ-кабинета.
 // OverallStats returns aggregate KPIs for the admin stats page.
 func (r *AdminRepo) OverallStats() (*model.AdminStats, error) {
 	var s model.AdminStats
@@ -106,6 +114,7 @@ func (r *AdminRepo) OverallStats() (*model.AdminStats, error) {
 	return &s, err
 }
 
+// TodayKPI возвращает на сегодня: число записей, выручку и количество свободных слотов.
 // TodayKPI returns appointment count, revenue and free slot count for today.
 func (r *AdminRepo) TodayKPI() (int, float64, int, error) {
 	var count int
@@ -129,6 +138,7 @@ func (r *AdminRepo) TodayKPI() (int, float64, int, error) {
 	return count, revenue, free, nil
 }
 
+// ListTomorrowAppointments возвращает все назначенные на завтра приёмы с контактами для SMS-напоминаний.
 // ListTomorrowAppointments returns all scheduled appointments for tomorrow with contact info.
 func (r *AdminRepo) ListTomorrowAppointments() ([]model.AppointmentReminder, error) {
 	var reminders []model.AppointmentReminder
@@ -144,6 +154,7 @@ func (r *AdminRepo) ListTomorrowAppointments() ([]model.AppointmentReminder, err
 	return reminders, err
 }
 
+// ListScheduleForMonth возвращает ячейки расписания за указанный месяц с инфо о врачах и наличии записей.
 // ListScheduleForMonth returns all schedule cells for the given month, joined with doctor info.
 func (r *AdminRepo) ListScheduleForMonth(year, month int, specialtyID string) ([]model.ScheduleCell, error) {
 	q := `
@@ -169,6 +180,7 @@ func (r *AdminRepo) ListScheduleForMonth(year, month int, specialtyID string) ([
 	return cells, r.db.Select(&cells, q, args...)
 }
 
+// BulkUpsertSchedule массово вставляет или обновляет строки расписания (по конфликту doctor_id+work_date).
 // BulkUpsertSchedule inserts or updates schedule rows in bulk.
 func (r *AdminRepo) BulkUpsertSchedule(rows []model.ScheduleRow) error {
 	if len(rows) == 0 {
@@ -193,6 +205,7 @@ func (r *AdminRepo) BulkUpsertSchedule(rows []model.ScheduleRow) error {
 	return err
 }
 
+// UpsertScheduleCell вставляет или обновляет одну ячейку расписания для пары (врач, дата).
 // UpsertScheduleCell updates a single doctor/date schedule cell.
 func (r *AdminRepo) UpsertScheduleCell(doctorID, date, startTime, endTime string, isDayOff bool) error {
 	_, err := r.db.Exec(`
@@ -206,6 +219,7 @@ func (r *AdminRepo) UpsertScheduleCell(doctorID, date, startTime, endTime string
 	return err
 }
 
+// CreatePromoCode создаёт новый промокод и записывает в pc.ID сгенерированный UUID.
 // CreatePromoCode inserts a new promo code.
 func (r *AdminRepo) CreatePromoCode(pc *model.PromoCode) error {
 	return r.db.QueryRow(`
@@ -216,6 +230,7 @@ func (r *AdminRepo) CreatePromoCode(pc *model.PromoCode) error {
 	).Scan(&pc.ID)
 }
 
+// ListPromos возвращает все промокоды, упорядоченные по дате создания (новые сверху).
 // ListPromos returns all promo codes ordered by creation date desc.
 func (r *AdminRepo) ListPromos() ([]model.PromoCode, error) {
 	var pcs []model.PromoCode
@@ -223,6 +238,7 @@ func (r *AdminRepo) ListPromos() ([]model.PromoCode, error) {
 		SELECT * FROM promo_codes ORDER BY created_at DESC`)
 }
 
+// MonthlyStats возвращает помесячные метрики (число записей, выручка) за последние 6 календарных месяцев.
 // MonthlyStats returns appointment counts and revenue for the last 6 calendar months.
 func (r *AdminRepo) MonthlyStats() ([]model.MonthlyStatPoint, error) {
 	var pts []model.MonthlyStatPoint

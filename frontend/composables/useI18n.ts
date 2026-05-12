@@ -1,7 +1,10 @@
+// Файл: composables/useI18n.ts
+// Назначение: i18n-композабл — хранит выбранный язык в cookie, возвращает функции t() (UI-переводы) и tMed() (медицинский глоссарий), переключает локаль.
 import ru from '~/locales/ru'
 import tk from '~/locales/tk'
 import { medicalDict } from '~/locales/medical'
 
+// Поддерживаемые локали интерфейса.
 export type Locale = 'ru' | 'tk'
 
 const dictionaries: Record<Locale, typeof ru> = { ru, tk }
@@ -17,6 +20,7 @@ function interpolate(template: string, params?: Record<string, string | number>)
   })
 }
 
+// Композабл локализации: реактивная локаль из cookie + переводчики t/tMed/setLocale.
 export function useI18n() {
   // useCookie is SSR-safe and synced to browser; default 'ru'.
   const locale = useCookie<Locale>(LOCALE_COOKIE, {

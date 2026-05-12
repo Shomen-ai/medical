@@ -1,5 +1,9 @@
+// Файл: composables/useApi.ts
+// Назначение: обёртка над $fetch с динамическим базовым URL — на SSR используется внутренний docker-адрес api:8080, на клиенте — относительный путь через nginx.
+
 // SSR: uses runtimeConfig.apiBase (internal Docker URL)
 // Client: uses '' (relative URL, nginx proxies /api/ to backend)
+// Композабл useApi возвращает методы get/post/patch с автоматической вставкой Bearer-токена.
 export const useApi = () => {
   const config = useRuntimeConfig()
   const base = import.meta.server ? config.apiBase : ''

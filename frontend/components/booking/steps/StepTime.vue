@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/steps/StepTime.vue
+  Назначение: четвёртый шаг мастера записи — выбор свободного временного слота у врача на выбранную дату.
+-->
 <script setup lang="ts">
 import type { TimeSlot } from '~/types'
 

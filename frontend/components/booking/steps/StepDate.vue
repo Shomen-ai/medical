@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/steps/StepDate.vue
+  Назначение: третий шаг мастера записи — выбор даты приёма из календаря с учётом расписания выбранного врача.
+-->
 <script setup lang="ts">
 const booking = useBookingStore()
 const { get } = useApi()

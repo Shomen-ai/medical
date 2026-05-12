@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/services/[id].vue
+  Назначение: детальная страница услуги по её ID; загружает данные услуги и связанную специальность, отображает описание, цену и кнопку записи.
+-->
 <script setup lang="ts">
 import type { Service, Specialty } from '~/types'
 

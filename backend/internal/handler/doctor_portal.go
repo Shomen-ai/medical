@@ -1,3 +1,5 @@
+// Файл: internal/handler/doctor_portal.go
+// Назначение: HTTP-обработчики рабочего места врача — приёмы на день, заполнение медкарты (черновик/финал) с переводом записи в completed, личное расписание на месяц и статистика приёмов.
 package handler
 
 import (
@@ -13,12 +15,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DoctorPortalHandler — обработчик запросов рабочего места врача.
 type DoctorPortalHandler struct{ svc *service.Services }
 
+// NewDoctorPortalHandler создаёт новый DoctorPortalHandler с подключённым сервисным слоем.
 func NewDoctorPortalHandler(svc *service.Services) *DoctorPortalHandler {
 	return &DoctorPortalHandler{svc: svc}
 }
 
+// TodayAppointments возвращает список приёмов врача на указанный день (по умолчанию — сегодня).
 // GET /api/doctor/appointments?date=2026-05-10  (default: today)
 func (h *DoctorPortalHandler) TodayAppointments(c *gin.Context) {
 	doctorID := c.GetString("user_id")
@@ -42,6 +47,7 @@ func (h *DoctorPortalHandler) TodayAppointments(c *gin.Context) {
 	c.JSON(http.StatusOK, as)
 }
 
+// GetAppointment возвращает детали приёма врача вместе с уже сохранённой медкартой (если есть).
 // GET /api/doctor/appointments/:id
 func (h *DoctorPortalHandler) GetAppointment(c *gin.Context) {
 	doctorID := c.GetString("user_id")
@@ -68,6 +74,7 @@ func (h *DoctorPortalHandler) GetAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"appointment": a, "record": record})
 }
 
+// SaveRecord сохраняет медкарту приёма (жалобы, диагноз, назначения); при is_draft=false переводит запись в статус completed.
 // PATCH /api/doctor/appointments/:id/record
 func (h *DoctorPortalHandler) SaveRecord(c *gin.Context) {
 	doctorID := c.GetString("user_id")
@@ -116,6 +123,7 @@ func (h *DoctorPortalHandler) SaveRecord(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "saved"})
 }
 
+// MonthlySchedule возвращает расписание врача на указанный месяц.
 // GET /api/doctor/schedule?year=2026&month=5
 func (h *DoctorPortalHandler) MonthlySchedule(c *gin.Context) {
 	doctorID := c.GetString("user_id")
@@ -139,6 +147,7 @@ func (h *DoctorPortalHandler) MonthlySchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, rows)
 }
 
+// Stats возвращает агрегированную статистику приёмов текущего врача.
 // GET /api/doctor/stats
 func (h *DoctorPortalHandler) Stats(c *gin.Context) {
 	stats, err := h.svc.Repos.Appointments.DoctorStats(c.GetString("user_id"))

@@ -1,3 +1,5 @@
+// Файл: internal/middleware/auth.go
+// Назначение: Gin-middleware для проверки JWT access-токена из заголовка Authorization и контроля доступа по роли (patient/doctor/admin) с прокидыванием user_id и role в контекст запроса.
 package middleware
 
 import (
@@ -9,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Auth возвращает middleware, проверяющий валидность JWT и принадлежность пользователя к одной из разрешённых ролей.
 func Auth(jwt *service.JWTService, roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := extractToken(c)

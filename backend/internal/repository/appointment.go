@@ -1,3 +1,5 @@
+// Файл: internal/repository/appointment.go
+// Назначение: SQL-доступ к таблицам appointments, appointment_records, promo_codes и расписанию врачей.
 package repository
 
 import (
@@ -10,16 +12,20 @@ import (
 	"github.com/lib/pq"
 )
 
+// ErrSlotTaken возвращается, когда временной слот уже занят другой записью (конфликт exclusion-ограничения).
 // ErrSlotTaken is returned when the exclusion constraint rejects an overlapping appointment.
 var ErrSlotTaken = errors.New("slot is already taken")
 
 // pgExclusionViolation is the Postgres SQLSTATE for exclusion_violation (23P01).
 const pgExclusionViolation = "23P01"
 
+// AppointmentRepo — репозиторий записей на приём и связанных сущностей (карточки, промокоды, расписание).
 type AppointmentRepo struct{ db *sqlx.DB }
 
+// NewAppointmentRepo создаёт новый AppointmentRepo на базе пула sqlx.
 func NewAppointmentRepo(db *sqlx.DB) *AppointmentRepo { return &AppointmentRepo{db} }
 
+// Create вставляет одну запись на приём; при пересечении интервалов возвращает ErrSlotTaken.
 func (r *AppointmentRepo) Create(a *model.Appointment) error {
 	err := r.db.Get(a, `
 		INSERT INTO appointments
@@ -34,6 +40,7 @@ func (r *AppointmentRepo) Create(a *model.Appointment) error {
 	return err
 }
 
+// BookAtomic атомарно создаёт запись и инкрементит счётчик промокода в одной транзакции.
 // BookAtomic creates an appointment and (optionally) increments the promo code usage
 // in a single transaction. If the exclusion constraint rejects the insert because the
 // slot is already taken, ErrSlotTaken is returned and the promo counter is not touched.
@@ -75,6 +82,7 @@ func isSlotOverlap(err error) bool {
 	return errors.As(err, &pqErr) && string(pqErr.Code) == pgExclusionViolation
 }
 
+// FindByID возвращает запись на приём по её ID c присоединёнными именами врача, услуги и пациента.
 func (r *AppointmentRepo) FindByID(id string) (*model.Appointment, error) {
 	var a model.Appointment
 	err := r.db.Get(&a, `
@@ -91,12 +99,14 @@ func (r *AppointmentRepo) FindByID(id string) (*model.Appointment, error) {
 	return &a, err
 }
 
+// TakenRange — занятый интервал [starts_at, ends_at) уже существующей записи на приём.
 // TakenRange represents an existing appointment as a [starts_at, ends_at) interval.
 type TakenRange struct {
 	StartsAt time.Time `db:"starts_at"`
 	EndsAt   time.Time `db:"ends_at"`
 }
 
+// TakenSlots возвращает занятые интервалы у заданного врача на указанную дату (без отменённых/перенесённых).
 func (r *AppointmentRepo) TakenSlots(doctorID string, date time.Time) ([]TakenRange, error) {
 	var ranges []TakenRange
 	err := r.db.Select(&ranges, `
@@ -108,6 +118,7 @@ func (r *AppointmentRepo) TakenSlots(doctorID string, date time.Time) ([]TakenRa
 	return ranges, err
 }
 
+// ListByPatient возвращает историю всех записей конкретного пациента (новые сверху).
 func (r *AppointmentRepo) ListByPatient(patientID string) ([]model.Appointment, error) {
 	var as []model.Appointment
 	err := r.db.Select(&as, `
@@ -122,6 +133,7 @@ func (r *AppointmentRepo) ListByPatient(patientID string) ([]model.Appointment, 
 	return as, err
 }
 
+// ListByDoctor возвращает приёмы конкретного врача на указанную дату (без отменённых/перенесённых).
 func (r *AppointmentRepo) ListByDoctor(doctorID string, date time.Time) ([]model.Appointment, error) {
 	var as []model.Appointment
 	err := r.db.Select(&as, `
@@ -139,12 +151,14 @@ func (r *AppointmentRepo) ListByDoctor(doctorID string, date time.Time) ([]model
 	return as, err
 }
 
+// UpdateStatus меняет статус записи (scheduled/completed/cancelled/rescheduled).
 func (r *AppointmentRepo) UpdateStatus(id, status string) error {
 	_, err := r.db.Exec(
 		`UPDATE appointments SET status=$1 WHERE id=$2`, status, id)
 	return err
 }
 
+// Reschedule переносит запись на новое время и выставляет статус 'rescheduled'.
 func (r *AppointmentRepo) Reschedule(id string, startsAt, endsAt time.Time) error {
 	_, err := r.db.Exec(`
 		UPDATE appointments SET starts_at=$1, ends_at=$2, status='rescheduled'
@@ -155,12 +169,14 @@ func (r *AppointmentRepo) Reschedule(id string, startsAt, endsAt time.Time) erro
 	return err
 }
 
+// GetRecord возвращает медицинскую карточку (запись врача) по ID приёма.
 func (r *AppointmentRepo) GetRecord(appointmentID string) (*model.AppointmentRecord, error) {
 	var rec model.AppointmentRecord
 	err := r.db.Get(&rec, `SELECT * FROM appointment_records WHERE appointment_id=$1`, appointmentID)
 	return &rec, err
 }
 
+// UpsertRecord создаёт или обновляет карточку приёма (черновик или финал).
 func (r *AppointmentRepo) UpsertRecord(rec *model.AppointmentRecord) error {
 	_, err := r.db.Exec(`
 		INSERT INTO appointment_records
@@ -174,12 +190,14 @@ func (r *AppointmentRepo) UpsertRecord(rec *model.AppointmentRecord) error {
 	return err
 }
 
+// DoctorSchedule — расписание врача на конкретный день (рабочие часы и признак выходного).
 type DoctorSchedule struct {
 	StartTime string `db:"start_time"`
 	EndTime   string `db:"end_time"`
 	IsDayOff  bool   `db:"is_day_off"`
 }
 
+// GetSchedule возвращает расписание врача на указанную дату или sql.ErrNoRows, если записи нет.
 func (r *AppointmentRepo) GetSchedule(doctorID, date string) (*DoctorSchedule, error) {
 	var s DoctorSchedule
 	err := r.db.Get(&s, `
@@ -192,6 +210,7 @@ func (r *AppointmentRepo) GetSchedule(doctorID, date string) (*DoctorSchedule, e
 	return &s, nil
 }
 
+// FindPromoCode ищет активный промокод по строке кода с учётом сроков действия и лимита использований.
 func (r *AppointmentRepo) FindPromoCode(code string) (*model.PromoCode, error) {
 	var pc model.PromoCode
 	err := r.db.Get(&pc, `
@@ -203,11 +222,13 @@ func (r *AppointmentRepo) FindPromoCode(code string) (*model.PromoCode, error) {
 	return &pc, err
 }
 
+// IncrementPromoUsage увеличивает счётчик использований промокода на единицу.
 func (r *AppointmentRepo) IncrementPromoUsage(id string) error {
 	_, err := r.db.Exec(`UPDATE promo_codes SET used_count=used_count+1 WHERE id=$1`, id)
 	return err
 }
 
+// DoctorStats возвращает агрегированную статистику врача за текущий календарный месяц.
 // DoctorStats returns aggregate stats for the current calendar month.
 func (r *AppointmentRepo) DoctorStats(doctorID string) (*model.DoctorStats, error) {
 	var s model.DoctorStats
@@ -231,6 +252,7 @@ func (r *AppointmentRepo) DoctorStats(doctorID string) (*model.DoctorStats, erro
 	return &s, err
 }
 
+// ListWorkDates возвращает рабочие даты (не выходные) врача в заданном месяце.
 // ListWorkDates returns dates where the doctor is not on day-off for the given month.
 func (r *AppointmentRepo) ListWorkDates(doctorID string, year, month int) ([]string, error) {
 	var dates []string
@@ -251,6 +273,7 @@ func (r *AppointmentRepo) ListWorkDates(doctorID string, year, month int) ([]str
 	return dates, nil
 }
 
+// ListScheduleByDoctor возвращает расписание врача на месяц с числом записей и количеством требующих внимания.
 // ListScheduleByDoctor returns the month's schedule rows for a single doctor,
 // enriched with per-day appointment counts (excluding cancelled) and a
 // "pending" count of appointments still needing the doctor's attention —
@@ -299,21 +322,4 @@ func (r *AppointmentRepo) ListScheduleByDoctor(doctorID string, year, month int)
 		result = append(result, m)
 	}
 	return result, rows.Err()
-}
-
-// ListCompletedByPatientYear returns completed appointments for a patient in a given year.
-func (r *AppointmentRepo) ListCompletedByPatientYear(patientID string, year int) ([]model.Appointment, error) {
-	var as []model.Appointment
-	err := r.db.Select(&as, `
-		SELECT a.*,
-		       d.full_name AS doctor_name,
-		       s.name      AS service_name
-		FROM appointments a
-		JOIN doctors  d ON d.id = a.doctor_id
-		JOIN services s ON s.id = a.service_id
-		WHERE a.patient_id = $1
-		  AND a.status     = 'completed'
-		  AND EXTRACT(YEAR FROM a.starts_at) = $2
-		ORDER BY a.starts_at`, patientID, year)
-	return as, err
 }

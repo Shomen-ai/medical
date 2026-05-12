@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/steps/StepDoctor.vue
+  Назначение: второй шаг мастера записи — выбор врача из списка специалистов, доступных по выбранной ранее специальности.
+-->
 <script setup lang="ts">
 import { DoctorsKey } from '~/composables/injectionKeys'
 

@@ -1,3 +1,5 @@
+// Файл: internal/handler/doctor.go
+// Назначение: публичные HTTP-обработчики каталога врачей — список всех врачей (с фильтром по специальности) и карточка конкретного врача.
 package handler
 
 import (
@@ -10,10 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DoctorHandler — обработчик публичных запросов каталога врачей.
 type DoctorHandler struct{ svc *service.Services }
 
+// NewDoctorHandler создаёт новый DoctorHandler с подключённым сервисным слоем.
 func NewDoctorHandler(svc *service.Services) *DoctorHandler { return &DoctorHandler{svc: svc} }
 
+// List возвращает всех активных врачей; при указании specialty_id фильтрует по специальности.
 // GET /api/doctors?specialty_id=uuid
 func (h *DoctorHandler) List(c *gin.Context) {
 	specialtyID := c.Query("specialty_id")
@@ -34,6 +39,7 @@ func (h *DoctorHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, ds)
 }
 
+// Get возвращает карточку врача по идентификатору.
 // GET /api/doctors/:id
 func (h *DoctorHandler) Get(c *gin.Context) {
 	d, err := h.svc.Repos.Doctors.FindByID(c.Param("id"))

@@ -1,3 +1,5 @@
+// Файл: tests/e2e/booking.spec.ts
+// Назначение: e2e-тесты Playwright для главной страницы и модального окна онлайн-записи — открытие модалки, закрытие по бэкдропу/Escape, дизейбл кнопки «Далее» на шаге 1.
 import { test, expect, type Page } from '@playwright/test'
 
 // The modal backdrop container is a fixed overlay with z-50.

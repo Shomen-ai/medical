@@ -1,3 +1,7 @@
+<!--
+  Файл: components/booking/BookingModal.vue
+  Назначение: главная модалка мастера записи к врачу из 5 шагов (специальность → врач → дата → время → подтверждение), переключает шаги через booking store.
+-->
 <script setup lang="ts">
 const booking = useBookingStore()
 const { t } = useI18n()

@@ -1,5 +1,8 @@
+// Файл: internal/model/staff.go
+// Назначение: модель учётной записи сотрудника (врача/админа) для входа в кабинет по телефону или логину.
 package model
 
+// Staff — учётка сотрудника клиники: телефон, роль, логин/пароль и ссылка на врача.
 type Staff struct {
 	ID           string  `db:"id"            json:"id"`
 	DoctorID     *string `db:"doctor_id"     json:"doctor_id,omitempty"`

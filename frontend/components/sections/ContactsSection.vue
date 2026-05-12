@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/ContactsSection.vue
+  Назначение: секция главной страницы с контактами клиники в Туркменабаде: адрес, телефоны, часы работы и карта.
+-->
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { t } = useI18n()

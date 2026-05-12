@@ -1,3 +1,5 @@
+// Файл: tests/booking.store.test.ts
+// Назначение: юнит-тесты Vitest для Pinia-стора booking — проверяют initial state, переходы между шагами, валидацию canProceed и сброс модалки.
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useBookingStore } from '../stores/booking'

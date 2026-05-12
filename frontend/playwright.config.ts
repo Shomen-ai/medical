@@ -1,5 +1,8 @@
+// Файл: playwright.config.ts
+// Назначение: конфигурация Playwright для e2e-тестов — каталог tests/e2e, базовый URL dev-сервера, проект Chromium и автоматический запуск `npm run dev`.
 import { defineConfig, devices } from '@playwright/test'
 
+// Экспорт конфигурации Playwright.
 export default defineConfig({
   testDir: './tests/e2e',
   use: {

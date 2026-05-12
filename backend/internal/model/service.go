@@ -1,5 +1,8 @@
+// Файл: internal/model/service.go
+// Назначение: модель медицинской услуги — цена, длительность приёма, связь со специальностью.
 package model
 
+// Service — медицинская услуга клиники с ценой и длительностью в минутах.
 type Service struct {
 	ID          string  `db:"id"           json:"id"`
 	Name        string  `db:"name"         json:"name"`

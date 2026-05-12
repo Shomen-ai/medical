@@ -1,5 +1,8 @@
+// Файл: stores/booking.ts
+// Назначение: Pinia-стор мастера записи — текущий шаг (1–5), выбранные специальность/врач/услуга/дата/время, состояние OTP и промокода, валидация перехода между шагами.
 import { defineStore } from 'pinia'
 
+// Тип-объединение для номера текущего шага мастера записи (1..5).
 export type BookingStep = 1 | 2 | 3 | 4 | 5
 
 interface BookingState {
@@ -23,6 +26,7 @@ interface BookingState {
   success: boolean
 }
 
+// Стор мастера записи: состояние модалки, навигация по шагам и условие canProceed.
 export const useBookingStore = defineStore('booking', {
   state: (): BookingState => ({
     open: false,

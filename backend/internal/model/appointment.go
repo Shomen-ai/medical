@@ -1,7 +1,10 @@
+// Файл: internal/model/appointment.go
+// Назначение: модели, связанные с записями на приём — сама запись, медицинская карточка визита, временной слот, промокод.
 package model
 
 import "time"
 
+// Appointment — запись пациента на приём к врачу (со связанными именами для отображения).
 type Appointment struct {
 	ID          string    `db:"id"           json:"id"`
 	PatientID   string    `db:"patient_id"   json:"patient_id"`
@@ -22,6 +25,7 @@ type Appointment struct {
 	PatientPhone string  `db:"patient_phone" json:"patient_phone,omitempty"`
 }
 
+// AppointmentRecord — медицинская карточка визита: жалобы, диагноз, назначения и рекомендации.
 type AppointmentRecord struct {
 	ID              string    `db:"id"               json:"id"`
 	AppointmentID   string    `db:"appointment_id"   json:"appointment_id"`
@@ -34,11 +38,13 @@ type AppointmentRecord struct {
 	UpdatedAt       time.Time `db:"updated_at"       json:"updated_at"`
 }
 
+// TimeSlot — свободный временной интервал для бронирования (формат HH:MM).
 type TimeSlot struct {
 	StartsAt string `json:"starts_at"`
 	EndsAt   string `json:"ends_at"`
 }
 
+// PromoCode — промокод со скидкой в процентах и ограничением по числу применений и сроку действия.
 type PromoCode struct {
 	ID          string    `db:"id"           json:"id"`
 	Code        string    `db:"code"         json:"code"`

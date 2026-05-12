@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/doctor/index.vue
+  Назначение: рабочее место врача — список приёмов на день, GitHub-подобный календарь активности и краткая статистика; использует layout 'staff'.
+-->
 <script setup lang="ts">
 definePageMeta({ layout: 'staff' })
 

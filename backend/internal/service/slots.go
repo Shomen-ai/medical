@@ -1,3 +1,5 @@
+// Файл: internal/service/slots.go
+// Назначение: расчёт свободных временных слотов в рабочем окне врача с учётом длительности услуги и уже занятых интервалов.
 package service
 
 import (
@@ -7,6 +9,7 @@ import (
 	"beautymed/internal/repository"
 )
 
+// CalcSlots возвращает свободные слоты в рабочем окне с шагом, равным длительности услуги.
 // CalcSlots returns available time slots given work window, duration and already booked ranges.
 // A candidate slot is hidden if its [start, end) interval overlaps any taken range.
 // All times are expected to be in UTC.

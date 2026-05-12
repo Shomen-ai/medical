@@ -1,5 +1,8 @@
+// Файл: data/specialtyMeta.ts
+// Назначение: декоративные мета-данные специальностей (иконка, цвет фона, краткое описание) — используются на главной и в выборе специальности в мастере записи.
 import type { SpecialtyMeta } from '~/types'
 
+// Словарь мета-данных, индексированный по русскому названию специальности.
 export const SPECIALTY_META: Record<string, SpecialtyMeta> = {
   'Косметология': {
     icon: '✨',
@@ -23,5 +26,6 @@ export const SPECIALTY_META: Record<string, SpecialtyMeta> = {
   },
 }
 
+// Возвращает мета-данные специальности по её русскому названию, либо дефолтные значения, если запись отсутствует.
 export const getSpecialtyMeta = (name: string): SpecialtyMeta =>
   SPECIALTY_META[name] ?? { icon: '🏥', description: '', color: 'bg-gray-50' }

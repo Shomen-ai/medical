@@ -1,3 +1,5 @@
+// Файл: internal/service/scheduler.go
+// Назначение: фоновые cron-задачи — ежедневная рассылка SMS-напоминаний и ежемесячная автогенерация расписания.
 package service
 
 import (
@@ -9,6 +11,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// CronScheduler управляет регулярными фоновыми задачами BeautyMed.
 type CronScheduler struct {
 	c           *cron.Cron
 	admin       *repository.AdminRepo
@@ -18,6 +21,7 @@ type CronScheduler struct {
 	sms         *SMSService
 }
 
+// NewCronScheduler собирает CronScheduler из репозиториев и зависимых сервисов.
 func NewCronScheduler(
 	admin *repository.AdminRepo,
 	specialties *repository.SpecialtyRepo,
@@ -35,6 +39,7 @@ func NewCronScheduler(
 	}
 }
 
+// Start регистрирует cron-задачи (напоминания и генерация расписания) и запускает их.
 func (s *CronScheduler) Start() {
 	// Send 24h appointment reminders daily at 10:00 UTC.
 	s.c.AddFunc("0 10 * * *", s.sendReminders)
@@ -45,6 +50,7 @@ func (s *CronScheduler) Start() {
 	s.c.Start()
 }
 
+// Stop останавливает все запланированные cron-задачи.
 func (s *CronScheduler) Stop() {
 	s.c.Stop()
 }

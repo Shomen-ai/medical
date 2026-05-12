@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/index.vue
+  Назначение: главная страница сайта BeautyMed; собирает секции «герой», услуги, врачи, преимущества, отзывы и контакты, а также загружает справочники специальностей/врачей/услуг.
+-->
 <script setup lang="ts">
 import type { Specialty, Doctor, Service } from '~/types'
 import { SpecialtiesKey, DoctorsKey, ServicesKey } from '~/composables/injectionKeys'

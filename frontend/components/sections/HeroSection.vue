@@ -1,3 +1,7 @@
+<!--
+  Файл: components/sections/HeroSection.vue
+  Назначение: «герой»-секция главной страницы с заголовком клиники, основным CTA «Записаться» и переходом к услугам.
+-->
 <script setup lang="ts">
 const booking = useBookingStore()
 const { t } = useI18n()
@@ -22,9 +26,8 @@ const scrollToServices = () => {
             {{ t('heroBadge') }}
           </div>
           <h1 class="text-2xl sm:text-3xl font-black text-white leading-tight mb-2 sm:mb-3">
-            <span class="sm:inline">{{ t('heroTitleLine1') }}</span>
-            <span class="hidden sm:inline"><br></span>
-            <span class="sm:inline"> {{ t('heroTitleLine2') }}</span>
+            <span class="block">{{ t('heroTitleLine1') }}</span>
+            <span class="block">{{ t('heroTitleLine2') }}</span>
           </h1>
           <p class="text-white/75 text-sm leading-relaxed mb-5 sm:mb-6">
             {{ t('heroSubtitle') }}

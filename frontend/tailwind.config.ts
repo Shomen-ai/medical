@@ -1,5 +1,8 @@
+// Файл: tailwind.config.ts
+// Назначение: конфигурация Tailwind CSS — фирменная палитра (primary, slate, muted), шрифт Inter и собственные тени card/card-lg.
 import type { Config } from 'tailwindcss'
 
+// Экспорт конфигурации Tailwind, типизированной через `satisfies Config`.
 export default {
   content: ['./components/**/*.vue', './pages/**/*.vue', './app.vue'],
   theme: {

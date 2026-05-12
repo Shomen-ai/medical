@@ -1,3 +1,5 @@
+// Файл: internal/repository/doctor.go
+// Назначение: SQL-доступ к таблицам doctors и staff (поиск врачей и учёток сотрудников).
 package repository
 
 import (
@@ -6,10 +8,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// DoctorRepo — репозиторий врачей и связанных учёток сотрудников (staff).
 type DoctorRepo struct{ db *sqlx.DB }
 
+// NewDoctorRepo создаёт DoctorRepo на базе пула sqlx.
 func NewDoctorRepo(db *sqlx.DB) *DoctorRepo { return &DoctorRepo{db} }
 
+// List возвращает всех активных врачей с подтянутыми именами специальностей.
 func (r *DoctorRepo) List() ([]model.Doctor, error) {
 	var ds []model.Doctor
 	err := r.db.Select(&ds, `
@@ -21,6 +26,7 @@ func (r *DoctorRepo) List() ([]model.Doctor, error) {
 	return ds, err
 }
 
+// ListBySpecialty возвращает активных врачей выбранной специальности.
 func (r *DoctorRepo) ListBySpecialty(specialtyID string) ([]model.Doctor, error) {
 	var ds []model.Doctor
 	err := r.db.Select(&ds, `
@@ -32,6 +38,7 @@ func (r *DoctorRepo) ListBySpecialty(specialtyID string) ([]model.Doctor, error)
 	return ds, err
 }
 
+// FindByID возвращает одного врача по ID с присоединённым именем специальности.
 func (r *DoctorRepo) FindByID(id string) (*model.Doctor, error) {
 	var d model.Doctor
 	err := r.db.Get(&d, `
@@ -42,12 +49,14 @@ func (r *DoctorRepo) FindByID(id string) (*model.Doctor, error) {
 	return &d, err
 }
 
+// FindStaffByPhone находит активную учётку сотрудника по номеру телефона (для OTP-логина).
 func (r *DoctorRepo) FindStaffByPhone(phone string) (*model.Staff, error) {
 	var st model.Staff
 	err := r.db.Get(&st, `SELECT * FROM staff WHERE phone = $1 AND is_active = true`, phone)
 	return &st, err
 }
 
+// CreateDoctor создаёт нового врача и заполняет d.ID и d.CreatedAt.
 // CreateDoctor inserts a new doctor and returns the generated UUID.
 func (r *DoctorRepo) CreateDoctor(d *model.Doctor) error {
 	return r.db.QueryRow(`
@@ -58,6 +67,7 @@ func (r *DoctorRepo) CreateDoctor(d *model.Doctor) error {
 	).Scan(&d.ID, &d.CreatedAt)
 }
 
+// UpdateDoctor обновляет изменяемые поля врача (имя, био, фото, опыт, активность).
 // UpdateDoctor updates mutable doctor fields.
 func (r *DoctorRepo) UpdateDoctor(d *model.Doctor) error {
 	_, err := r.db.Exec(`
@@ -72,6 +82,7 @@ func (r *DoctorRepo) UpdateDoctor(d *model.Doctor) error {
 	return err
 }
 
+// CreateStaff создаёт учётку сотрудника, привязанную к врачу (без перезаписи при конфликте по телефону).
 // CreateStaff creates a staff login record for a doctor.
 func (r *DoctorRepo) CreateStaff(doctorID, phone, role string) error {
 	_, err := r.db.Exec(`
@@ -82,6 +93,7 @@ func (r *DoctorRepo) CreateStaff(doctorID, phone, role string) error {
 	return err
 }
 
+// FindStaffByUsername ищет активную учётку сотрудника по логину (для входа по паролю).
 // FindStaffByUsername looks up a staff record by username.
 func (r *DoctorRepo) FindStaffByUsername(username string) (*model.Staff, error) {
 	var st model.Staff

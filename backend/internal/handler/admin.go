@@ -1,3 +1,5 @@
+// Файл: internal/handler/admin.go
+// Назначение: HTTP-обработчики административной панели — KPI на главном экране, управление записями, врачами, расписанием, промокодами, выручкой и сводной статистикой.
 package handler
 
 import (
@@ -11,10 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AdminHandler — обработчик запросов административной части API.
 type AdminHandler struct{ svc *service.Services }
 
+// NewAdminHandler создаёт новый AdminHandler с подключённым сервисным слоем.
 func NewAdminHandler(svc *service.Services) *AdminHandler { return &AdminHandler{svc: svc} }
 
+// Dashboard возвращает KPI текущего дня и список сегодняшних записей для главного экрана админки.
 // GET /api/admin/dashboard
 func (h *AdminHandler) Dashboard(c *gin.Context) {
 	count, revenue, free, err := h.svc.Admin.TodayKPI()
@@ -38,6 +43,7 @@ func (h *AdminHandler) Dashboard(c *gin.Context) {
 	})
 }
 
+// ListAppointments возвращает список записей с фильтрацией по статусу, врачу и дате.
 // GET /api/admin/appointments?status=&doctor_id=&date=
 func (h *AdminHandler) ListAppointments(c *gin.Context) {
 	var date *time.Time
@@ -57,6 +63,7 @@ func (h *AdminHandler) ListAppointments(c *gin.Context) {
 	c.JSON(http.StatusOK, as)
 }
 
+// CreateAppointment создаёт запись пациента вручную через админ-панель (при необходимости создаёт пользователя по телефону).
 // POST /api/admin/appointments — manual booking
 // body: {"patient_phone":"+7...","doctor_id":"uuid","service_id":"uuid","starts_at":"RFC3339","promo_code":""}
 func (h *AdminHandler) CreateAppointment(c *gin.Context) {
@@ -96,6 +103,7 @@ func (h *AdminHandler) CreateAppointment(c *gin.Context) {
 	c.JSON(http.StatusCreated, a)
 }
 
+// CreateDoctor добавляет нового врача и создаёт для него сотрудника с ролью doctor.
 // POST /api/admin/doctors
 // body: {"full_name":"...","specialty_id":"uuid","phone":"+7...","bio":"...","photo_url":"...","experience_years":5}
 func (h *AdminHandler) CreateDoctor(c *gin.Context) {
@@ -131,6 +139,7 @@ func (h *AdminHandler) CreateDoctor(c *gin.Context) {
 	c.JSON(http.StatusCreated, d)
 }
 
+// UpdateDoctor обновляет данные карточки врача по идентификатору.
 // PATCH /api/admin/doctors/:id
 func (h *AdminHandler) UpdateDoctor(c *gin.Context) {
 	d, err := h.svc.Repos.Doctors.FindByID(c.Param("id"))
@@ -171,6 +180,7 @@ func (h *AdminHandler) UpdateDoctor(c *gin.Context) {
 	c.JSON(http.StatusOK, d)
 }
 
+// GetSchedule возвращает сетку расписания врачей на указанный месяц и (опционально) специальность.
 // GET /api/admin/schedule?year=2026&month=6&specialty_id=uuid
 func (h *AdminHandler) GetSchedule(c *gin.Context) {
 	now := time.Now()
@@ -193,6 +203,7 @@ func (h *AdminHandler) GetSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"year": year, "month": month, "cells": cells})
 }
 
+// UpdateScheduleCell обновляет одну ячейку расписания (рабочие часы или выходной) для пары врач+дата.
 // PATCH /api/admin/schedule/:doctor_id/:date
 // body: {"start_time":"09:00","end_time":"18:00","is_day_off":false}
 func (h *AdminHandler) UpdateScheduleCell(c *gin.Context) {
@@ -215,6 +226,7 @@ func (h *AdminHandler) UpdateScheduleCell(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "updated"})
 }
 
+// GenerateSchedule автоматически формирует расписание на месяц для всех активных врачей указанной специальности.
 // POST /api/admin/schedule/generate
 // body: {"year":2026,"month":6,"specialty_id":"uuid"}
 func (h *AdminHandler) GenerateSchedule(c *gin.Context) {
@@ -246,6 +258,7 @@ func (h *AdminHandler) GenerateSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"generated": len(rows)})
 }
 
+// ListPromos возвращает все промокоды клиники.
 // GET /api/admin/promo
 func (h *AdminHandler) ListPromos(c *gin.Context) {
 	pcs, err := h.svc.Admin.ListPromos()
@@ -256,6 +269,7 @@ func (h *AdminHandler) ListPromos(c *gin.Context) {
 	c.JSON(http.StatusOK, pcs)
 }
 
+// CreatePromo создаёт новый промокод с заданной скидкой и периодом действия.
 // POST /api/admin/promo
 // body: {"code":"BEAUTY20","discount_pct":20,"max_uses":100,"valid_from":"2026-06-01","valid_until":"2026-08-31"}
 func (h *AdminHandler) CreatePromo(c *gin.Context) {
@@ -316,6 +330,7 @@ func periodRange(period string) (from, to time.Time, ok bool) {
 	return
 }
 
+// Revenue возвращает суммарную выручку клиники за выбранный период.
 // GET /api/admin/revenue?period=week  (day|week|month|quarter|year)
 func (h *AdminHandler) Revenue(c *gin.Context) {
 	period := c.DefaultQuery("period", "day")
@@ -332,6 +347,7 @@ func (h *AdminHandler) Revenue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"period": period, "from": from, "to": to, "total": total})
 }
 
+// PeriodStats возвращает статистику записей и выручки за выбранный период.
 // GET /api/admin/stats/period?period=month  (day|week|month|quarter|year)
 func (h *AdminHandler) PeriodStats(c *gin.Context) {
 	period := c.DefaultQuery("period", "month")
@@ -348,6 +364,7 @@ func (h *AdminHandler) PeriodStats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
+// Stats возвращает общую сводную статистику по клинике за всё время.
 // GET /api/admin/stats
 func (h *AdminHandler) Stats(c *gin.Context) {
 	s, err := h.svc.Admin.OverallStats()
@@ -358,6 +375,7 @@ func (h *AdminHandler) Stats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
+// MonthlyStats возвращает разбивку показателей по месяцам для построения графиков.
 // GET /api/admin/stats/monthly
 func (h *AdminHandler) MonthlyStats(c *gin.Context) {
 	pts, err := h.svc.Admin.MonthlyStats()

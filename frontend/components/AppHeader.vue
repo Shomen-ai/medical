@@ -1,3 +1,7 @@
+<!--
+  Файл: components/AppHeader.vue
+  Назначение: общая шапка сайта с логотипом, навигацией, переключателем языка, кнопкой записи и блоком входа/личного кабинета пациента.
+-->
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const auth = useAuthStore()
