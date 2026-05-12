@@ -1,10 +1,116 @@
+# ───────────── Окружение / секреты ─────────────
 .env
+.env.local
+.env.*.local
 *.env.local
-backend/vendor/
-__debug_bin
-*.test
+.env.production
+.env.development
+
+# ───────────── Операционная система ─────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ───────────── Редакторы / IDE ─────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*~
+.history/
+.fleet/
+
+# ───────────── Локальные ассистенты разработки ─────────────
+.claude/
 .superpowers/
-dump.rdb
+.cursor/
+.cursorignore
+.windsurf/
+.roo*
+.aider*
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+
+# ───────────── Go (backend) ─────────────
+backend/vendor/
+backend/api
+backend/__debug_bin*
+*.test
+*.out
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+coverage.out
+
+# ───────────── Node / Nuxt (frontend) ─────────────
+node_modules/
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/.nitro/
+frontend/.cache/
+frontend/dist/
+frontend/.vite/
+frontend/*.local
+frontend/.env
+frontend/.env.*
 frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+frontend/coverage/
+
+# ───────────── Логи и runtime-артефакты ─────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ───────────── PostgreSQL / Redis локальные дампы ─────────────
 *.rdb
+*.aof
+dump.rdb
+appendonlydir/
+pgdata/
+postgres-data/
+redis-data/
+
+# ───────────── Docker volume-каталоги ─────────────
+.docker-volumes/
+docker-data/
+
+# ───────────── Сборочные артефакты PDF/Office ─────────────
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# ───────────── Документы / исследовательские материалы (личные) ─────────────
+# Дипломные тексты, методички и сторонние документы хранятся локально.
+# Если нужно положить в репозиторий — кладите их в /docs/ и снимайте этот фильтр.
+/2022_Требования к ВКР бакалавров.pdf
+/ВКР_Шайманова_БьютиМед.docx
+/ВКР_БьютиМед_дополнения.docx
+/Разработка_электронной_системы_записи_на_прием_пациентов_частной.docx
+
+# ───────────── Дубликаты изображений в корне ─────────────
+# Реальные клинические фото лежат в frontend/public/.
+/clinic_1.png
+/clinic_2.png
+/clinic_3.png
+
+# ───────────── Прочее ─────────────
+tmp/
+.tmp/
+*.bak
+*.orig
