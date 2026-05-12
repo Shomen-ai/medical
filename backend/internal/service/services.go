@@ -1,3 +1,5 @@
+// Файл: internal/service/services.go
+// Назначение: фабрика-сборщик всех сервисов и репозиториев BeautyMed в одну структуру для DI.
 package service
 
 import (
@@ -8,6 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// Services — контейнер со всеми инициализированными сервисами и репозиториями приложения.
 type Services struct {
 	Auth      *AuthService
 	OTP       *OTPService
@@ -15,12 +18,12 @@ type Services struct {
 	Booking   *BookingService
 	Schedule  *ScheduleService
 	SMS       *SMSService
-	PDF       *PDFService
 	Admin     *repository.AdminRepo
 	Scheduler *CronScheduler
 	Repos     *Repos
 }
 
+// Repos группирует базовые data-репозитории для удобного проброса в сервисы.
 type Repos struct {
 	Users        *repository.UserRepo
 	Doctors      *repository.DoctorRepo
@@ -29,6 +32,7 @@ type Repos struct {
 	Appointments *repository.AppointmentRepo
 }
 
+// New собирает все сервисы и репозитории BeautyMed на основе подключений к Postgres, Redis и конфига.
 func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 	repos := &Repos{
 		Users:        repository.NewUserRepo(db),
@@ -49,7 +53,6 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 		Booking:   NewBookingService(repos),
 		Schedule:  schedule,
 		SMS:       sms,
-		PDF:       NewPDFService(cfg.Clinic),
 		Admin:     adminRepo,
 		Scheduler: NewCronScheduler(adminRepo, repos.Specialties, repos.Doctors, schedule, sms),
 		Repos:     repos,

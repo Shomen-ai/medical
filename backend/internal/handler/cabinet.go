@@ -1,11 +1,11 @@
+// Файл: internal/handler/cabinet.go
+// Назначение: HTTP-обработчики личного кабинета пациента — просмотр и управление своими записями (отмена, перенос) и редактирование профиля.
 package handler
 
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"beautymed/internal/service"
@@ -13,10 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CabinetHandler — обработчик запросов личного кабинета пациента.
 type CabinetHandler struct{ svc *service.Services }
 
+// NewCabinetHandler создаёт новый CabinetHandler с подключённым сервисным слоем.
 func NewCabinetHandler(svc *service.Services) *CabinetHandler { return &CabinetHandler{svc: svc} }
 
+// ListAppointments возвращает все записи текущего пациента.
 // GET /api/cabinet/appointments
 func (h *CabinetHandler) ListAppointments(c *gin.Context) {
 	patientID := c.GetString("user_id")
@@ -28,6 +31,7 @@ func (h *CabinetHandler) ListAppointments(c *gin.Context) {
 	c.JSON(http.StatusOK, as)
 }
 
+// GetAppointment возвращает детали записи пациента вместе с медкартой (если она уже заполнена).
 // GET /api/cabinet/appointments/:id
 func (h *CabinetHandler) GetAppointment(c *gin.Context) {
 	a, err := h.svc.Repos.Appointments.FindByID(c.Param("id"))
@@ -54,6 +58,7 @@ func (h *CabinetHandler) GetAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"appointment": a, "record": record})
 }
 
+// Cancel отменяет запись пациента (только если она ещё в статусе scheduled).
 // PATCH /api/cabinet/appointments/:id/cancel
 func (h *CabinetHandler) Cancel(c *gin.Context) {
 	a, err := h.svc.Repos.Appointments.FindByID(c.Param("id"))
@@ -80,6 +85,7 @@ func (h *CabinetHandler) Cancel(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "cancelled"})
 }
 
+// Reschedule переносит запись на другое время с проверкой свободного слота и правила «не позже чем за 2 часа».
 // PATCH /api/cabinet/appointments/:id/reschedule
 // body: {"starts_at":"2026-05-15T11:00:00Z"}
 func (h *CabinetHandler) Reschedule(c *gin.Context) {
@@ -133,6 +139,7 @@ func (h *CabinetHandler) Reschedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "rescheduled", "starts_at": newStart})
 }
 
+// GetProfile возвращает анкету текущего пациента.
 // GET /api/cabinet/profile
 func (h *CabinetHandler) GetProfile(c *gin.Context) {
 	u, err := h.svc.Repos.Users.FindByID(c.GetString("user_id"))
@@ -147,6 +154,7 @@ func (h *CabinetHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, u)
 }
 
+// UpdateProfile обновляет данные медкарты пациента: ФИО, дату рождения, пол, адрес, контакты, номер удостоверения личности.
 // PATCH /api/cabinet/profile
 func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 	u, err := h.svc.Repos.Users.FindByID(c.GetString("user_id"))
@@ -155,14 +163,13 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	var req struct {
-		FullName         string  `json:"full_name"`
-		Email            *string `json:"email"`
-		BirthDate        *string `json:"birth_date"`
-		INN              *string `json:"inn"`
-		PassportSeries   *string `json:"passport_series"`
-		PassportNumber   *string `json:"passport_number"`
-		PassportIssuedAt *string `json:"passport_issued_at"`
-		PassportIssuedBy *string `json:"passport_issued_by"`
+		FullName      string  `json:"full_name"`
+		Email         *string `json:"email"`
+		BirthDate     *string `json:"birth_date"`
+		Gender        *string `json:"gender"`
+		Address       *string `json:"address"`
+		IDDocNumber   *string `json:"id_doc_number"`
+		IDDocIssuedBy *string `json:"id_doc_issued_by"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -179,57 +186,29 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 			u.BirthDate = &t
 		}
 	}
-	if req.INN != nil {
-		u.INN = req.INN
-	}
-	if req.PassportSeries != nil {
-		u.PassportSeries = req.PassportSeries
-	}
-	if req.PassportNumber != nil {
-		u.PassportNumber = req.PassportNumber
-	}
-	if req.PassportIssuedAt != nil && *req.PassportIssuedAt != "" {
-		if t, err := time.Parse("2006-01-02", *req.PassportIssuedAt); err == nil {
-			u.PassportIssuedAt = &t
+	if req.Gender != nil {
+		// Принимаем только 'm', 'f' либо пустую строку (=сброс).
+		g := *req.Gender
+		if g == "m" || g == "f" {
+			u.Gender = &g
+		} else if g == "" {
+			u.Gender = nil
 		}
 	}
-	if req.PassportIssuedBy != nil {
-		u.PassportIssuedBy = req.PassportIssuedBy
+	if req.Address != nil {
+		u.Address = req.Address
+	}
+	if req.IDDocNumber != nil {
+		u.IDDocNumber = req.IDDocNumber
+	}
+	if req.IDDocIssuedBy != nil {
+		u.IDDocIssuedBy = req.IDDocIssuedBy
 	}
 	if err := h.svc.Repos.Users.Update(u); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, u)
-}
-
-// GET /api/cabinet/receipts?year=2026
-func (h *CabinetHandler) Receipts(c *gin.Context) {
-	year := time.Now().Year()
-	if y := c.Query("year"); y != "" {
-		if v, err := strconv.Atoi(y); err == nil {
-			year = v
-		}
-	}
-	patientID := c.GetString("user_id")
-	patient, err := h.svc.Repos.Users.FindByID(patientID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	appts, err := h.svc.Repos.Appointments.ListCompletedByPatientYear(patientID, year)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	pdfBytes, err := h.svc.PDF.GenerateTaxReceipt(patient, year, appts)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate PDF"})
-		return
-	}
-	filename := fmt.Sprintf("receipt_%d.pdf", year)
-	c.Header("Content-Disposition", "attachment; filename="+filename)
-	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
 
 func (h *CabinetHandler) validateSlot(doctorID, serviceID string, newStart time.Time) error {

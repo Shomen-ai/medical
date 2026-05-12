@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/cabinet/profile.vue
+  Назначение: страница редактирования профиля пациента (ФИО, дата рождения, пол, адрес, контакты, удостоверение личности) в личном кабинете.
+-->
 <script setup lang="ts">
 const auth = useAuthStore()
 const router = useRouter()
@@ -16,22 +20,20 @@ interface Profile {
   full_name: string
   birth_date: string | null
   email: string | null
-  inn: string | null
-  passport_series: string | null
-  passport_number: string | null
-  passport_issued_at: string | null
-  passport_issued_by: string | null
+  gender: 'm' | 'f' | null
+  address: string | null
+  id_doc_number: string | null
+  id_doc_issued_by: string | null
 }
 
 const form = reactive({
   full_name: '',
   birth_date: '',
   email: '',
-  inn: '',
-  passport_series: '',
-  passport_number: '',
-  passport_issued_at: '',
-  passport_issued_by: '',
+  gender: '' as '' | 'm' | 'f',
+  address: '',
+  id_doc_number: '',
+  id_doc_issued_by: '',
 })
 
 const loading = ref(true)
@@ -49,11 +51,10 @@ const loadProfile = async () => {
     form.full_name = p.full_name ?? ''
     form.birth_date = toInputDate(p.birth_date)
     form.email = p.email ?? ''
-    form.inn = p.inn ?? ''
-    form.passport_series = p.passport_series ?? ''
-    form.passport_number = p.passport_number ?? ''
-    form.passport_issued_at = toInputDate(p.passport_issued_at)
-    form.passport_issued_by = p.passport_issued_by ?? ''
+    form.gender = (p.gender ?? '') as '' | 'm' | 'f'
+    form.address = p.address ?? ''
+    form.id_doc_number = p.id_doc_number ?? ''
+    form.id_doc_issued_by = p.id_doc_issued_by ?? ''
   } catch {
     error.value = 'Не удалось загрузить профиль'
   } finally {
@@ -75,11 +76,10 @@ const save = async () => {
         full_name: form.full_name.trim(),
         birth_date: form.birth_date || null,
         email: form.email.trim() || null,
-        inn: form.inn.trim() || null,
-        passport_series: form.passport_series.trim() || null,
-        passport_number: form.passport_number.trim() || null,
-        passport_issued_at: form.passport_issued_at || null,
-        passport_issued_by: form.passport_issued_by.trim() || null,
+        gender: form.gender || null,
+        address: form.address.trim() || null,
+        id_doc_number: form.id_doc_number.trim() || null,
+        id_doc_issued_by: form.id_doc_issued_by.trim() || null,
       },
       auth.token
     )
@@ -103,8 +103,7 @@ useHead({ title: 'Профиль — BeautyMed' })
 
     <h1 class="text-2xl font-bold text-slate mb-2">Профиль</h1>
     <p class="text-sm text-muted mb-8">
-      Личные данные для записи и подготовки справок об оплате медицинских услуг.
-      Паспортные данные используются при оформлении именной справки.
+      Данные медкарты, которые клиника фиксирует при первом приёме: ФИО, дата рождения, пол, адрес проживания и удостоверение личности.
     </p>
 
     <div v-if="loading" class="text-center py-16 text-muted">Загружаем профиль...</div>
@@ -115,7 +114,7 @@ useHead({ title: 'Профиль — BeautyMed' })
         <input
           v-model="form.full_name"
           type="text"
-          placeholder="Иванов Иван Иванович"
+          placeholder="Babaýew Begenç Mämmedowiç"
           class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
         >
       </div>
@@ -130,67 +129,60 @@ useHead({ title: 'Профиль — BeautyMed' })
           >
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate block mb-1.5">Email</label>
-          <input
-            v-model="form.email"
-            type="email"
-            placeholder="you@example.com"
-            class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-          >
+          <label class="text-xs font-semibold text-slate block mb-1.5">Пол</label>
+          <div class="flex items-center gap-4 pt-1.5">
+            <label class="inline-flex items-center gap-1.5 text-sm text-slate cursor-pointer">
+              <input v-model="form.gender" type="radio" value="m" class="accent-primary">
+              Мужской
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-sm text-slate cursor-pointer">
+              <input v-model="form.gender" type="radio" value="f" class="accent-primary">
+              Женский
+            </label>
+          </div>
         </div>
       </div>
 
+      <div>
+        <label class="text-xs font-semibold text-slate block mb-1.5">Email</label>
+        <input
+          v-model="form.email"
+          type="email"
+          placeholder="you@example.com"
+          class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
+        >
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold text-slate block mb-1.5">Адрес проживания</label>
+        <input
+          v-model="form.address"
+          type="text"
+          placeholder="Лебапский велаят, г. Туркменабат, ул. Парахат 25/31"
+          class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
+        >
+      </div>
+
       <div class="pt-3 border-t border-border">
-        <div class="text-sm font-semibold text-slate mb-3">Документы для именной справки</div>
+        <div class="text-sm font-semibold text-slate mb-3">Удостоверение личности</div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-semibold text-slate block mb-1.5">ИНН</label>
+            <label class="text-xs font-semibold text-slate block mb-1.5">Номер паспорта Туркменистана</label>
             <input
-              v-model="form.inn"
+              v-model="form.id_doc_number"
               type="text"
-              maxlength="12"
-              placeholder="123456789012"
-              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-            >
-          </div>
-          <div /> <!-- spacer -->
-
-          <div>
-            <label class="text-xs font-semibold text-slate block mb-1.5">Паспорт: серия</label>
-            <input
-              v-model="form.passport_series"
-              type="text"
-              maxlength="6"
-              placeholder="1234"
-              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-            >
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-slate block mb-1.5">Паспорт: номер</label>
-            <input
-              v-model="form.passport_number"
-              type="text"
-              maxlength="10"
-              placeholder="567890"
-              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-            >
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold text-slate block mb-1.5">Дата выдачи паспорта</label>
-            <input
-              v-model="form.passport_issued_at"
-              type="date"
+              maxlength="20"
+              placeholder="I-AG № 1234567"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
             >
           </div>
           <div>
             <label class="text-xs font-semibold text-slate block mb-1.5">Кем выдан</label>
             <input
-              v-model="form.passport_issued_by"
+              v-model="form.id_doc_issued_by"
               type="text"
-              placeholder="ОВД..."
+              placeholder="МВД Туркменистана"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
             >
           </div>

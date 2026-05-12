@@ -1,13 +1,19 @@
+// Файл: data/advantages.ts
+// Назначение: статичные данные блока «Почему выбирают нас» — четыре преимущества клиники с двуязычными заголовками и подробными текстами.
+
+// Локализованная строка: одинаковая фраза в двух языках интерфейса.
 export interface LocalizedString {
   ru: string
   tk: string
 }
 
+// Локализованный набор абзацев — для развёрнутых описаний.
 export interface LocalizedParagraphs {
   ru: string[]
   tk: string[]
 }
 
+// Карточка преимущества клиники: slug, иконка, краткие заголовок/подпись и полный текст.
 export interface Advantage {
   slug: string
   icon: string
@@ -16,6 +22,7 @@ export interface Advantage {
   body: LocalizedParagraphs
 }
 
+// Массив преимуществ клиники, выводимых на главной странице и страницах /advantages/[slug].
 export const ADVANTAGES: Advantage[] = [
   {
     slug: 'experienced-doctors',
@@ -71,12 +78,12 @@ export const ADVANTAGES: Advantage[] = [
       ru: [
         'Система онлайн-записи позволяет выбрать специалиста, удобную дату и время за пару минут — без звонков и долгих ожиданий на линии.',
         'После выбора услуги вы увидите только свободные слоты выбранного врача. Подтверждение происходит по SMS-коду, а напоминание о визите придёт за день до приёма.',
-        'В личном кабинете вы можете перенести или отменить запись (не позднее чем за 2 часа), посмотреть историю приёмов и скачать справку об оплате медицинских услуг.',
+        'В личном кабинете вы можете перенести или отменить запись (не позднее чем за 2 часа) и посмотреть историю приёмов.',
       ],
       tk: [
         'Onlaýn bellige durmak ulgamy hünärmeni, amatly senäni we wagty birnäçe minutda saýlamaga mümkinçilik berýär — jaňsyz we uzak garaşmasyz.',
         'Hyzmat saýlandan soň diňe saýlanan lukmanyň boş wagtlaryny görersiňiz. Tassyklama SMS-kod arkaly geçýär, ýatlatma — kabul edilmezden bir gün öň iberilýär.',
-        'Şahsy hasabyňyzda bellige durmagy geçirip ýa-da goýbolsun edip bilersiňiz (kabul edilmezden 2 sagatdan az däl), kabul taryhyny görüp we lukmançylyk hyzmatlary üçin töleg şahadatnamasyny ýükläp bilersiňiz.',
+        'Şahsy hasabyňyzda bellige durmagy geçirip ýa-da goýbolsun edip bilersiňiz (kabul edilmezden 2 sagatdan az däl) we kabul taryhyny görüp bilersiňiz.',
       ],
     },
   },

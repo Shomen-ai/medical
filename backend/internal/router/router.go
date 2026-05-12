@@ -1,3 +1,5 @@
+// Файл: internal/router/router.go
+// Назначение: описывает REST-маршруты приложения и распределяет их по группам (публичные, пациент, врач, администратор) с применением JWT-middleware для каждой роли.
 package router
 
 import (
@@ -9,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// New создаёт и настраивает Gin-роутер со всеми маршрутами API.
 func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -62,7 +65,6 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			cabinet.PATCH("/appointments/:id/reschedule", cabH.Reschedule)
 			cabinet.GET("/profile", cabH.GetProfile)
 			cabinet.PATCH("/profile", cabH.UpdateProfile)
-			cabinet.GET("/receipts", cabH.Receipts)
 		}
 
 		// Doctor portal

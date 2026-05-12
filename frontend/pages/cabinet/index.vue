@@ -1,3 +1,7 @@
+<!--
+  Файл: pages/cabinet/index.vue
+  Назначение: личный кабинет пациента со списком его записей, возможностью отмены и переноса визита, а также навигацией к профилю и квитанциям.
+-->
 <script setup lang="ts">
 const auth = useAuthStore()
 const router = useRouter()
@@ -180,9 +184,6 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
       <div class="flex items-center gap-4">
         <NuxtLink to="/cabinet/profile" class="text-sm text-muted hover:text-primary hover:underline">
           Профиль
-        </NuxtLink>
-        <NuxtLink to="/cabinet/receipts" class="text-sm text-primary font-semibold hover:underline">
-          Справка об оплате услуг
         </NuxtLink>
         <button
           type="button"
