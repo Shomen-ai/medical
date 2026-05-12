@@ -1,0 +1,29 @@
+# Нормализация переводов строк — критично для запуска bash-скриптов и SQL-миграций
+# с виндовых рабочих станций. Без этого Git for Windows может подсунуть CRLF,
+# и `bash deploy.sh` упадёт на shebang с ошибкой '/usr/bin/env: bash\r: No such file'.
+*.sh        text eol=lf
+*.sql       text eol=lf
+*.go        text eol=lf
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.vue       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+.gitignore  text eol=lf
+.gitattributes text eol=lf
+.env.example text eol=lf
+Dockerfile  text eol=lf
+
+# Бинарные ассеты — Git не должен трогать их совсем.
+*.jpg       binary
+*.jpeg      binary
+*.png       binary
+*.webp      binary
+*.pdf       binary
+*.docx      binary
+*.xlsx      binary
+*.zip       binary
+*.gz        binary
+*.tar       binary
