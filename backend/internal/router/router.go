@@ -96,6 +96,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			admin.GET("/stats", adminH.Stats)
 			admin.GET("/stats/monthly", adminH.MonthlyStats)
 			admin.GET("/stats/period", adminH.PeriodStats)
+			admin.GET("/stats/by-doctor", adminH.StatsByDoctor)
 		}
 	}
 
