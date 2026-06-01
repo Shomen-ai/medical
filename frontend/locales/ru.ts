@@ -70,6 +70,7 @@ export default {
 
   // Booking — confirm
   confirmYourName: 'Ваше имя',
+  confirmNamePlaceholder: 'Айна Мырадова',
   confirmPhone: 'Номер телефона',
   confirmGetCode: 'Код',
   confirmResend: 'Повтор',

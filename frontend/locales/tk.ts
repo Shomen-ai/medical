@@ -73,6 +73,7 @@ const tk: typeof ru = {
 
   // Booking — confirm
   confirmYourName: 'Adyňyz',
+  confirmNamePlaceholder: 'Aýna Myradowa',
   confirmPhone: 'Telefon belgisi',
   confirmGetCode: 'Kod',
   confirmResend: 'Gaýtadan',

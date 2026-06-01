@@ -6,6 +6,7 @@
 const booking = useBookingStore()
 const auth = useAuthStore()
 const { post } = useApi()
+const { t } = useI18n()
 const config = useRuntimeConfig()
 
 const submittingOtp = ref(false)
@@ -209,7 +210,7 @@ const formattedDate = computed(() => {
         <input
           v-model="booking.name"
           type="text"
-          placeholder="Иван Иванов"
+          :placeholder="t('confirmNamePlaceholder')"
           class="w-full border border-border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary"
         >
       </div>
