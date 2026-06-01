@@ -43,6 +43,38 @@ const medicalTk: Record<string, string> = {
   'Консультация эстетиста': 'Estetik maslahaty',
   'Нитевой лифтинг (нос-губы)': 'Sapakly lifting (burun-dodak)',
   'Объёмное моделирование лица': 'Ýüzüň göwrümli modelirlemesi',
+
+  // Образование врачей (миграция 020) — ключи строго совпадают с засеянными RU-строками
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2009; ординатура по дерматовенерологии':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2009; dermatowenerologiýa boýunça ordinatura',
+  'Первый МГМУ им. И. М. Сеченова (Москва), 2012; курс эстетической медицины':
+    'I. M. Seçenow adyndaky Birinji Moskwa döwlet lukmançylyk uniwersiteti, 2012; estetiki lukmançylyk kursy',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2014':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2014',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2007; ординатура по дерматовенерологии':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2007; dermatowenerologiýa boýunça ordinatura',
+  'Российский университет дружбы народов (Москва), 2011':
+    'Halklaryň dostlugy rus uniwersiteti (Moskwa), 2011',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2013':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2013',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2008':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2008',
+  'Hacettepe Üniversitesi (Анкара, Турция), 2010; пластическая и эстетическая медицина':
+    'Hacettepe uniwersiteti (Ankara, Türkiýe), 2010; plastiki we estetiki lukmançylyk',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2016':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2016',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2019':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2019',
+  'Белорусский государственный медицинский университет (Минск), 2014':
+    'Belarus döwlet lukmançylyk uniwersiteti (Minsk), 2014',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2012':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2012',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2017':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2017',
+  'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2015; эстетическая медицина':
+    'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2015; estetiki lukmançylyk',
+  'İstanbul Üniversitesi (Стамбул, Турция), 2010; нитевой лифтинг и эстетическая хирургия':
+    'Stambul uniwersiteti (Stambul, Türkiýe), 2010; sapakly lifting we estetiki hirurgiýa',
 }
 
 // Словарь медицинских терминов по локалям: ru — тождество (исходные названия), tk — переводы.

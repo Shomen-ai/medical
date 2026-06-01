@@ -72,10 +72,10 @@ const photoSrc = (doc: Doctor, index: number) =>
             <div
               v-if="doc.education"
               class="text-[11px] leading-snug text-muted/90 mb-3 flex items-start gap-1"
-              :title="`${t('doctorsEducation')}: ${doc.education}`"
+              :title="`${t('doctorsEducation')}: ${tMed(doc.education)}`"
             >
               <span class="flex-shrink-0">🎓</span>
-              <span class="line-clamp-2">{{ doc.education }}</span>
+              <span class="line-clamp-2">{{ tMed(doc.education) }}</span>
             </div>
             <button
               type="button"
