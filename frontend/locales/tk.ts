@@ -95,9 +95,36 @@ const tk: typeof ru = {
   confirmSuccessFooter: 'BeautyMed klinikasynda garaşýarys',
   confirmToPay: 'Tölenýän möçber: {price}',
   confirmPhoneErr: 'Belgini şu görnüşde giriziň: +993 65 12-34-56',
+  confirmSendErr: 'Kody ibermek başartmady. Belgini barlaň.',
   confirmCodeErr: 'Kod nädogry ýa-da möhleti geçen. Täzeden synanyşyň.',
   confirmSlotTaken: 'Bu wagt eýelenen. Başga wagt saýlaň.',
   confirmGenericErr: 'Bellige durmakda säwlik. Bize jaň ediň: ',
+
+  // Staff portal (layout)
+  staffRoleAdmin: 'Administrator hasaby',
+  staffRoleDoctor: 'Lukman hasaby',
+  staffRoleDefault: 'Hasap',
+  logout: 'Çykmak',
+
+  // Doctor portal
+  docApptsThisMonth: 'Aýdaky kabullar',
+  docUniquePatients: 'Üýtgeşik hassalar',
+  docFilledRecords: 'Doldurylan ýazgylar',
+  docSelectDate: 'Senäni saýlaň',
+  docNoAppts: 'Bu güne kabul ýok',
+  docOpenAppt: 'Kabuly açmak',
+  docNoName: 'Atsyz',
+  docDayOff: 'Dynç güni',
+  docLegendLess: 'Az',
+  docLegendMore: 'Köp kabul',
+  docLegendPending: 'Doldurylmadyk ýazgylar bar',
+  docLegendToday: 'Bu gün',
+  docMonthAppts: 'Aýda: {n} kabul',
+  docMonthPending: 'Doldurmaly: {n}',
+  docApptCellTitle: '{a} kabul, {p} doldurmaly',
+  docPageTitle: 'Lukman hasaby — BeautyMed',
+  docWeekdays: 'Du,Si,Ça,Pe,An,Şe,Ýe',
+  monthsList: 'Ýanwar,Fewral,Mart,Aprel,Maý,Iýun,Iýul,Awgust,Sentýabr,Oktýabr,Noýabr,Dekabr',
 
   // Reports (Excel) + ýazgy ýagdaýlary
   reportButton: 'Hasabat döretmek',

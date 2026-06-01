@@ -92,9 +92,36 @@ export default {
   confirmSuccessFooter: 'Ждём вас в клинике BeautyMed',
   confirmToPay: 'К оплате: {price}',
   confirmPhoneErr: 'Введите номер в формате +993 65 12-34-56',
+  confirmSendErr: 'Не удалось отправить код. Проверьте номер.',
   confirmCodeErr: 'Неверный или истёкший код. Попробуйте ещё раз.',
   confirmSlotTaken: 'Это время уже занято. Выберите другой слот.',
   confirmGenericErr: 'Ошибка записи. Позвоните нам: ',
+
+  // Staff portal (layout)
+  staffRoleAdmin: 'Кабинет администратора',
+  staffRoleDoctor: 'Кабинет врача',
+  staffRoleDefault: 'Кабинет',
+  logout: 'Выйти',
+
+  // Doctor portal
+  docApptsThisMonth: 'Приёмов за месяц',
+  docUniquePatients: 'Уникальных пациентов',
+  docFilledRecords: 'Заполнено записей',
+  docSelectDate: 'Выберите дату',
+  docNoAppts: 'Нет приёмов на этот день',
+  docOpenAppt: 'Открыть приём',
+  docNoName: 'Без имени',
+  docDayOff: 'Выходной',
+  docLegendLess: 'Меньше',
+  docLegendMore: 'Больше приёмов',
+  docLegendPending: 'Есть незаполненные записи',
+  docLegendToday: 'Сегодня',
+  docMonthAppts: 'За месяц: {n} приём(ов)',
+  docMonthPending: 'К заполнению: {n}',
+  docApptCellTitle: '{a} приём(ов), {p} к заполнению',
+  docPageTitle: 'Кабинет врача — BeautyMed',
+  docWeekdays: 'Пн,Вт,Ср,Чт,Пт,Сб,Вс',
+  monthsList: 'Январь,Февраль,Март,Апрель,Май,Июнь,Июль,Август,Сентябрь,Октябрь,Ноябрь,Декабрь',
 
   // Reports (Excel) + статусы записей
   reportButton: 'Создать отчёт',

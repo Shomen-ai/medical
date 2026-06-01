@@ -79,7 +79,7 @@ const sendOtp = async () => {
     booking.startOtpCooldown()
     startTimer()
   } catch {
-    otpError.value = 'Не удалось отправить код. Проверьте номер.'
+    otpError.value = t('confirmSendErr')
   } finally {
     submittingOtp.value = false
   }
@@ -124,22 +124,22 @@ const confirmBooking = async () => {
     const status = (err as { status?: number })?.status
     const msg = (err as { data?: { error?: string } })?.data?.error ?? ''
     if (status === 401 || msg.toLowerCase().includes('otp') || msg.toLowerCase().includes('invalid or expired')) {
-      bookingError.value = 'Неверный или истёкший код. Попробуйте ещё раз.'
+      bookingError.value = t('confirmCodeErr')
     } else if (msg.includes('taken') || msg.includes('conflict') || status === 409) {
-      bookingError.value = 'Это время уже занято. Выберите другой слот.'
+      bookingError.value = t('confirmSlotTaken')
     } else {
-      bookingError.value = 'Ошибка записи. Позвоните нам: ' + config.public.clinicPhone
+      bookingError.value = t('confirmGenericErr') + config.public.clinicPhone
     }
   } finally {
     submittingBooking.value = false
   }
 }
 
-// Timezone-safe Russian date format
+// Timezone-safe numeric date (locale-independent).
 const formattedDate = computed(() => {
   if (!booking.date) return ''
-  const [y, m, d] = booking.date.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  const [y, m, d] = booking.date.split('-')
+  return `${d}.${m}.${y}`
 })
 </script>
 
@@ -148,17 +148,17 @@ const formattedDate = computed(() => {
     <!-- Success state -->
     <div v-if="booking.success" class="text-center py-4">
       <div class="text-4xl mb-3">✅</div>
-      <div class="text-base font-bold text-slate mb-1">Вы записаны!</div>
+      <div class="text-base font-bold text-slate mb-1">{{ t('confirmSuccess') }}</div>
       <div class="text-sm text-muted mb-1">{{ formattedDate }}, {{ booking.timeSlot }}</div>
       <div v-if="booking.finalPrice > 0" class="text-sm text-slate font-semibold mb-1">
-        К оплате: {{ formatPrice(booking.finalPrice) }}
+        {{ t('confirmToPay', { price: formatPrice(booking.finalPrice) }) }}
       </div>
-      <div class="text-sm text-muted mb-6">Ждём вас в клинике BeautyMed</div>
+      <div class="text-sm text-muted mb-6">{{ t('confirmSuccessFooter') }}</div>
       <button
         class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold"
         @click="booking.closeModal()"
       >
-        Закрыть
+        {{ t('close') }}
       </button>
     </div>
 
@@ -168,7 +168,7 @@ const formattedDate = computed(() => {
       <div class="bg-gray-50 rounded-xl p-4 text-sm space-y-2 text-slate">
         <div>📅 {{ formattedDate }}, {{ booking.timeSlot }}</div>
         <div v-if="booking.servicePrice > 0" class="flex items-center justify-between border-t border-border/60 pt-2">
-          <span class="text-muted">Стоимость</span>
+          <span class="text-muted">{{ t('confirmCost') }}</span>
           <span class="font-semibold">
             <span
               v-if="booking.promoDiscountPct > 0"
@@ -181,7 +181,7 @@ const formattedDate = computed(() => {
 
       <!-- Promo code -->
       <div>
-        <label class="text-xs font-semibold text-slate block mb-1">Промокод (необязательно)</label>
+        <label class="text-xs font-semibold text-slate block mb-1">{{ t('confirmPromoLabel') }}</label>
         <div class="flex gap-2">
           <input
             v-model="booking.promoCode"
@@ -199,20 +199,20 @@ const formattedDate = computed(() => {
             :disabled="submittingPromo || !booking.serviceId"
             @click="applyPromo"
           >
-            {{ submittingPromo ? '...' : 'Применить' }}
+            {{ submittingPromo ? '...' : t('confirmPromoApply') }}
           </button>
         </div>
         <div v-if="booking.promoValid === true" class="text-xs text-emerald-600 mt-1">
-          ✓ Промокод применён: скидка {{ booking.promoDiscountPct }}%
+          {{ t('confirmPromoValid', { pct: booking.promoDiscountPct }) }}
         </div>
         <div v-else-if="booking.promoValid === false" class="text-xs text-red-500 mt-1">
-          Промокод недействителен
+          {{ t('confirmPromoInvalid') }}
         </div>
       </div>
 
       <!-- Name -->
       <div>
-        <label class="text-xs font-semibold text-slate block mb-1">Ваше имя</label>
+        <label class="text-xs font-semibold text-slate block mb-1">{{ t('confirmYourName') }}</label>
         <input
           v-model="booking.name"
           type="text"
@@ -223,7 +223,7 @@ const formattedDate = computed(() => {
 
       <!-- Phone + OTP send -->
       <div>
-        <label class="text-xs font-semibold text-slate block mb-1">Номер телефона</label>
+        <label class="text-xs font-semibold text-slate block mb-1">{{ t('confirmPhone') }}</label>
         <div class="flex gap-2">
           <input
             :value="booking.phone"
@@ -244,7 +244,7 @@ const formattedDate = computed(() => {
             :disabled="cooldownSecs > 0 || submittingOtp || !booking.phone || !consent"
             @click="sendOtp"
           >
-            {{ cooldownSecs > 0 ? `${cooldownSecs}с` : booking.otpSent ? 'Повтор' : 'Код' }}
+            {{ cooldownSecs > 0 ? `${cooldownSecs}с` : booking.otpSent ? t('confirmResend') : t('confirmGetCode') }}
           </button>
         </div>
         <div v-if="otpError" class="text-xs text-red-500 mt-1">{{ otpError }}</div>
@@ -254,18 +254,18 @@ const formattedDate = computed(() => {
       <label v-if="!booking.otpSent" class="flex items-start gap-2 text-xs text-muted cursor-pointer">
         <input v-model="consent" type="checkbox" class="mt-0.5 flex-shrink-0 accent-primary">
         <span>
-          Я даю согласие на обработку информации о личной жизни в соответствии с
+          {{ t('confirmConsent') }}
           <NuxtLink to="/privacy" target="_blank" class="text-primary underline" @click.stop>
-            Политикой конфиденциальности
+            {{ t('confirmConsentLink') }}
           </NuxtLink>
-          (Закон Туркменистана от 20.03.2017).
+          {{ t('confirmConsentLaw') }}
         </span>
       </label>
 
       <!-- OTP code input -->
       <Transition name="slide-down">
         <div v-if="booking.otpSent">
-          <label class="text-xs font-semibold text-slate block mb-1">Код из SMS</label>
+          <label class="text-xs font-semibold text-slate block mb-1">{{ t('confirmOtpLabel') }}</label>
           <input
             v-model="otpCode"
             type="text"
@@ -286,12 +286,12 @@ const formattedDate = computed(() => {
         :disabled="!otpCode || submittingBooking"
         @click="confirmBooking"
       >
-        {{ submittingBooking ? 'Записываем...' : 'Подтвердить и записаться' }}
+        {{ submittingBooking ? t('confirmSubmitting') : t('confirmSubmit') }}
       </button>
 
       <div class="flex justify-start pt-1">
         <button class="text-sm text-muted hover:text-slate transition-colors" @click="booking.prevStep()">
-          ← Назад
+          {{ t('back') }}
         </button>
       </div>
     </div>

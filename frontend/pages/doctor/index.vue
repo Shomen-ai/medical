@@ -42,8 +42,8 @@ const viewYear = ref(today.getFullYear())
 const viewMonth = ref(today.getMonth() + 1)
 
 const monthLabel = computed(() => {
-  const d = new Date(viewYear.value, viewMonth.value - 1, 1)
-  return d.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+  const months = t('monthsList').split(',')
+  return `${months[viewMonth.value - 1]} ${viewYear.value}`
 })
 
 const prevMonth = () => {
@@ -113,8 +113,8 @@ const cellTone = (c: ScheduleCell) => {
   return 'bg-primary/75 text-white'
 }
 
-// Day-of-week headers (Mon-first, in Russian short form)
-const weekDayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+// Day-of-week headers (Mon-first), localized.
+const weekDayLabels = computed(() => t('docWeekdays').split(','))
 
 // Month-wide tallies for the legend strip
 const monthTotals = computed(() => {
@@ -159,8 +159,8 @@ const loadDay = async (date: string) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────
 const formatDate = (dateStr: string) => {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' })
+  const [y, m, d] = dateStr.split('-')
+  return `${d}.${m}.${y}`
 }
 
 const formatTime = (iso: string) => {
@@ -176,19 +176,13 @@ const isToday = (dateStr: string) => {
   return dateStr === `${y}-${m}-${d}`
 }
 
-const statusLabel: Record<string, string> = {
-  scheduled: 'Запланировано', completed: 'Завершено',
-  cancelled: 'Отменено', rescheduled: 'Перенесено',
-}
+const statusLabel = computed<Record<string, string>>(() => ({
+  scheduled: t('statusScheduled'), completed: t('statusCompleted'),
+  cancelled: t('statusCancelled'), rescheduled: t('statusRescheduled'),
+}))
 
 // ── Excel-отчёт врача (пациенты за сегодня + уникальные + статистика) ──
 const generatingReport = ref(false)
-
-// Локализованная подпись статуса записи для отчёта.
-const tStatus = (s: string): string => (({
-  scheduled: t('statusScheduled'), completed: t('statusCompleted'),
-  cancelled: t('statusCancelled'), rescheduled: t('statusRescheduled'),
-} as Record<string, string>)[s] ?? s)
 
 // ДД.ММ.ГГГГ без зависимости от Intl-локали.
 const reportDate = (iso: string) => {
@@ -215,7 +209,7 @@ const generateReport = async () => {
         rows: [
           [t('reportColTime'), t('reportColPatient'), t('reportColPhone'), t('reportColService'), t('reportColStatus')],
           ...(todayAppts ?? []).map(a => [
-            formatTime(a.starts_at), a.patient_name || '—', a.patient_phone, a.service_name, tStatus(a.status),
+            formatTime(a.starts_at), a.patient_name || '—', a.patient_phone, a.service_name, statusLabel.value[a.status] ?? a.status,
           ]),
         ],
       },
@@ -243,7 +237,7 @@ const generateReport = async () => {
   }
 }
 
-useHead({ title: 'Кабинет врача — BeautyMed' })
+useHead({ title: t('docPageTitle') })
 </script>
 
 <template>
@@ -268,15 +262,15 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
           <div class="text-2xl font-extrabold text-primary">{{ stats?.appointments_this_month ?? '—' }}</div>
-          <div class="text-xs text-gray-500 mt-1">Приёмов за месяц</div>
+          <div class="text-xs text-gray-500 mt-1">{{ t('docApptsThisMonth') }}</div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
           <div class="text-2xl font-extrabold text-primary">{{ stats?.unique_patients ?? '—' }}</div>
-          <div class="text-xs text-gray-500 mt-1">Уникальных пациентов</div>
+          <div class="text-xs text-gray-500 mt-1">{{ t('docUniquePatients') }}</div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
           <div class="text-2xl font-extrabold text-primary">{{ stats?.filled_records_pct != null ? Math.round(stats.filled_records_pct) + '%' : '—' }}</div>
-          <div class="text-xs text-gray-500 mt-1">Заполнено записей</div>
+          <div class="text-xs text-gray-500 mt-1">{{ t('docFilledRecords') }}</div>
         </div>
       </div>
 
@@ -315,8 +309,8 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
                   isToday(cell.work_date) ? 'outline outline-2 outline-offset-1 outline-amber-400' : ''
                 ]"
                 :title="cell.is_day_off
-                  ? 'Выходной'
-                  : `${cell.appointments_count} приём(ов), ${cell.pending_records_count} к заполнению`"
+                  ? t('docDayOff')
+                  : t('docApptCellTitle', { a: cell.appointments_count, p: cell.pending_records_count })"
                 @click="loadDay(cell.work_date)"
               >
                 <span>{{ Number(cell.work_date.slice(-2)) }}</span>
@@ -331,25 +325,25 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
           <!-- Legend -->
           <div class="px-4 py-3 border-t border-gray-100 text-xs text-gray-500 space-y-2">
             <div class="flex items-center gap-2">
-              <span>Меньше</span>
+              <span>{{ t('docLegendLess') }}</span>
               <span class="inline-block w-3 h-3 rounded-sm bg-white border border-gray-200"></span>
               <span class="inline-block w-3 h-3 rounded-sm bg-primary/15"></span>
               <span class="inline-block w-3 h-3 rounded-sm bg-primary/30"></span>
               <span class="inline-block w-3 h-3 rounded-sm bg-primary/50"></span>
               <span class="inline-block w-3 h-3 rounded-sm bg-primary/75"></span>
-              <span>Больше приёмов</span>
+              <span>{{ t('docLegendMore') }}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              <span>Есть незаполненные записи</span>
+              <span>{{ t('docLegendPending') }}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-3 h-3 rounded-sm border-2 border-amber-400"></span>
-              <span>Сегодня</span>
+              <span>{{ t('docLegendToday') }}</span>
             </div>
             <div class="flex items-center justify-between text-slate font-medium pt-1">
-              <span>За месяц: {{ monthTotals.appts }} приём(ов)</span>
-              <span v-if="monthTotals.pending > 0" class="text-amber-600">К заполнению: {{ monthTotals.pending }}</span>
+              <span>{{ t('docMonthAppts', { n: monthTotals.appts }) }}</span>
+              <span v-if="monthTotals.pending > 0" class="text-amber-600">{{ t('docMonthPending', { n: monthTotals.pending }) }}</span>
             </div>
           </div>
         </div>
@@ -358,14 +352,14 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
         <div class="md:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-100">
             <div class="font-semibold text-slate">
-              {{ selectedDate ? formatDate(selectedDate) : 'Выберите дату' }}
+              {{ selectedDate ? formatDate(selectedDate) : t('docSelectDate') }}
             </div>
           </div>
 
-          <div v-if="loadingDay" class="text-center py-12 text-gray-400">Загружаем...</div>
+          <div v-if="loadingDay" class="text-center py-12 text-gray-400">{{ t('loading') }}</div>
 
           <div v-else-if="!dayAppointments.length" class="text-center py-12 text-gray-400">
-            Нет приёмов на этот день
+            {{ t('docNoAppts') }}
           </div>
 
           <div v-else class="divide-y divide-gray-50">
@@ -380,7 +374,7 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
                     {{ formatTime(apt.starts_at) }}
                   </div>
                   <div>
-                    <div class="font-semibold text-slate">{{ apt.patient_name || 'Без имени' }}</div>
+                    <div class="font-semibold text-slate">{{ apt.patient_name || t('docNoName') }}</div>
                     <div class="text-sm text-gray-400">{{ apt.patient_phone }}</div>
                     <div class="text-sm text-gray-500 mt-0.5">{{ apt.service_name }}</div>
                   </div>
@@ -393,7 +387,7 @@ useHead({ title: 'Кабинет врача — BeautyMed' })
                     :to="`/doctor/appointment/${apt.id}`"
                     class="text-xs text-primary font-semibold underline"
                   >
-                    Открыть приём
+                    {{ t('docOpenAppt') }}
                   </NuxtLink>
                 </div>
               </div>
