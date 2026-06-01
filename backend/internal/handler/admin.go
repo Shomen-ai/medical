@@ -364,6 +364,23 @@ func (h *AdminHandler) PeriodStats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
+// StatsByDoctor возвращает разбивку приёмов и уникальных пациентов по каждому врачу за период.
+// GET /api/admin/stats/by-doctor?period=month  (day|week|month|quarter|year)
+func (h *AdminHandler) StatsByDoctor(c *gin.Context) {
+	period := c.DefaultQuery("period", "month")
+	from, to, ok := periodRange(period)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period"})
+		return
+	}
+	rows, err := h.svc.Admin.ByDoctorStats(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"period": period, "from": from, "to": to, "doctors": rows})
+}
+
 // Stats возвращает общую сводную статистику по клинике за всё время.
 // GET /api/admin/stats
 func (h *AdminHandler) Stats(c *gin.Context) {

@@ -73,6 +73,28 @@ func (r *AdminRepo) PeriodStats(from, to time.Time) (*model.PeriodStats, error) 
 	return &s, err
 }
 
+// ByDoctorStats возвращает по каждому активному врачу число приёмов и уникальных
+// пациентов за интервал [from, to). Отменённые/перенесённые приёмы не считаются;
+// врачи без приёмов попадают в отчёт с нулями (LEFT JOIN).
+func (r *AdminRepo) ByDoctorStats(from, to time.Time) ([]model.DoctorReport, error) {
+	var rows []model.DoctorReport
+	err := r.db.Select(&rows, `
+		SELECT d.id        AS doctor_id,
+		       d.full_name AS doctor_name,
+		       s.name      AS specialty_name,
+		       COUNT(a.id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled'))                  AS appointments,
+		       COUNT(DISTINCT a.patient_id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled')) AS unique_patients
+		FROM doctors d
+		JOIN specialties s ON s.id = d.specialty_id
+		LEFT JOIN appointments a
+		       ON a.doctor_id = d.id
+		      AND a.starts_at >= $1 AND a.starts_at < $2
+		WHERE d.is_active = true
+		GROUP BY d.id, d.full_name, s.name
+		ORDER BY appointments DESC, d.full_name`, from, to)
+	return rows, err
+}
+
 // Revenue возвращает суммарную выручку (final_price) по завершённым приёмам за интервал [from, to).
 // Revenue returns the total final_price for completed appointments in [from, to).
 func (r *AdminRepo) Revenue(from, to time.Time) (float64, error) {

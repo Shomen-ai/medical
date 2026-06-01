@@ -10,6 +10,7 @@ definePageMeta({ layout: 'staff' })
 const auth = useAuthStore()
 const router = useRouter()
 const { get, post } = useApi()
+const { t } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -30,6 +31,10 @@ interface Appointment {
 interface MonthlyPoint { month: string; appointments: number; revenue: number }
 interface PeriodStats { appointments: number; revenue: number; unique_patients: number; cancelled: number }
 interface Specialty { id: string; name: string }
+interface DoctorReport {
+  doctor_id: string; doctor_name: string; specialty_name: string
+  appointments: number; unique_patients: number
+}
 
 // ── Data fetching ────────────────────────────────────────────────────────
 const token = computed(() => auth.token ?? undefined)
@@ -61,6 +66,25 @@ const { data: periodStats, refresh: refreshPeriod } = await useAsyncData(
   { server: false }
 )
 watch(selectedPeriod, () => refreshPeriod())
+
+// ── Per-doctor report (same period selector) ──────────────────────────
+const { data: byDoctor, refresh: refreshByDoctor } = await useAsyncData(
+  'admin-by-doctor',
+  () => get<{ doctors: DoctorReport[] }>(`/api/admin/stats/by-doctor?period=${selectedPeriod.value}`, token.value),
+  { server: false }
+)
+watch(selectedPeriod, () => refreshByDoctor())
+
+const exportDoctorsReport = async () => {
+  const rows = byDoctor.value?.doctors ?? []
+  await downloadXlsx(`BeautyMed_doctors_${selectedPeriod.value}.xlsx`, [{
+    name: t('reportAdminSheet'),
+    rows: [
+      [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('reportColUniquePatients')],
+      ...rows.map(d => [d.doctor_name, d.specialty_name, d.appointments, d.unique_patients]),
+    ],
+  }])
+}
 
 // ── Appointments with date filter ─────────────────────────────────────
 const filterDate = ref('')
@@ -277,6 +301,45 @@ useHead({ title: 'Панель администратора — BeautyMed' })
           </div>
         </div>
 
+      </div>
+
+      <!-- Doctors report (uses the period selector above) -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
+          <h2 class="font-semibold text-slate">{{ t('reportAdminTitle') }}</h2>
+          <button
+            type="button"
+            class="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            style="background: linear-gradient(135deg, #005A5F, #00959D)"
+            @click="exportDoctorsReport"
+          >
+            📊 {{ t('reportExport') }}
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
+                <th class="px-5 py-3 font-semibold">{{ t('reportColDoctor') }}</th>
+                <th class="px-5 py-3 font-semibold">{{ t('reportColSpecialty') }}</th>
+                <th class="px-5 py-3 font-semibold text-center">{{ t('reportColAppointments') }}</th>
+                <th class="px-5 py-3 font-semibold text-center">{{ t('reportColUniquePatients') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="d in byDoctor?.doctors ?? []"
+                :key="d.doctor_id"
+                class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+              >
+                <td class="px-5 py-3 font-medium text-slate">{{ d.doctor_name }}</td>
+                <td class="px-5 py-3 text-gray-500">{{ d.specialty_name }}</td>
+                <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.appointments }}</td>
+                <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.unique_patients }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Schedule generation -->

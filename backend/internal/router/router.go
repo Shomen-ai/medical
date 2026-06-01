@@ -75,6 +75,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			doctor.PATCH("/appointments/:id/record", drH.SaveRecord)
 			doctor.GET("/schedule", drH.MonthlySchedule)
 			doctor.GET("/stats", drH.Stats)
+			doctor.GET("/patients", drH.Patients)
 		}
 
 		// Admin panel

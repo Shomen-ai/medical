@@ -8,6 +8,7 @@ definePageMeta({ layout: 'staff' })
 const auth = useAuthStore()
 const router = useRouter()
 const { get } = useApi()
+const { t } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -29,6 +30,10 @@ interface DoctorStats {
   appointments_this_month: number
   unique_patients: number
   filled_records_pct: number
+}
+interface DoctorPatient {
+  patient_name: string; patient_phone: string
+  visits: number; first_visit: string; last_visit: string
 }
 
 // ── Month navigation ─────────────────────────────────────────────────
@@ -176,12 +181,88 @@ const statusLabel: Record<string, string> = {
   cancelled: 'Отменено', rescheduled: 'Перенесено',
 }
 
+// ── Excel-отчёт врача (пациенты за сегодня + уникальные + статистика) ──
+const generatingReport = ref(false)
+
+// Локализованная подпись статуса записи для отчёта.
+const tStatus = (s: string): string => (({
+  scheduled: t('statusScheduled'), completed: t('statusCompleted'),
+  cancelled: t('statusCancelled'), rescheduled: t('statusRescheduled'),
+} as Record<string, string>)[s] ?? s)
+
+// ДД.ММ.ГГГГ без зависимости от Intl-локали.
+const reportDate = (iso: string) => {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+}
+
+const generateReport = async () => {
+  generatingReport.value = true
+  try {
+    const y = today.getFullYear()
+    const m = String(today.getMonth() + 1).padStart(2, '0')
+    const d = String(today.getDate()).padStart(2, '0')
+    const ds = `${y}-${m}-${d}`
+
+    const [todayAppts, patients] = await Promise.all([
+      get<Appointment[]>(`/api/doctor/appointments?date=${ds}`, token.value),
+      get<DoctorPatient[]>('/api/doctor/patients', token.value),
+    ])
+
+    await downloadXlsx(`BeautyMed_${ds}.xlsx`, [
+      {
+        name: t('reportSheetToday'),
+        rows: [
+          [t('reportColTime'), t('reportColPatient'), t('reportColPhone'), t('reportColService'), t('reportColStatus')],
+          ...(todayAppts ?? []).map(a => [
+            formatTime(a.starts_at), a.patient_name || '—', a.patient_phone, a.service_name, tStatus(a.status),
+          ]),
+        ],
+      },
+      {
+        name: t('reportSheetPatients'),
+        rows: [
+          [t('reportColPatient'), t('reportColPhone'), t('reportColVisits'), t('reportColFirstVisit'), t('reportColLastVisit')],
+          ...(patients ?? []).map(p => [
+            p.patient_name || '—', p.patient_phone, p.visits, reportDate(p.first_visit), reportDate(p.last_visit),
+          ]),
+        ],
+      },
+      {
+        name: t('reportSheetStats'),
+        rows: [
+          [t('reportColMetric'), t('reportColValue')],
+          [t('reportStatAppointmentsMonth'), stats.value?.appointments_this_month ?? 0],
+          [t('reportStatUniquePatients'), stats.value?.unique_patients ?? 0],
+          [t('reportStatFilledPct'), stats.value?.filled_records_pct != null ? Math.round(stats.value.filled_records_pct) : 0],
+        ],
+      },
+    ])
+  } finally {
+    generatingReport.value = false
+  }
+}
+
 useHead({ title: 'Кабинет врача — BeautyMed' })
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
+      <!-- Report button -->
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="text-sm font-semibold text-white px-4 py-2 rounded-lg transition-opacity"
+          :class="generatingReport ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'"
+          style="background: linear-gradient(135deg, #005A5F, #00959D)"
+          :disabled="generatingReport"
+          @click="generateReport"
+        >
+          📊 {{ generatingReport ? t('reportGenerating') : t('reportButton') }}
+        </button>
+      </div>
 
       <!-- Stats -->
       <div class="grid grid-cols-3 gap-4">

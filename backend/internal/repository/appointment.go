@@ -252,6 +252,25 @@ func (r *AppointmentRepo) DoctorStats(doctorID string) (*model.DoctorStats, erro
 	return &s, err
 }
 
+// DoctorPatients возвращает уникальных пациентов врача за всё время с числом визитов
+// и датами первого/последнего приёма (для отчёта). Отменённые/перенесённые исключены.
+func (r *AppointmentRepo) DoctorPatients(doctorID string) ([]model.DoctorPatient, error) {
+	var rows []model.DoctorPatient
+	err := r.db.Select(&rows, `
+		SELECT u.full_name      AS patient_name,
+		       u.phone          AS patient_phone,
+		       COUNT(*)         AS visits,
+		       MIN(a.starts_at) AS first_visit,
+		       MAX(a.starts_at) AS last_visit
+		FROM appointments a
+		JOIN users u ON u.id = a.patient_id
+		WHERE a.doctor_id = $1
+		  AND a.status NOT IN ('cancelled','rescheduled')
+		GROUP BY u.id, u.full_name, u.phone
+		ORDER BY MAX(a.starts_at) DESC`, doctorID)
+	return rows, err
+}
+
 // ListWorkDates возвращает рабочие даты (не выходные) врача в заданном месяце.
 // ListWorkDates returns dates where the doctor is not on day-off for the given month.
 func (r *AppointmentRepo) ListWorkDates(doctorID string, year, month int) ([]string, error) {

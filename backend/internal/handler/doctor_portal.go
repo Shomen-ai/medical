@@ -157,3 +157,14 @@ func (h *DoctorPortalHandler) Stats(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, stats)
 }
+
+// Patients возвращает уникальных пациентов текущего врача с числом визитов (для отчёта в Excel).
+// GET /api/doctor/patients
+func (h *DoctorPortalHandler) Patients(c *gin.Context) {
+	rows, err := h.svc.Repos.Appointments.DoctorPatients(c.GetString("user_id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, rows)
+}

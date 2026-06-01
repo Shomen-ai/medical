@@ -11,6 +11,24 @@ type DoctorStats struct {
 	FilledRecordsPct      float64 `db:"filled_records_pct"      json:"filled_records_pct"`
 }
 
+// DoctorReport — строка отчёта по врачу за период: приёмы и уникальные пациенты.
+type DoctorReport struct {
+	DoctorID       string `db:"doctor_id"       json:"doctor_id"`
+	DoctorName     string `db:"doctor_name"     json:"doctor_name"`
+	SpecialtyName  string `db:"specialty_name"  json:"specialty_name"`
+	Appointments   int    `db:"appointments"    json:"appointments"`
+	UniquePatients int    `db:"unique_patients" json:"unique_patients"`
+}
+
+// DoctorPatient — пациент врача в отчёте: контакты, число визитов, первый/последний приём.
+type DoctorPatient struct {
+	PatientName  string    `db:"patient_name"  json:"patient_name"`
+	PatientPhone string    `db:"patient_phone" json:"patient_phone"`
+	Visits       int       `db:"visits"        json:"visits"`
+	FirstVisit   time.Time `db:"first_visit"   json:"first_visit"`
+	LastVisit    time.Time `db:"last_visit"    json:"last_visit"`
+}
+
 // AdminStats хранит сводные KPI для главной страницы админ-кабинета.
 type AdminStats struct {
 	TotalPatients     int     `db:"total_patients"      json:"total_patients"`
