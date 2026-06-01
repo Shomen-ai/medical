@@ -244,7 +244,7 @@ const formattedDate = computed(() => {
             :disabled="cooldownSecs > 0 || submittingOtp || !booking.phone || !consent"
             @click="sendOtp"
           >
-            {{ cooldownSecs > 0 ? `${cooldownSecs}с` : booking.otpSent ? t('confirmResend') : t('confirmGetCode') }}
+            {{ cooldownSecs > 0 ? `${cooldownSecs}${t('secShort')}` : booking.otpSent ? t('confirmResend') : t('confirmGetCode') }}
           </button>
         </div>
         <div v-if="otpError" class="text-xs text-red-500 mt-1">{{ otpError }}</div>

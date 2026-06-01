@@ -6,6 +6,7 @@
 const auth = useAuthStore()
 const router = useRouter()
 const { get, patch } = useApi()
+const { t } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -36,21 +37,22 @@ const { data: appointments, pending, error, refresh } = await useAsyncData(
   { server: false }
 )
 
+const pad2 = (n: number) => String(n).padStart(2, '0')
 const formatDateTime = (iso: string) => {
   const d = new Date(iso)
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
-    + ', ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}, `
+    + `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
 
 const formatMoney = (n: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(n)
 
-const statusLabel: Record<string, string> = {
-  scheduled: 'Запланировано',
-  completed: 'Завершено',
-  cancelled: 'Отменено',
-  rescheduled: 'Перенесено',
-}
+const statusLabel = computed<Record<string, string>>(() => ({
+  scheduled: t('statusScheduled'),
+  completed: t('statusCompleted'),
+  cancelled: t('statusCancelled'),
+  rescheduled: t('statusRescheduled'),
+}))
 const statusClass: Record<string, string> = {
   scheduled: 'bg-blue-100 text-blue-700',
   completed: 'bg-green-100 text-green-700',
@@ -111,7 +113,7 @@ const openReschedule = async (apt: Appointment) => {
     const todayISO = new Date().toISOString().slice(0, 10)
     availableDates.value = results.flat().filter(date => date >= todayISO)
   } catch {
-    rescheduleError.value = 'Не удалось загрузить расписание врача'
+    rescheduleError.value = t('cabRescheduleDatesError')
   } finally {
     loadingDates.value = false
   }
@@ -135,7 +137,7 @@ const selectDate = async (date: string) => {
       `/api/doctors/${apt.doctor_id}/slots?service_id=${apt.service_id}&date=${date}`
     )
   } catch {
-    rescheduleError.value = 'Не удалось загрузить слоты'
+    rescheduleError.value = t('cabRescheduleSlotsError')
   } finally {
     loadingSlots.value = false
   }
@@ -158,11 +160,11 @@ const submitReschedule = async () => {
     const status = (err as { status?: number })?.status
     const msg = (err as { data?: { error?: string } })?.data?.error ?? ''
     if (status === 409 || msg.includes('taken')) {
-      rescheduleError.value = 'Это время уже занято. Выберите другой слот.'
+      rescheduleError.value = t('cabSlotTaken')
     } else if (msg.includes('2 hours')) {
-      rescheduleError.value = 'Перенос невозможен — меньше 2 часов до приёма.'
+      rescheduleError.value = t('cabRescheduleTooLate')
     } else {
-      rescheduleError.value = 'Не удалось перенести запись'
+      rescheduleError.value = t('cabRescheduleError')
     }
   } finally {
     submittingReschedule.value = false
@@ -170,35 +172,35 @@ const submitReschedule = async () => {
 }
 
 const formatDateChip = (iso: string) => {
-  const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  const [, m, d] = iso.split('-').map(Number)
+  return `${d} ${t('cabMonthsShort').split(',')[m - 1]}`
 }
 
-useHead({ title: 'Личный кабинет — BeautyMed' })
+useHead({ title: t('cabPageTitle') })
 </script>
 
 <template>
   <div class="max-w-3xl mx-auto px-4 py-10">
     <div class="flex items-center justify-between mb-8 flex-wrap gap-3">
-      <h1 class="text-2xl font-bold text-slate">Мои записи</h1>
+      <h1 class="text-2xl font-bold text-slate">{{ t('cabMyAppts') }}</h1>
       <div class="flex items-center gap-4">
         <NuxtLink to="/cabinet/profile" class="text-sm text-muted hover:text-primary hover:underline">
-          Профиль
+          {{ t('cabProfile') }}
         </NuxtLink>
         <button
           type="button"
           class="text-sm text-muted underline"
           @click="auth.logout(); router.replace('/')"
         >
-          Выйти
+          {{ t('logout') }}
         </button>
       </div>
     </div>
 
-    <div v-if="pending" class="text-center py-16 text-muted">Загружаем записи...</div>
-    <div v-else-if="error" class="text-center py-16 text-red-500">Не удалось загрузить записи</div>
+    <div v-if="pending" class="text-center py-16 text-muted">{{ t('cabLoading') }}</div>
+    <div v-else-if="error" class="text-center py-16 text-red-500">{{ t('cabLoadError') }}</div>
     <div v-else-if="!appointments?.length" class="text-center py-16 text-muted">
-      У вас пока нет записей
+      {{ t('cabNoAppts') }}
     </div>
 
     <div v-else class="flex flex-col gap-4">
@@ -229,7 +231,7 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
               class="text-xs text-primary underline"
               @click="openReschedule(apt)"
             >
-              Перенести
+              {{ t('cabReschedule') }}
             </button>
             <button
               v-if="apt.status === 'scheduled'"
@@ -238,7 +240,7 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
               :disabled="cancelling === apt.id"
               @click="cancelAppointment(apt.id)"
             >
-              {{ cancelling === apt.id ? '...' : 'Отменить' }}
+              {{ cancelling === apt.id ? '...' : t('cabCancel') }}
             </button>
           </div>
         </div>
@@ -249,18 +251,18 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
           class="mt-4 pt-4 border-t border-border space-y-3"
         >
           <div class="flex items-center justify-between">
-            <div class="text-sm font-semibold text-slate">Выберите новое время</div>
+            <div class="text-sm font-semibold text-slate">{{ t('cabSelectNewTime') }}</div>
             <button type="button" class="text-xs text-muted hover:text-slate" @click="closeReschedule">
-              Закрыть
+              {{ t('close') }}
             </button>
           </div>
 
           <!-- Dates -->
           <div>
-            <div class="text-xs font-semibold text-muted mb-1.5">Дата</div>
-            <div v-if="loadingDates" class="text-xs text-muted">Загружаем...</div>
+            <div class="text-xs font-semibold text-muted mb-1.5">{{ t('cabDate') }}</div>
+            <div v-if="loadingDates" class="text-xs text-muted">{{ t('loading') }}</div>
             <div v-else-if="!availableDates.length" class="text-xs text-muted">
-              Нет доступных дат
+              {{ t('cabNoDates') }}
             </div>
             <div v-else class="flex flex-wrap gap-2">
               <button
@@ -280,9 +282,9 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
 
           <!-- Slots -->
           <div v-if="selectedDate">
-            <div class="text-xs font-semibold text-muted mb-1.5">Время</div>
-            <div v-if="loadingSlots" class="text-xs text-muted">Загружаем слоты...</div>
-            <div v-else-if="!slots.length" class="text-xs text-muted">Нет свободных слотов на эту дату</div>
+            <div class="text-xs font-semibold text-muted mb-1.5">{{ t('cabTime') }}</div>
+            <div v-if="loadingSlots" class="text-xs text-muted">{{ t('cabLoadingSlots') }}</div>
+            <div v-else-if="!slots.length" class="text-xs text-muted">{{ t('cabNoSlots') }}</div>
             <div v-else class="flex flex-wrap gap-2">
               <button
                 v-for="s in slots"
@@ -309,7 +311,7 @@ useHead({ title: 'Личный кабинет — BeautyMed' })
             :disabled="submittingReschedule"
             @click="submitReschedule"
           >
-            {{ submittingReschedule ? 'Переносим...' : 'Подтвердить перенос' }}
+            {{ submittingReschedule ? t('cabRescheduling') : t('cabConfirmReschedule') }}
           </button>
         </div>
       </div>

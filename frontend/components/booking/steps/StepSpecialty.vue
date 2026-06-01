@@ -7,7 +7,7 @@ import { getSpecialtyMeta } from '~/data/specialtyMeta'
 import { SpecialtiesKey, ServicesKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
-const { tMed } = useI18n()
+const { t, tMed } = useI18n()
 const specialties = inject(SpecialtiesKey, computed(() => []))
 const services = inject(ServicesKey, computed(() => []))
 
@@ -40,7 +40,7 @@ const formatPrice = (price: number) =>
   <div class="flex flex-col sm:flex-row gap-4 sm:min-h-[280px]">
     <!-- Left: specialty list -->
     <div class="w-full sm:w-1/2 flex flex-col gap-2">
-      <div class="text-xs font-semibold text-slate mb-1">Специальность</div>
+      <div class="text-xs font-semibold text-slate mb-1">{{ t('step1') }}</div>
       <button
         v-for="sp in specialties"
         :key="sp.id"
@@ -60,7 +60,7 @@ const formatPrice = (price: number) =>
     <div class="w-full sm:w-1/2 flex flex-col">
       <Transition name="fade-right">
         <div v-if="booking.specialtyId && servicesForSelected.length" class="flex flex-col gap-1.5">
-          <div class="text-xs font-semibold text-slate mb-1">Услуга</div>
+          <div class="text-xs font-semibold text-slate mb-1">{{ t('bkService') }}</div>
           <button
             v-for="svc in servicesForSelected"
             :key="svc.id"
@@ -75,9 +75,7 @@ const formatPrice = (price: number) =>
             <span class="whitespace-nowrap text-xs flex-shrink-0">{{ formatPrice(svc.price) }}</span>
           </button>
         </div>
-        <div v-else-if="!booking.specialtyId" class="hidden sm:flex items-center justify-center h-full text-sm text-muted text-center pt-8">
-          Выберите<br>специальность
-        </div>
+        <div v-else-if="!booking.specialtyId" class="hidden sm:flex items-center justify-center h-full text-sm text-muted text-center pt-8" v-html="t('bkSelectSpecialty')" />
       </Transition>
     </div>
   </div>

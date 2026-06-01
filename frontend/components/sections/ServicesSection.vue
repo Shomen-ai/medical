@@ -67,7 +67,7 @@ const formatPrice = (price: number) =>
               :to="`/services/${svc.id}`"
               class="text-xs font-semibold text-muted hover:text-primary transition-colors hidden sm:block"
             >
-              Подробнее
+              {{ t('more') }}
             </NuxtLink>
             <button
               type="button"

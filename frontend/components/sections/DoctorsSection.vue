@@ -97,17 +97,17 @@ const photoSrc = (doc: Doctor, index: number) =>
           class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
           <div class="relative h-36 sm:h-48 overflow-hidden">
-            <img :src="photo" alt="Врач клиники" class="w-full h-full object-cover object-top">
+            <img :src="photo" :alt="t('secDoctorAlt')" class="w-full h-full object-cover object-top">
             <div
               class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
             >
-              Специалист клиники
+              {{ t('secClinicSpecialist') }}
             </div>
           </div>
           <div class="p-3 sm:p-4">
-            <div class="text-sm font-bold text-slate mb-1">Врач BeautyMed</div>
-            <div class="text-xs text-muted mb-3">Опытный специалист</div>
+            <div class="text-sm font-bold text-slate mb-1">{{ t('secDoctorBeautyMed') }}</div>
+            <div class="text-xs text-muted mb-3">{{ t('secExperiencedSpecialist') }}</div>
             <button
               type="button"
               class="w-full text-white text-[11px] font-bold py-2 rounded-lg hover:opacity-90 transition-opacity"

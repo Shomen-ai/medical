@@ -51,7 +51,7 @@ onUnmounted(() => {
           <!-- Close button -->
           <button
             type="button"
-            aria-label="Закрыть"
+            :aria-label="t('close')"
             class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-muted hover:text-slate hover:bg-gray-100 rounded-full transition-colors z-10"
             @click="emit('close')"
           >

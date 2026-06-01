@@ -53,7 +53,7 @@ const { t } = useI18n()
             class="w-full h-full min-h-[200px] border-0"
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            title="Карта клиники BeautyMed — Туркменабад"
+            :title="t('secMapTitle')"
           />
         </div>
       </div>

@@ -9,6 +9,7 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const { get, patch } = useApi()
+const { t } = useI18n()
 
 const appointmentId = computed(() => route.params.id as string)
 
@@ -71,10 +72,10 @@ const loadAppointment = async () => {
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status
     loadError.value = status === 404
-      ? 'Приём не найден'
+      ? t('recNotFound')
       : status === 403
-        ? 'Нет доступа к этому приёму'
-        : 'Не удалось загрузить приём'
+        ? t('recNoAccess')
+        : t('recLoadError')
   } finally {
     loading.value = false
   }
@@ -86,7 +87,7 @@ const canSubmit = computed(() => !!complaints.value.trim() && !!diagnosis.value.
 
 const saveRecord = async (isDraft: boolean) => {
   if (!canSubmit.value) {
-    saveError.value = 'Жалобы и диагноз обязательны'
+    saveError.value = t('recRequiredError')
     return
   }
   if (!auth.token) return
@@ -115,41 +116,42 @@ const saveRecord = async (isDraft: boolean) => {
     }
   } catch (err: unknown) {
     const msg = (err as { data?: { error?: string } })?.data?.error ?? ''
-    saveError.value = msg || 'Не удалось сохранить запись'
+    saveError.value = msg || t('recSaveError')
   } finally {
     saving.value = false
   }
 }
 
+const pad2 = (n: number) => String(n).padStart(2, '0')
 const formattedDateTime = computed(() => {
   if (!appointment.value) return ''
   const d = new Date(appointment.value.starts_at)
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
-    + ', ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}, `
+    + `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 })
 
-const statusLabel: Record<string, string> = {
-  scheduled: 'Запланировано',
-  completed: 'Завершено',
-  cancelled: 'Отменено',
-  rescheduled: 'Перенесено',
-}
+const statusLabel = computed<Record<string, string>>(() => ({
+  scheduled: t('statusScheduled'),
+  completed: t('statusCompleted'),
+  cancelled: t('statusCancelled'),
+  rescheduled: t('statusRescheduled'),
+}))
 
-useHead({ title: 'Приём — BeautyMed' })
+useHead({ title: t('recPageTitle') })
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-3xl mx-auto px-4 py-8">
       <NuxtLink to="/doctor" class="inline-flex items-center text-sm text-muted hover:text-primary mb-4">
-        ← К расписанию
+        {{ t('recBackToSchedule') }}
       </NuxtLink>
 
-      <div v-if="loading" class="text-center py-16 text-muted">Загружаем приём...</div>
+      <div v-if="loading" class="text-center py-16 text-muted">{{ t('recLoading') }}</div>
 
       <div v-else-if="loadError" class="text-center py-16">
         <div class="text-red-500 mb-3">{{ loadError }}</div>
-        <NuxtLink to="/doctor" class="text-sm text-primary underline">Вернуться к расписанию</NuxtLink>
+        <NuxtLink to="/doctor" class="text-sm text-primary underline">{{ t('recReturnToSchedule') }}</NuxtLink>
       </div>
 
       <div v-else-if="appointment" class="space-y-6">
@@ -157,7 +159,7 @@ useHead({ title: 'Приём — BeautyMed' })
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <div class="text-xl font-bold text-slate">{{ appointment.patient_name || 'Без имени' }}</div>
+              <div class="text-xl font-bold text-slate">{{ appointment.patient_name || t('recNoName') }}</div>
               <div class="text-sm text-muted mt-0.5">{{ appointment.patient_phone }}</div>
               <div class="text-sm text-slate mt-2">{{ appointment.service_name }}</div>
               <div class="text-sm text-muted">{{ formattedDateTime }}</div>
@@ -177,54 +179,54 @@ useHead({ title: 'Приём — BeautyMed' })
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-5">
           <div>
             <label class="text-sm font-semibold text-slate block mb-1.5">
-              Жалобы / Анамнез <span class="text-red-500">*</span>
+              {{ t('recComplaintsLabel') }} <span class="text-red-500">*</span>
             </label>
             <textarea
               v-model="complaints"
               rows="3"
-              placeholder="На что жалуется пациент, анамнез заболевания..."
+              :placeholder="t('recComplaintsPlaceholder')"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary resize-y"
             />
           </div>
 
           <div>
             <label class="text-sm font-semibold text-slate block mb-1.5">
-              Выполненные процедуры / Диагноз <span class="text-red-500">*</span>
+              {{ t('recDiagnosisLabel') }} <span class="text-red-500">*</span>
             </label>
             <textarea
               v-model="diagnosis"
               rows="3"
-              placeholder="Что выполнено, поставленный диагноз..."
+              :placeholder="t('recDiagnosisPlaceholder')"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary resize-y"
             />
           </div>
 
           <div>
             <label class="text-sm font-semibold text-slate block mb-1.5">
-              Рецепт <span class="text-xs text-muted font-normal">(необязательно)</span>
+              {{ t('recPrescriptionLabel') }} <span class="text-xs text-muted font-normal">{{ t('recOptional') }}</span>
             </label>
             <textarea
               v-model="prescription"
               rows="2"
-              placeholder="Назначенные препараты с дозировкой..."
+              :placeholder="t('recPrescriptionPlaceholder')"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary resize-y"
             />
           </div>
 
           <div>
             <label class="text-sm font-semibold text-slate block mb-1.5">
-              Предписания <span class="text-xs text-muted font-normal">(необязательно)</span>
+              {{ t('recRecommendationsLabel') }} <span class="text-xs text-muted font-normal">{{ t('recOptional') }}</span>
             </label>
             <textarea
               v-model="recommendations"
               rows="2"
-              placeholder="Рекомендации, образ жизни, повторный приём..."
+              :placeholder="t('recRecommendationsPlaceholder')"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary resize-y"
             />
           </div>
 
           <div v-if="saveError" class="text-sm text-red-500">{{ saveError }}</div>
-          <div v-else-if="justSaved" class="text-sm text-emerald-600">✓ Сохранено</div>
+          <div v-else-if="justSaved" class="text-sm text-emerald-600">{{ t('recSaved') }}</div>
 
           <div class="flex flex-wrap gap-3 pt-2">
             <button
@@ -235,7 +237,7 @@ useHead({ title: 'Приём — BeautyMed' })
               :disabled="!canSubmit || saving"
               @click="saveRecord(false)"
             >
-              {{ saving ? 'Сохраняем...' : 'Завершить приём' }}
+              {{ saving ? t('recSaving') : t('recComplete') }}
             </button>
             <button
               type="button"
@@ -244,7 +246,7 @@ useHead({ title: 'Приём — BeautyMed' })
               :disabled="!canSubmit || saving"
               @click="saveRecord(true)"
             >
-              {{ appointment.status === 'completed' ? 'Сохранить изменения' : 'Сохранить черновик' }}
+              {{ appointment.status === 'completed' ? t('recSaveChanges') : t('recSaveDraft') }}
             </button>
           </div>
         </div>

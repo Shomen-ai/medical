@@ -52,13 +52,13 @@ const { data: specialties } = await useAsyncData('admin-specialties', () =>
   get<Specialty[]>('/api/specialties'), { server: false })
 
 // ── Period stats ──────────────────────────────────────────────────────
-const periods = [
-  { key: 'day',     label: 'День' },
-  { key: 'week',    label: 'Неделя' },
-  { key: 'month',   label: 'Месяц' },
-  { key: 'quarter', label: 'Квартал' },
-  { key: 'year',    label: 'Год' },
-]
+const periods = computed(() => [
+  { key: 'day',     label: t('adminPeriodDay') },
+  { key: 'week',    label: t('adminPeriodWeek') },
+  { key: 'month',   label: t('adminPeriodMonth') },
+  { key: 'quarter', label: t('adminPeriodQuarter') },
+  { key: 'year',    label: t('adminPeriodYear') },
+])
 const selectedPeriod = ref('month')
 const { data: periodStats, refresh: refreshPeriod } = await useAsyncData(
   'admin-period-stats',
@@ -108,41 +108,44 @@ const schedMonth = ref(new Date().getMonth() + 1)
 const schedSpecialty = ref('')
 const schedLoading = ref(false)
 const schedMsg = ref('')
+const schedError = ref(false)
 
 const generateSchedule = async () => {
   if (!schedSpecialty.value) return
   schedLoading.value = true
   schedMsg.value = ''
+  schedError.value = false
   try {
     const res = await post<{ generated: number }>(
       '/api/admin/schedule/generate',
       { year: schedYear.value, month: schedMonth.value, specialty_id: schedSpecialty.value },
       token.value
     )
-    schedMsg.value = `Сгенерировано ${res.generated} записей`
+    schedMsg.value = t('adminGenSuccess', { n: res.generated })
   } catch {
-    schedMsg.value = 'Ошибка генерации'
+    schedMsg.value = t('adminGenError')
+    schedError.value = true
   } finally {
     schedLoading.value = false
   }
 }
 
 // ── Chart data ────────────────────────────────────────────────────────
-const monthNames: Record<string, string> = {
-  '01': 'Янв', '02': 'Фев', '03': 'Мар', '04': 'Апр',
-  '05': 'Май', '06': 'Июн', '07': 'Июл', '08': 'Авг',
-  '09': 'Сен', '10': 'Окт', '11': 'Ноя', '12': 'Дек',
-}
+const monthNames = computed(() => {
+  const list = t('adminMonthShort').split(',')
+  return Object.fromEntries(list.map((name, i) => [String(i + 1).padStart(2, '0'), name]))
+})
 
 const barChartData = computed(() => {
   const pts = monthly.value ?? []
+  const names = monthNames.value
   return {
     labels: pts.map(p => {
       const [, m] = p.month.split('-')
-      return monthNames[m] ?? p.month
+      return names[m] ?? p.month
     }),
     datasets: [{
-      label: 'Записей',
+      label: t('adminChartAppts'),
       data: pts.map(p => p.appointments),
       backgroundColor: '#00959D',
       borderRadius: 6,
@@ -167,7 +170,7 @@ const statusChartData = computed(() => {
     if (a.status in counts) counts[a.status as keyof typeof counts]++
   })
   return {
-    labels: ['Запланировано', 'Завершено', 'Отменено', 'Перенесено'],
+    labels: [t('statusScheduled'), t('statusCompleted'), t('statusCancelled'), t('statusRescheduled')],
     datasets: [{
       data: [counts.scheduled, counts.completed, counts.cancelled, counts.rescheduled],
       backgroundColor: ['#3B82F6', '#10B981', '#EF4444', '#F59E0B'],
@@ -190,24 +193,25 @@ const donutOptions = {
 const formatMoney = (n: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(n)
 
+const pad2 = (n: number) => String(n).padStart(2, '0')
 const formatDateTime = (iso: string) => {
   const d = new Date(iso)
-  return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} `
+    + `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
 
-const statusLabel: Record<string, string> = {
-  scheduled: 'Запланировано', completed: 'Завершено',
-  cancelled: 'Отменено', rescheduled: 'Перенесено',
-}
+const statusLabel = computed<Record<string, string>>(() => ({
+  scheduled: t('statusScheduled'), completed: t('statusCompleted'),
+  cancelled: t('statusCancelled'), rescheduled: t('statusRescheduled'),
+}))
 const statusClass: Record<string, string> = {
   scheduled: 'bg-blue-100 text-blue-700', completed: 'bg-green-100 text-green-700',
   cancelled: 'bg-red-100 text-red-600', rescheduled: 'bg-yellow-100 text-yellow-700',
 }
 
-const months = ['Январь','Февраль','Март','Апрель','Май','Июнь',
-  'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+const months = computed(() => t('monthsList').split(','))
 
-useHead({ title: 'Панель администратора — BeautyMed' })
+useHead({ title: t('adminPageTitle') })
 </script>
 
 <template>
@@ -216,19 +220,19 @@ useHead({ title: 'Панель администратора — BeautyMed' })
 
       <!-- KPI row -->
       <div>
-        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Сегодня</h2>
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{{ t('adminToday') }}</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-3xl font-extrabold text-primary">{{ dashboard?.kpi?.appointments_today ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Записей на сегодня</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminApptsToday') }}</div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-3xl font-extrabold text-primary">{{ dashboard?.kpi?.revenue_today != null ? formatMoney(dashboard.kpi.revenue_today) : '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Выручка (завершённые)</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminRevenueCompleted') }}</div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-3xl font-extrabold text-primary">{{ dashboard?.kpi?.free_slots ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Свободных слотов</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminFreeSlots') }}</div>
           </div>
         </div>
       </div>
@@ -236,7 +240,7 @@ useHead({ title: 'Панель администратора — BeautyMed' })
       <!-- Period stats -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Статистика</h2>
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">{{ t('adminStats') }}</h2>
           <!-- Period tabs -->
           <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
             <button
@@ -257,26 +261,26 @@ useHead({ title: 'Панель администратора — BeautyMed' })
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-2xl font-extrabold text-slate">{{ periodStats?.appointments ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Записей</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminStatAppts') }}</div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-2xl font-extrabold text-primary">
               {{ periodStats?.revenue != null ? formatMoney(periodStats.revenue) : '—' }}
             </div>
-            <div class="text-xs text-gray-500 mt-1">Выручка</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminStatRevenue') }}</div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-2xl font-extrabold text-slate">{{ periodStats?.unique_patients ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Пациентов</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminStatPatients') }}</div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
             <div class="text-2xl font-extrabold text-red-500">{{ periodStats?.cancelled ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Отменено</div>
+            <div class="text-xs text-gray-500 mt-1">{{ t('adminStatCancelled') }}</div>
           </div>
         </div>
 
         <div v-if="stats?.top_service" class="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 text-sm text-gray-600">
-          🏆 Популярная услуга за месяц: <span class="font-semibold text-slate">{{ stats.top_service }}</span>
+          {{ t('adminTopService') }} <span class="font-semibold text-slate">{{ stats.top_service }}</span>
         </div>
       </div>
 
@@ -285,19 +289,19 @@ useHead({ title: 'Панель администратора — BeautyMed' })
 
         <!-- Monthly appointments bar chart -->
         <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div class="font-semibold text-slate mb-4">Записи по месяцам</div>
+          <div class="font-semibold text-slate mb-4">{{ t('adminApptsByMonth') }}</div>
           <div class="h-48">
             <Bar v-if="(monthly?.length ?? 0) > 0" :data="barChartData" :options="barChartOptions" />
-            <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">Нет данных</div>
+            <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">{{ t('adminNoData') }}</div>
           </div>
         </div>
 
         <!-- Status donut chart -->
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div class="font-semibold text-slate mb-4">Статусы записей</div>
+          <div class="font-semibold text-slate mb-4">{{ t('adminApptStatuses') }}</div>
           <div class="h-48">
             <Doughnut v-if="(allAppointments?.length ?? 0) > 0" :data="statusChartData" :options="donutOptions" />
-            <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">Нет данных</div>
+            <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">{{ t('adminNoData') }}</div>
           </div>
         </div>
 
@@ -344,23 +348,23 @@ useHead({ title: 'Панель администратора — BeautyMed' })
 
       <!-- Schedule generation -->
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 class="font-semibold text-slate mb-4">Генерация расписания</h2>
+        <h2 class="font-semibold text-slate mb-4">{{ t('adminScheduleGen') }}</h2>
         <div class="flex flex-wrap gap-3 items-end">
           <div>
-            <label class="text-xs font-semibold text-gray-500 block mb-1">Специальность</label>
+            <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('adminSpecialty') }}</label>
             <select v-model="schedSpecialty" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
-              <option value="">— выберите —</option>
+              <option value="">{{ t('adminSelectPlaceholder') }}</option>
               <option v-for="sp in specialties" :key="sp.id" :value="sp.id">{{ sp.name }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500 block mb-1">Месяц</label>
+            <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('adminMonth') }}</label>
             <select v-model="schedMonth" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
               <option v-for="(name, i) in months" :key="i" :value="i + 1">{{ name }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500 block mb-1">Год</label>
+            <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('adminYear') }}</label>
             <select v-model="schedYear" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
               <option :value="2026">2026</option>
               <option :value="2027">2027</option>
@@ -374,9 +378,9 @@ useHead({ title: 'Панель администратора — BeautyMed' })
             style="background: linear-gradient(135deg, #005A5F, #00959D)"
             @click="generateSchedule"
           >
-            {{ schedLoading ? 'Генерируем...' : 'Сгенерировать' }}
+            {{ schedLoading ? t('adminGenerating') : t('adminGenerate') }}
           </button>
-          <span v-if="schedMsg" class="text-sm" :class="schedMsg.includes('Ошибка') ? 'text-red-500' : 'text-green-600'">
+          <span v-if="schedMsg" class="text-sm" :class="schedError ? 'text-red-500' : 'text-green-600'">
             {{ schedMsg }}
           </span>
         </div>
@@ -385,7 +389,7 @@ useHead({ title: 'Панель администратора — BeautyMed' })
       <!-- Appointments table -->
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
-          <h2 class="font-semibold text-slate">Записи</h2>
+          <h2 class="font-semibold text-slate">{{ t('adminAppts') }}</h2>
           <div class="flex gap-2">
             <input
               v-model="filterDate"
@@ -393,27 +397,27 @@ useHead({ title: 'Панель администратора — BeautyMed' })
               class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
             >
             <select v-model="filterStatus" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary">
-              <option value="">Все статусы</option>
-              <option value="scheduled">Запланировано</option>
-              <option value="completed">Завершено</option>
-              <option value="cancelled">Отменено</option>
+              <option value="">{{ t('adminAllStatuses') }}</option>
+              <option value="scheduled">{{ t('statusScheduled') }}</option>
+              <option value="completed">{{ t('statusCompleted') }}</option>
+              <option value="cancelled">{{ t('statusCancelled') }}</option>
             </select>
           </div>
         </div>
 
-        <div v-if="loadingAppts" class="text-center py-10 text-gray-400">Загружаем...</div>
+        <div v-if="loadingAppts" class="text-center py-10 text-gray-400">{{ t('loading') }}</div>
 
-        <div v-else-if="!allAppointments?.length" class="text-center py-10 text-gray-400">Нет записей</div>
+        <div v-else-if="!allAppointments?.length" class="text-center py-10 text-gray-400">{{ t('adminNoAppts') }}</div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
-                <th class="px-5 py-3 font-semibold">Пациент</th>
-                <th class="px-5 py-3 font-semibold">Врач / Услуга</th>
-                <th class="px-5 py-3 font-semibold">Дата и время</th>
-                <th class="px-5 py-3 font-semibold">Цена</th>
-                <th class="px-5 py-3 font-semibold">Статус</th>
+                <th class="px-5 py-3 font-semibold">{{ t('adminColPatient') }}</th>
+                <th class="px-5 py-3 font-semibold">{{ t('adminColDoctorService') }}</th>
+                <th class="px-5 py-3 font-semibold">{{ t('adminColDateTime') }}</th>
+                <th class="px-5 py-3 font-semibold">{{ t('adminColPrice') }}</th>
+                <th class="px-5 py-3 font-semibold">{{ t('adminColStatus') }}</th>
               </tr>
             </thead>
             <tbody>

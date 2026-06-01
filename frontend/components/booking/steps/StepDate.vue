@@ -5,6 +5,7 @@
 <script setup lang="ts">
 const booking = useBookingStore()
 const { get } = useApi()
+const { t } = useI18n()
 
 const today = new Date()
 today.setHours(0, 0, 0, 0)
@@ -83,7 +84,7 @@ const isSelected = (d: Date) => booking.date === toISODate(d)
 
 <template>
   <div>
-    <div class="text-xs font-semibold text-slate mb-3">Выберите дату</div>
+    <div class="text-xs font-semibold text-slate mb-3">{{ t('docSelectDate') }}</div>
 
     <!-- Month navigation -->
     <div class="flex items-center justify-between mb-3">
@@ -94,7 +95,7 @@ const isSelected = (d: Date) => booking.date === toISODate(d)
 
     <!-- Day-of-week headers -->
     <div class="grid grid-cols-7 text-center mb-1">
-      <div v-for="d in ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']" :key="d" class="text-[10px] text-muted py-1">
+      <div v-for="d in t('docWeekdays').split(',')" :key="d" class="text-[10px] text-muted py-1">
         {{ d }}
       </div>
     </div>

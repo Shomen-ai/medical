@@ -53,7 +53,7 @@ const scrollToServices = () => {
         <div class="w-full h-44 sm:h-auto sm:w-[300px] flex-shrink-0 overflow-hidden">
           <img
             src="/clinic_3.png"
-            alt="Клиника BeautyMed"
+            :alt="t('secClinicAlt')"
             class="w-full h-full object-cover object-top"
           >
         </div>

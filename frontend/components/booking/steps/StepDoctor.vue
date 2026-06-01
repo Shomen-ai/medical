@@ -6,6 +6,7 @@
 import { DoctorsKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
+const { t } = useI18n()
 const doctors = inject(DoctorsKey, computed(() => []))
 
 const filteredDoctors = computed(() =>
@@ -15,7 +16,7 @@ const filteredDoctors = computed(() =>
 
 <template>
   <div>
-    <div class="text-xs font-semibold text-slate mb-2">Выберите врача</div>
+    <div class="text-xs font-semibold text-slate mb-2">{{ t('bkSelectDoctor') }}</div>
     <div class="flex flex-col gap-2">
       <button
         v-for="doc in filteredDoctors"
@@ -32,13 +33,13 @@ const filteredDoctors = computed(() =>
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-medium text-slate truncate">{{ doc.full_name }}</div>
-          <div class="text-xs text-muted">Стаж {{ doc.experience_years }} лет</div>
+          <div class="text-xs text-muted">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
         </div>
         <span v-if="booking.doctorId === doc.id" class="text-primary text-sm">✓</span>
       </button>
     </div>
     <div v-if="filteredDoctors.length === 0" class="text-sm text-muted text-center py-6">
-      Нет доступных врачей
+      {{ t('bkNoDoctors') }}
     </div>
   </div>
 </template>

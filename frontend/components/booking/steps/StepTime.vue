@@ -7,6 +7,7 @@ import type { TimeSlot } from '~/types'
 
 const booking = useBookingStore()
 const { get } = useApi()
+const { t } = useI18n()
 
 const slots = ref<TimeSlot[]>([])
 const loading = ref(false)
@@ -21,7 +22,7 @@ const fetchSlots = async () => {
       `/api/doctors/${booking.doctorId}/slots?service_id=${booking.serviceId}&date=${booking.date}`
     )
   } catch {
-    error.value = 'Не удалось загрузить слоты'
+    error.value = t('bkSlotsError')
     slots.value = []
   } finally {
     loading.value = false
@@ -41,18 +42,18 @@ const formattedDate = computed(() => {
 <template>
   <div>
     <div class="text-xs font-semibold text-slate mb-3">
-      Выберите время — {{ formattedDate }}
+      {{ t('bkSelectTime', { date: formattedDate }) }}
     </div>
 
-    <div v-if="loading" class="text-sm text-muted text-center py-6">Загружаем расписание...</div>
+    <div v-if="loading" class="text-sm text-muted text-center py-6">{{ t('bkLoadingSchedule') }}</div>
 
     <div v-else-if="error" class="text-center py-6">
       <div class="text-sm text-red-500 mb-3">{{ error }}</div>
-      <button type="button" class="text-xs text-primary underline" @click="fetchSlots">Попробовать снова</button>
+      <button type="button" class="text-xs text-primary underline" @click="fetchSlots">{{ t('bkRetry') }}</button>
     </div>
 
     <div v-else-if="slots.length === 0" class="text-sm text-muted text-center py-6">
-      Нет доступных слотов на эту дату
+      {{ t('bkNoSlots') }}
     </div>
 
     <div v-else class="grid grid-cols-3 gap-2">

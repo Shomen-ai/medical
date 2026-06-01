@@ -6,6 +6,7 @@
 const auth = useAuthStore()
 const router = useRouter()
 const { post } = useApi()
+const { t } = useI18n()
 
 const username = ref('')
 const password = ref('')
@@ -38,13 +39,13 @@ const handleLogin = async () => {
     if (resp.role === 'admin') router.push('/admin')
     else router.push('/doctor')
   } catch {
-    error.value = 'Неверный логин или пароль'
+    error.value = t('staffLoginError')
   } finally {
     loading.value = false
   }
 }
 
-useHead({ title: 'Вход для персонала — BeautyMed' })
+useHead({ title: t('staffLoginPageTitle') })
 </script>
 
 <template>
@@ -58,12 +59,12 @@ useHead({ title: 'Вход для персонала — BeautyMed' })
         >
           BeautyMed
         </span>
-        <p class="text-sm text-gray-500 mt-1">Портал для персонала клиники</p>
+        <p class="text-sm text-gray-500 mt-1">{{ t('staffLoginSubtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="text-xs font-semibold text-slate block mb-1.5">Логин</label>
+          <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('staffLoginUsername') }}</label>
           <input
             v-model="username"
             type="text"
@@ -73,7 +74,7 @@ useHead({ title: 'Вход для персонала — BeautyMed' })
           >
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate block mb-1.5">Пароль</label>
+          <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('staffLoginPassword') }}</label>
           <input
             v-model="password"
             type="password"
@@ -92,12 +93,12 @@ useHead({ title: 'Вход для персонала — BeautyMed' })
           style="background: linear-gradient(135deg, #005A5F, #00959D)"
           :disabled="loading"
         >
-          {{ loading ? 'Входим...' : 'Войти' }}
+          {{ loading ? t('staffLoginEntering') : t('signIn') }}
         </button>
       </form>
 
       <div class="mt-5 text-center">
-        <NuxtLink to="/" class="text-xs text-muted underline">← На главную</NuxtLink>
+        <NuxtLink to="/" class="text-xs text-muted underline">{{ t('staffLoginToHome') }}</NuxtLink>
       </div>
     </div>
   </div>
