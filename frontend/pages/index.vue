@@ -10,6 +10,7 @@ import { SpecialtiesKey, DoctorsKey, ServicesKey } from '~/composables/injection
 const { get } = useApi()
 
 const config = useRuntimeConfig()
+const { locale } = useI18n()
 
 // SSR: parallel data fetch — fetcher runs server-side, result hydrated to client
 const [
@@ -32,16 +33,34 @@ provide(SpecialtiesKey, safeSpecialties)
 provide(DoctorsKey, safeDoctors)
 provide(ServicesKey, safeServices)
 
-// SEO
+// SEO — user-visible strings switch with the current locale (ru/tk), SSR-safe via computed
+const seo = computed(() =>
+  locale.value === 'tk'
+    ? {
+        title: 'BeautyMed — Türkmenabatda gözellik we saglyk kliniki',
+        description:
+          'Kosmetologiýa, dermatologiýa, trihologiýa we estetiki lukmançylyk. Lukmana onlaýn ýazylyş 2 minutda.',
+        ogTitle: 'BeautyMed — gözellik we saglyk kliniki',
+        ogDescription: 'Türkmenabatda professional kosmetologiýa we estetiki lukmançylyk.',
+      }
+    : {
+        title: 'BeautyMed — Клиника красоты и здоровья в Туркменабаде',
+        description:
+          'Косметология, дерматология, трихология и эстетическая медицина. Онлайн-запись к врачу за 2 минуты.',
+        ogTitle: 'BeautyMed — Клиника красоты и здоровья',
+        ogDescription: 'Профессиональная косметология и эстетическая медицина в Туркменабаде.',
+      },
+)
+
 useHead({
-  title: 'BeautyMed — Клиника красоты и здоровья в Туркменабаде',
+  title: () => seo.value.title,
   meta: [
     {
       name: 'description',
-      content: 'Косметология, дерматология, трихология и эстетическая медицина. Онлайн-запись к врачу за 2 минуты.',
+      content: () => seo.value.description,
     },
-    { property: 'og:title', content: 'BeautyMed — Клиника красоты и здоровья' },
-    { property: 'og:description', content: 'Профессиональная косметология и эстетическая медицина в Туркменабаде.' },
+    { property: 'og:title', content: () => seo.value.ogTitle },
+    { property: 'og:description', content: () => seo.value.ogDescription },
     { property: 'og:image', content: '/clinic_3.png' },
   ],
   script: [
