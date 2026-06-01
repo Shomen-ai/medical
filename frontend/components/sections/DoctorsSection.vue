@@ -68,7 +68,15 @@ const photoSrc = (doc: Doctor, index: number) =>
           <!-- Info -->
           <div class="p-3 sm:p-4">
             <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
-            <div class="text-xs text-muted mb-3">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
+            <div class="text-xs text-muted mb-1.5">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
+            <div
+              v-if="doc.education"
+              class="text-[11px] leading-snug text-muted/90 mb-3 flex items-start gap-1"
+              :title="`${t('doctorsEducation')}: ${doc.education}`"
+            >
+              <span class="flex-shrink-0">🎓</span>
+              <span class="line-clamp-2">{{ doc.education }}</span>
+            </div>
             <button
               type="button"
               class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"

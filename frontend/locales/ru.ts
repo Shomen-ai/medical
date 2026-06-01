@@ -49,6 +49,7 @@ export default {
   // Doctors
   doctorsTitle: 'Наши врачи',
   doctorsExperience: 'Стаж {n} лет',
+  doctorsEducation: 'Образование',
 
   // Reviews
   reviewsTitle: 'Отзывы пациентов',

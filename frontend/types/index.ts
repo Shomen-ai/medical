@@ -15,6 +15,7 @@ export interface Doctor {
   specialty_id: string
   specialty_name: string
   bio: string
+  education: string
   photo_url: string | null
   experience_years: number
   is_active: boolean

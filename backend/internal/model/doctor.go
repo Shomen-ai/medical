@@ -12,6 +12,7 @@ type Doctor struct {
 	SpecialtyName   string    `db:"specialty_name"   json:"specialty_name,omitempty"`
 	Phone           string    `db:"phone"            json:"-"`
 	Bio             string    `db:"bio"              json:"bio"`
+	Education       string    `db:"education"        json:"education"`
 	PhotoURL        string    `db:"photo_url"        json:"photo_url"`
 	ExperienceYears int       `db:"experience_years" json:"experience_years"`
 	IsActive        bool      `db:"is_active"        json:"is_active"`
