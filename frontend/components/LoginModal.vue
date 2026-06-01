@@ -15,6 +15,12 @@ const phoneError = ref('')
 
 const phoneCheck = computed(() => validatePhone(phone.value))
 
+// Форматирует ввод по маске +993 65 12-34-56 на каждый input.
+const onPhoneInput = (e: Event) => {
+  phone.value = formatTmPhone((e.target as HTMLInputElement).value)
+  phoneError.value = ''
+}
+
 const handleSendOTP = () => {
   if (!consent.value) return
   if (!phoneCheck.value.valid) {
@@ -49,14 +55,15 @@ const handleVerify = async () => {
         <div v-if="!auth.otpSent">
           <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('loginPhoneLabel') }}</label>
           <input
-            v-model="phone"
+            :value="phone"
             type="tel"
             inputmode="tel"
             autocomplete="tel"
+            :placeholder="t('confirmPhonePlaceholder')"
             class="w-full border rounded-xl px-4 py-2.5 text-sm mb-1 focus:outline-none focus:border-primary"
             :class="phoneError ? 'border-red-400' : 'border-border'"
             @keydown.enter="handleSendOTP"
-            @input="phoneError = ''"
+            @input="onPhoneInput"
           >
           <div v-if="phoneError" class="text-xs text-red-500 mb-3">{{ phoneError }}</div>
           <div v-else class="mb-3" />

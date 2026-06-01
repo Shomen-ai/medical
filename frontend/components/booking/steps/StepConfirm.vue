@@ -57,10 +57,16 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
 const phoneCheck = computed(() => validatePhone(booking.phone))
 
+// Форматирует ввод по маске +993 65 12-34-56 на каждый input.
+const onPhoneInput = (e: Event) => {
+  booking.phone = formatTmPhone((e.target as HTMLInputElement).value)
+  otpError.value = ''
+}
+
 const sendOtp = async () => {
   if (!booking.phone || !consent.value) return
   if (!phoneCheck.value.valid) {
-    otpError.value = 'Введите телефон в формате +7XXXXXXXXXX (Россия) или +993XXXXXXXX (Туркменистан)'
+    otpError.value = t('confirmPhoneErr')
     return
   }
   // Canonical form sent to API and stored for OTP verification.
@@ -220,14 +226,15 @@ const formattedDate = computed(() => {
         <label class="text-xs font-semibold text-slate block mb-1">Номер телефона</label>
         <div class="flex gap-2">
           <input
-            v-model="booking.phone"
+            :value="booking.phone"
             type="tel"
             inputmode="tel"
             autocomplete="tel"
+            :placeholder="t('confirmPhonePlaceholder')"
             :disabled="booking.otpSent"
             class="flex-1 border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary disabled:bg-gray-50"
             :class="otpError ? 'border-red-400' : 'border-border'"
-            @input="otpError = ''"
+            @input="onPhoneInput"
           >
           <button
             class="px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"

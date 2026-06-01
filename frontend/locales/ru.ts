@@ -73,6 +73,7 @@ export default {
   confirmYourName: 'Ваше имя',
   confirmNamePlaceholder: 'Айна Мырадова',
   confirmPhone: 'Номер телефона',
+  confirmPhonePlaceholder: '+993 65 12-34-56',
   confirmGetCode: 'Код',
   confirmResend: 'Повтор',
   confirmOtpLabel: 'Код из SMS',
@@ -90,8 +91,7 @@ export default {
   confirmSuccess: 'Вы записаны!',
   confirmSuccessFooter: 'Ждём вас в клинике BeautyMed',
   confirmToPay: 'К оплате: {price}',
-  confirmPhoneErr:
-    'Введите телефон в формате +7XXXXXXXXXX (Россия) или +993XXXXXXXX (Туркменистан)',
+  confirmPhoneErr: 'Введите номер в формате +993 65 12-34-56',
   confirmCodeErr: 'Неверный или истёкший код. Попробуйте ещё раз.',
   confirmSlotTaken: 'Это время уже занято. Выберите другой слот.',
   confirmGenericErr: 'Ошибка записи. Позвоните нам: ',

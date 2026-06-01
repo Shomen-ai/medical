@@ -76,6 +76,7 @@ const tk: typeof ru = {
   confirmYourName: 'Adyňyz',
   confirmNamePlaceholder: 'Aýna Myradowa',
   confirmPhone: 'Telefon belgisi',
+  confirmPhonePlaceholder: '+993 65 12-34-56',
   confirmGetCode: 'Kod',
   confirmResend: 'Gaýtadan',
   confirmOtpLabel: 'SMS-den kod',
@@ -93,8 +94,7 @@ const tk: typeof ru = {
   confirmSuccess: 'Bellige durduňyz!',
   confirmSuccessFooter: 'BeautyMed klinikasynda garaşýarys',
   confirmToPay: 'Tölenýän möçber: {price}',
-  confirmPhoneErr:
-    'Telefon belgini şu görnüşde giriziň: +7XXXXXXXXXX (Russiýa) ýa-da +993XXXXXXXX (Türkmenistan)',
+  confirmPhoneErr: 'Belgini şu görnüşde giriziň: +993 65 12-34-56',
   confirmCodeErr: 'Kod nädogry ýa-da möhleti geçen. Täzeden synanyşyň.',
   confirmSlotTaken: 'Bu wagt eýelenen. Başga wagt saýlaň.',
   confirmGenericErr: 'Bellige durmakda säwlik. Bize jaň ediň: ',
