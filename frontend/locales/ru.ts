@@ -73,7 +73,7 @@ export default {
   confirmYourName: 'Ваше имя',
   confirmNamePlaceholder: 'Айна Мырадова',
   confirmPhone: 'Номер телефона',
-  confirmPhonePlaceholder: '+993 65 12-34-56',
+  confirmPhonePlaceholder: '65 123456',
   confirmGetCode: 'Код',
   confirmResend: 'Повтор',
   confirmOtpLabel: 'Код из SMS',

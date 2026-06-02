@@ -216,7 +216,11 @@ const formattedDate = computed(() => {
         <input
           v-model="booking.name"
           type="text"
-          :placeholder="t('confirmNamePlaceholder')"
+          name="bm-fullname"
+          autocomplete="off"
+          autocapitalize="words"
+          data-1p-ignore
+          data-lpignore="true"
           class="w-full border border-border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary"
         >
       </div>
@@ -225,17 +229,26 @@ const formattedDate = computed(() => {
       <div>
         <label class="text-xs font-semibold text-slate block mb-1">{{ t('confirmPhone') }}</label>
         <div class="flex gap-2">
-          <input
-            :value="booking.phone"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            :placeholder="t('confirmPhonePlaceholder')"
-            :disabled="booking.otpSent"
-            class="flex-1 border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary disabled:bg-gray-50"
+          <div
+            class="flex items-center flex-1 border rounded-lg overflow-hidden focus-within:border-primary"
             :class="otpError ? 'border-red-400' : 'border-border'"
-            @input="onPhoneInput"
           >
+            <span class="pl-4 pr-2 text-sm text-muted select-none" :class="booking.otpSent ? 'bg-gray-50' : ''">+993</span>
+            <input
+              :value="booking.phone"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="off"
+              name="bm-phone"
+              maxlength="8"
+              data-1p-ignore
+              data-lpignore="true"
+              :placeholder="t('confirmPhonePlaceholder')"
+              :disabled="booking.otpSent"
+              class="flex-1 min-w-0 px-2 py-2.5 text-sm text-slate outline-none disabled:bg-gray-50"
+              @input="onPhoneInput"
+            >
+          </div>
           <button
             class="px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"
             :class="(cooldownSecs > 0 || submittingOtp || !consent)

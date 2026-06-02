@@ -76,7 +76,7 @@ const tk: typeof ru = {
   confirmYourName: 'Adyňyz',
   confirmNamePlaceholder: 'Aýna Myradowa',
   confirmPhone: 'Telefon belgisi',
-  confirmPhonePlaceholder: '+993 65 12-34-56',
+  confirmPhonePlaceholder: '65 123456',
   confirmGetCode: 'Kod',
   confirmResend: 'Gaýtadan',
   confirmOtpLabel: 'SMS-den kod',
