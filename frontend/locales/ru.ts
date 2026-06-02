@@ -297,6 +297,13 @@ export default {
   secMapTitle: 'Карта клиники BeautyMed — Туркменабад',
   secClinicAlt: 'Клиника BeautyMed',
 
+  // Service detail page (pages/services/[id].vue)
+  svcAllServices: '← Все услуги',
+  svcDuration: 'Длительность: {n} мин',
+  svcBookOn: 'Записаться на «{name}»',
+  svcNotFound: 'Услуга не найдена',
+  svcTitleFallback: 'Услуга — BeautyMed',
+
   // Footer
   footerPrivacy: 'Политика конфиденциальности',
 }

@@ -8,7 +8,7 @@ import type { Service, Specialty } from '~/types'
 const route = useRoute()
 const { get } = useApi()
 const booking = useBookingStore()
-const { tMed } = useI18n()
+const { t, tMed } = useI18n()
 
 const serviceId = computed(() => route.params.id as string)
 
@@ -18,7 +18,7 @@ const { data: service, error } = await useAsyncData(
 )
 
 if (error.value || !service.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Услуга не найдена', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: t('svcNotFound'), fatal: true })
 }
 
 const { data: specialty } = await useAsyncData(
@@ -43,11 +43,11 @@ const startBooking = () => {
   booking.openModal(service.value?.specialty_id)
 }
 
-const svcName = computed(() => service.value?.name ?? '')
-const svcDesc = computed(() => service.value?.description ?? '')
+const svcName = computed(() => service.value ? tMed(service.value.name) : '')
+const svcDesc = computed(() => service.value?.description ? tMed(service.value.description) : '')
 
 useHead({
-  title: computed(() => svcName.value ? `${svcName.value} — BeautyMed` : 'Услуга — BeautyMed'),
+  title: computed(() => svcName.value ? `${svcName.value} — BeautyMed` : t('svcTitleFallback')),
   meta: [
     { name: 'description', content: svcDesc },
     { property: 'og:title', content: computed(() => `${svcName.value} — BeautyMed`) },
@@ -59,7 +59,7 @@ useHead({
 <template>
   <div class="max-w-3xl mx-auto px-4 py-12">
     <NuxtLink to="/#services" class="inline-flex items-center text-sm text-muted hover:text-primary mb-6">
-      ← Все услуги
+      {{ t('svcAllServices') }}
     </NuxtLink>
 
     <div v-if="service" class="space-y-6">
@@ -70,12 +70,12 @@ useHead({
         <h1 class="text-3xl font-extrabold text-slate mb-3">{{ tMed(service.name) }}</h1>
         <div class="flex items-center gap-4 flex-wrap">
           <span class="text-xl font-bold text-primary">{{ formatPrice(service.price) }}</span>
-          <span class="text-sm text-muted">Длительность: {{ service.duration_min }} мин</span>
+          <span class="text-sm text-muted">{{ t('svcDuration', { n: service.duration_min }) }}</span>
         </div>
       </div>
 
       <article class="prose prose-slate max-w-none">
-        <p class="text-slate leading-relaxed">{{ service.description }}</p>
+        <p class="text-slate leading-relaxed">{{ tMed(service.description) }}</p>
       </article>
 
       <div class="pt-6 border-t border-border">
@@ -84,7 +84,7 @@ useHead({
           class="bg-primary text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
           @click="startBooking"
         >
-          Записаться на «{{ tMed(service.name) }}»
+          {{ t('svcBookOn', { name: tMed(service.name) }) }}
         </button>
       </div>
     </div>

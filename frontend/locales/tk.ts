@@ -300,6 +300,13 @@ const tk: typeof ru = {
   secMapTitle: 'BeautyMed klinikasynyň kartasy — Türkmenabat',
   secClinicAlt: 'BeautyMed kliniki',
 
+  // Service detail page (pages/services/[id].vue)
+  svcAllServices: '← Ähli hyzmatlar',
+  svcDuration: 'Dowamlylygy: {n} min',
+  svcBookOn: '«{name}» üçin bellige durmak',
+  svcNotFound: 'Hyzmat tapylmady',
+  svcTitleFallback: 'Hyzmat — BeautyMed',
+
   // Footer
   footerPrivacy: 'Maglumat goragy syýasaty',
 }

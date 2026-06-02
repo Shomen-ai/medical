@@ -44,6 +44,52 @@ const medicalTk: Record<string, string> = {
   'Нитевой лифтинг (нос-губы)': 'Sapakly lifting (burun-dodak)',
   'Объёмное моделирование лица': 'Ýüzüň göwrümli modelirlemesi',
 
+  // Описания услуг (миграции 002+007) — показываются на странице услуги; ключи строго совпадают с RU из БД
+  'Плазмолифтинг кожи головы. Активирует спящие фолликулы.':
+    'Kelle derisiniň plazmoliftingi. Uklap ýatan follikullary işjeňleşdirýär.',
+  'Плазмолифтинг — введение собственной плазмы. Регенерация и омоложение.':
+    'Plazmolifting — öz plazmaňy goýbermek. Dikeldiş we ýaşartma.',
+  'Инъекционное увлажнение гиалуроновой кислотой. Улучшает тургор и сияние кожи.':
+    'Gialuron turşusy bilen iňýeksion nemlendiriş. Deriniň dartgynlygyny we ýalkymyny gowulandyrýar.',
+  'Осмотр родинки или новообразования под дерматоскопом.':
+    'Meňiň ýa-da täze döremäniň dermatoskop arkaly barlagy.',
+  'Коррекция мимических морщин ботулотоксином. Цена за одну зону.':
+    'Botulotoksin bilen mimiki ýygyrtlary düzetmek. Baha bir zolak üçin.',
+  'Осмотр, постановка диагноза, назначение лечения.':
+    'Barlag, diagnoz goýmak, bejergi bellemek.',
+  'Первичный осмотр, анализ состояния кожи, подбор программы ухода.':
+    'Ilkinji barlag, deriniň ýagdaýyny seljermek, ideg maksatnamasyny saýlamak.',
+  'Трихоскопия, анализ состояния волос и кожи головы.':
+    'Trihoskopiýa, saçyň we kelle derisiniň ýagdaýyny seljermek.',
+  'Оценка внешности, планирование коррекции.':
+    'Daş keşbi bahalandyrmak, düzediş meýilnamasy.',
+  'Введение филлера для восстановления объёмов и контуров лица.':
+    'Ýüzüň göwrümini we konturlaryny dikeltmek üçin filler goýbermek.',
+  'Комплексный протокол лечения угревой болезни. Включает чистку и назначения.':
+    'Akne keseliniň toplumlaýyn bejergi teswiri. Arassalaýyşy we bellemeleri öz içine alýar.',
+  'Консультация и назначение терапии при розацеа.':
+    'Rozasea boýunça maslahat we bejergi bellemek.',
+  'Инъекции витаминного коктейля для стимуляции роста волос.':
+    'Saçyň ösüşini höweslendirmek üçin witamin kokteýliniň iňýeksiýasy.',
+  'Микроинъекции коктейля витаминов и пептидов. Питание и восстановление кожи.':
+    'Witaminleriň we peptidleriň kokteýliniň mikroiňýeksiýasy. Deriniň iýmitlenişi we dikeldişi.',
+  'Аппаратный лифтинг низкочастотными токами. Улучшает овал лица.':
+    'Pes ýygylykly toklar bilen apparatly lifting. Ýüzüň owalyny gowulandyrýar.',
+  'Подтяжка нижней трети лица нитями PDO.':
+    'Ýüzüň aşaky üçden bir böleginiň PDO sapaklary bilen dartylmagy.',
+  'Комплексная коррекция контуров с применением филлеров.':
+    'Filler ulanyp konturlary toplumlaýyn düzetmek.',
+  'Насыщение кожи головы кислородом. Улучшает питание корней.':
+    'Kelle derisini kislorod bilen baýlaşdyrmak. Saç köklüriniň iýmitlenişini gowulandyrýar.',
+  'Жидким азотом или лазером. До 5 мм в диаметре.':
+    'Suwuk azot ýa-da lazer bilen. Diametri 5 mm çenli.',
+  'Поверхностное или срединное отшелушивание. Устраняет пигментацию, мелкие морщины.':
+    'Üstki ýa-da orta gatlakly pilling. Pigmentasiýany, ownuk ýygyrtlary aýyrýar.',
+  'Глубокое очищение пор, удаление комедонов и акне. Включает распаривание и маску.':
+    'Öýjükleriň çuňňur arassalanmagy, komedonlary we akneni aýyrmak. Buglatmagy we maskany öz içine alýar.',
+  'Бесконтактное очищение кожи ультразвуком. Подходит для чувствительной кожи.':
+    'Ultrases bilen deriniň kontaktsyz arassalanmagy. Duýgur deri üçin amatly.',
+
   // Образование врачей (миграция 020) — ключи строго совпадают с засеянными RU-строками
   'Государственный медицинский университет Туркменистана им. М. Гаррыева, 2009; ординатура по дерматовенерологии':
     'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2009; dermatowenerologiýa boýunça ordinatura',
