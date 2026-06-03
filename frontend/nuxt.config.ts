@@ -9,6 +9,13 @@ export default defineNuxtConfig({
   components: {
     dirs: [{ path: '~/components', pathPrefix: false }],
   },
+  // Dev-only: проксируем клиентские /api-запросы на Go-бэкенд (в проде это делает nginx).
+  // nitro.devProxy действует только в `nuxt dev`; на прод-сборку не влияет.
+  nitro: {
+    devProxy: {
+      '/api': { target: 'http://localhost:8080/api', changeOrigin: true },
+    },
+  },
   runtimeConfig: {
     apiBase: 'http://localhost:8080',   // overridden by NUXT_API_BASE in docker
     public: {
