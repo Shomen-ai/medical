@@ -194,6 +194,8 @@ const tk: typeof ru = {
   adminPeriodMonth: 'Aý',
   adminPeriodQuarter: 'Çärýek',
   adminPeriodYear: 'Ýyl',
+  adminDateFrom: 'Başlangyç',
+  adminDateTo: 'Ahyr',
   adminStatAppts: 'Ýazgylar',
   adminStatRevenue: 'Girdeji',
   adminStatPatients: 'Hassalar',

@@ -191,6 +191,8 @@ export default {
   adminPeriodMonth: 'Месяц',
   adminPeriodQuarter: 'Квартал',
   adminPeriodYear: 'Год',
+  adminDateFrom: 'С',
+  adminDateTo: 'По',
   adminStatAppts: 'Записей',
   adminStatRevenue: 'Выручка',
   adminStatPatients: 'Пациентов',

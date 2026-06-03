@@ -49,13 +49,23 @@ const { data: dashboard } = await useAsyncData('admin-dashboard', () =>
 const { data: stats } = await useAsyncData('admin-stats', () =>
   get<Stats>('/api/admin/stats', token.value), { server: false })
 
-const { data: monthly } = await useAsyncData('admin-monthly', () =>
-  get<MonthlyPoint[]>('/api/admin/stats/monthly', token.value), { server: false })
+// ── Report date range («с/по») ────────────────────────────────────────
+const fmtDate = (dt: Date) => {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`
+}
+const todayStr = fmtDate(new Date())
+const dateFrom = ref(fmtDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)))
+const dateTo = ref(todayStr)
+const rangeQuery = computed(() => `from=${dateFrom.value}&to=${dateTo.value}`)
+
+const { data: monthly, refresh: refreshMonthly } = await useAsyncData('admin-monthly', () =>
+  get<MonthlyPoint[]>(`/api/admin/stats/monthly?${rangeQuery.value}`, token.value), { server: false })
 
 const { data: specialties } = await useAsyncData('admin-specialties', () =>
   get<Specialty[]>('/api/specialties'), { server: false })
 
-// ── Period stats ──────────────────────────────────────────────────────
+// ── Пресеты периода (заполняют поля «с/по»: от начала периода до сегодня) ──
 const periods = computed(() => [
   { key: 'day',     label: t('adminPeriodDay') },
   { key: 'week',    label: t('adminPeriodWeek') },
@@ -63,13 +73,27 @@ const periods = computed(() => [
   { key: 'quarter', label: t('adminPeriodQuarter') },
   { key: 'year',    label: t('adminPeriodYear') },
 ])
-const selectedPeriod = ref('month')
+const applyPreset = (key: string) => {
+  const n = new Date()
+  let from: Date
+  switch (key) {
+    case 'day':     from = new Date(n.getFullYear(), n.getMonth(), n.getDate()); break
+    case 'week':    { const off = (n.getDay() + 6) % 7; from = new Date(n.getFullYear(), n.getMonth(), n.getDate() - off); break }
+    case 'quarter': from = new Date(n.getFullYear(), Math.floor(n.getMonth() / 3) * 3, 1); break
+    case 'year':    from = new Date(n.getFullYear(), 0, 1); break
+    default:        from = new Date(n.getFullYear(), n.getMonth(), 1) // month
+  }
+  dateFrom.value = fmtDate(from)
+  dateTo.value = todayStr
+}
+// «с» не должно быть больше «по».
+watch(dateFrom, (v) => { if (v > dateTo.value) dateTo.value = v })
+
 const { data: periodStats, refresh: refreshPeriod } = await useAsyncData(
   'admin-period-stats',
-  () => get<PeriodStats>(`/api/admin/stats/period?period=${selectedPeriod.value}`, token.value),
+  () => get<PeriodStats>(`/api/admin/stats/period?${rangeQuery.value}`, token.value),
   { server: false }
 )
-watch(selectedPeriod, () => refreshPeriod())
 
 // ── Reviews moderation ─────────────────────────────────────────────────
 const { data: reviews, refresh: refreshReviews } = await useAsyncData('admin-reviews',
@@ -80,17 +104,18 @@ const toggleReview = async (r: AdminReview) => {
   await refreshReviews()
 }
 
-// ── Per-doctor report (same period selector) ──────────────────────────
+// ── Per-doctor report (тот же диапазон «с/по») ────────────────────────
 const { data: byDoctor, refresh: refreshByDoctor } = await useAsyncData(
   'admin-by-doctor',
-  () => get<{ doctors: DoctorReport[] }>(`/api/admin/stats/by-doctor?period=${selectedPeriod.value}`, token.value),
+  () => get<{ doctors: DoctorReport[] }>(`/api/admin/stats/by-doctor?${rangeQuery.value}`, token.value),
   { server: false }
 )
-watch(selectedPeriod, () => refreshByDoctor())
+// Изменение диапазона ИЛИ появление токена (auth.init после mount) обновляет все данные отчёта.
+watch([dateFrom, dateTo, token], () => { refreshPeriod(); refreshByDoctor(); refreshMonthly() })
 
 const exportDoctorsReport = async () => {
   const rows = byDoctor.value?.doctors ?? []
-  await downloadXlsx(`BeautyMed_doctors_${selectedPeriod.value}.xlsx`, [{
+  await downloadXlsx(`BeautyMed_doctors_${dateFrom.value}_${dateTo.value}.xlsx`, [{
     name: t('reportAdminSheet'),
     rows: [
       [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('reportColUniquePatients')],
@@ -152,10 +177,12 @@ const monthNames = computed(() => {
 const barChartData = computed(() => {
   const pts = monthly.value ?? []
   const names = monthNames.value
+  const multiYear = new Set(pts.map(p => p.month.slice(0, 4))).size > 1
   return {
     labels: pts.map(p => {
-      const [, m] = p.month.split('-')
-      return names[m] ?? p.month
+      const [y, m] = p.month.split('-')
+      const name = names[m] ?? p.month
+      return multiYear ? `${name} '${y.slice(2)}` : name
     }),
     datasets: [{
       label: t('adminChartAppts'),
@@ -252,22 +279,41 @@ useHead({ title: t('adminPageTitle') })
 
       <!-- Period stats -->
       <div>
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-3">
           <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">{{ t('adminStats') }}</h2>
-          <!-- Period tabs -->
-          <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
-            <button
-              v-for="p in periods"
-              :key="p.key"
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-colors"
-              :class="selectedPeriod === p.key
-                ? 'bg-white text-primary shadow-sm'
-                : 'text-gray-500 hover:text-slate'"
-              @click="selectedPeriod = p.key"
-            >
-              {{ p.label }}
-            </button>
+          <div class="flex flex-wrap items-end gap-3">
+            <!-- Период «с / по» (дата «по» не может быть больше сегодня) -->
+            <div>
+              <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateFrom') }}</label>
+              <input
+                v-model="dateFrom"
+                type="date"
+                :max="todayStr"
+                class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
+              >
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateTo') }}</label>
+              <input
+                v-model="dateTo"
+                type="date"
+                :min="dateFrom"
+                :max="todayStr"
+                class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
+              >
+            </div>
+            <!-- Пресеты-«быстрый выбор» (заполняют поля выше) -->
+            <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
+              <button
+                v-for="p in periods"
+                :key="p.key"
+                type="button"
+                class="px-3 py-1 text-xs font-semibold rounded-lg text-gray-500 hover:text-primary hover:bg-white transition-colors"
+                @click="applyPreset(p.key)"
+              >
+                {{ p.label }}
+              </button>
+            </div>
           </div>
         </div>
 
