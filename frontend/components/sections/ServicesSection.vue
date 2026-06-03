@@ -21,6 +21,20 @@ const activeServices = computed(() =>
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'TMT', maximumFractionDigits: 0 }).format(price)
+
+// Модалка с подробным описанием услуги (открывается по «Подробнее» / клику на название).
+const selectedService = ref<Service | null>(null)
+const selectedSpecialtyName = computed(() =>
+  props.specialties.find(s => s.id === selectedService.value?.specialty_id)?.name ?? '')
+
+const bookFromService = (svc: Service) => {
+  selectedService.value = null
+  booking.specialtyId = svc.specialty_id
+  booking.serviceId = svc.id
+  booking.servicePrice = svc.price
+  booking.finalPrice = svc.price
+  booking.openModal(svc.specialty_id)
+}
 </script>
 
 <template>
@@ -56,19 +70,24 @@ const formatPrice = (price: number) =>
           :class="i < activeServices.length - 1 ? 'border-b border-border' : ''"
         >
           <div class="flex-1 sm:pr-4">
-            <NuxtLink :to="`/services/${svc.id}`" class="text-sm font-medium text-slate hover:text-primary transition-colors">
+            <button
+              type="button"
+              class="text-sm font-medium text-slate hover:text-primary transition-colors text-left"
+              @click="selectedService = svc"
+            >
               {{ tMed(svc.name) }}
-            </NuxtLink>
+            </button>
             <div class="text-xs text-muted mt-0.5">{{ t('serviceDuration', { n: svc.duration_min }) }}</div>
           </div>
           <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
             <span class="text-sm font-semibold text-primary">{{ formatPrice(svc.price) }}</span>
-            <NuxtLink
-              :to="`/services/${svc.id}`"
+            <button
+              type="button"
               class="text-xs font-semibold text-muted hover:text-primary transition-colors hidden sm:block"
+              @click="selectedService = svc"
             >
               {{ t('more') }}
-            </NuxtLink>
+            </button>
             <button
               type="button"
               class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
@@ -83,5 +102,13 @@ const formatPrice = (price: number) =>
         </div>
       </div>
     </div>
+
+    <!-- Модалка с подробной информацией об услуге -->
+    <ServiceModal
+      :service="selectedService"
+      :specialty-name="selectedSpecialtyName"
+      @close="selectedService = null"
+      @book="bookFromService"
+    />
   </section>
 </template>
