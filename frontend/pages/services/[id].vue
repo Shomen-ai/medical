@@ -4,11 +4,12 @@
 -->
 <script setup lang="ts">
 import type { Service, Specialty } from '~/types'
+import { SERVICE_DESCRIPTIONS } from '~/data/serviceDescriptions'
 
 const route = useRoute()
 const { get } = useApi()
 const booking = useBookingStore()
-const { t, tMed } = useI18n()
+const { t, tMed, locale } = useI18n()
 
 const serviceId = computed(() => route.params.id as string)
 
@@ -44,7 +45,12 @@ const startBooking = () => {
 }
 
 const svcName = computed(() => service.value ? tMed(service.value.name) : '')
-const svcDesc = computed(() => service.value?.description ? tMed(service.value.description) : '')
+// Подробное описание из словаря (ru/tk); если услуги в нём нет — короткое из БД.
+const svcDesc = computed(() => {
+  if (!service.value) return ''
+  const rich = SERVICE_DESCRIPTIONS[service.value.name]?.[locale.value]
+  return rich || (service.value.description ? tMed(service.value.description) : '')
+})
 
 useHead({
   title: computed(() => svcName.value ? `${svcName.value} — BeautyMed` : t('svcTitleFallback')),
@@ -75,7 +81,7 @@ useHead({
       </div>
 
       <article class="prose prose-slate max-w-none">
-        <p class="text-slate leading-relaxed">{{ tMed(service.description) }}</p>
+        <p class="text-slate leading-relaxed whitespace-pre-line">{{ svcDesc }}</p>
       </article>
 
       <div class="pt-6 border-t border-border">
