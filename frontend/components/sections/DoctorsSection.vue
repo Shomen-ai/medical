@@ -53,58 +53,97 @@ const bookFromModal = (doc: Doctor) => {
   selectedDoctor.value = null
   startBooking(doc)
 }
+
+// Раскрытие списка: по умолчанию виден ~первый ряд, остальное под градиентом.
+const expanded = ref(false)
+const collapsible = computed(() => props.doctors.length > 4)
 </script>
 
 <template>
   <section class="py-10 sm:py-14 bg-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-8">
       <h2 class="text-2xl sm:text-3xl font-extrabold text-slate mb-6 sm:mb-10 text-center">{{ t('doctorsTitle') }}</h2>
-      <div v-if="doctors.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
-        <div
-          v-for="(doc, i) in doctors"
-          :key="doc.id"
-          class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-primary transition-shadow"
-        >
-          <!-- Photo with specialty badge bar (clickable → doctor modal) -->
-          <button
-            type="button"
-            class="relative h-36 sm:h-48 overflow-hidden w-full block group/photo cursor-pointer"
-            :aria-label="doc.full_name"
-            @click="openDoctor(doc, i)"
+      <div v-if="doctors.length > 0">
+        <div class="relative">
+          <div
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5 overflow-hidden transition-[max-height] duration-300"
+            :class="(collapsible && !expanded) ? 'max-h-[400px] sm:max-h-[470px]' : 'max-h-[5000px]'"
           >
-            <img
-              :src="photoSrc(doc, i)"
-              :alt="doc.full_name"
-              class="w-full h-full object-cover object-top transition-transform duration-300 group-hover/photo:scale-105"
-            >
+            <!-- Карточка целиком кликабельна (→ модалка врача); «Записаться» отдельно -->
             <div
-              class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
-              style="background: linear-gradient(135deg, #005A5F, #00959D)"
+              v-for="(doc, i) in doctors"
+              :key="doc.id"
+              role="button"
+              tabindex="0"
+              :aria-label="doc.full_name"
+              class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-primary transition-shadow cursor-pointer group/card focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              @click="openDoctor(doc, i)"
+              @keydown.enter="openDoctor(doc, i)"
             >
-              {{ tMed(doc.specialty_name) }}
+              <!-- Photo + specialty badge -->
+              <div class="relative h-36 sm:h-48 overflow-hidden">
+                <img
+                  :src="photoSrc(doc, i)"
+                  :alt="doc.full_name"
+                  class="w-full h-full object-cover object-top transition-transform duration-300 group-hover/card:scale-105"
+                >
+                <div
+                  class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
+                  style="background: linear-gradient(135deg, #005A5F, #00959D)"
+                >
+                  {{ tMed(doc.specialty_name) }}
+                </div>
+              </div>
+              <!-- Info -->
+              <div class="p-3 sm:p-4">
+                <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
+                <div class="text-xs text-muted mb-1.5">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
+                <div
+                  v-if="doc.education"
+                  class="text-[11px] leading-snug text-muted/90 mb-3 flex items-start gap-1"
+                  :title="`${t('doctorsEducation')}: ${tMed(doc.education)}`"
+                >
+                  <span class="flex-shrink-0">🎓</span>
+                  <span class="line-clamp-2">{{ tMed(doc.education) }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
+                  style="background: linear-gradient(135deg, #005A5F, #00959D)"
+                  @click.stop="startBooking(doc)"
+                >
+                  {{ t('bookShort') }}
+                </button>
+              </div>
             </div>
-          </button>
-          <!-- Info -->
-          <div class="p-3 sm:p-4">
-            <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
-            <div class="text-xs text-muted mb-1.5">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
-            <div
-              v-if="doc.education"
-              class="text-[11px] leading-snug text-muted/90 mb-3 flex items-start gap-1"
-              :title="`${t('doctorsEducation')}: ${tMed(doc.education)}`"
-            >
-              <span class="flex-shrink-0">🎓</span>
-              <span class="line-clamp-2">{{ tMed(doc.education) }}</span>
-            </div>
+          </div>
+
+          <!-- Градиент + стрелка «раскрыть» (свёрнуто) -->
+          <div
+            v-if="collapsible && !expanded"
+            class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white via-white/85 to-transparent flex items-end justify-center pointer-events-none"
+          >
             <button
               type="button"
-              class="w-full text-white text-[11px] font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
-              style="background: linear-gradient(135deg, #005A5F, #00959D)"
-              @click="startBooking(doc)"
+              :aria-label="t('doctorsShowAll')"
+              class="pointer-events-auto text-4xl leading-none text-muted hover:text-primary transition-colors"
+              @click="expanded = true"
             >
-              {{ t('bookShort') }}
+              <span class="inline-block rotate-90">›</span>
             </button>
           </div>
+        </div>
+
+        <!-- Стрелка «свернуть» (раскрыто) -->
+        <div v-if="collapsible && expanded" class="text-center mt-3">
+          <button
+            type="button"
+            :aria-label="t('doctorsCollapse')"
+            class="text-4xl leading-none text-muted hover:text-primary transition-colors"
+            @click="expanded = false"
+          >
+            <span class="inline-block -rotate-90">›</span>
+          </button>
         </div>
       </div>
 

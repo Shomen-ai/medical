@@ -57,6 +57,8 @@ const tk: typeof ru = {
   doctorsExperienceLabel: 'Iş tejribesi',
   doctorsExperienceYears: '{n} ýyl',
   doctorsModalHint: 'Has giňişleýin maglumat üçin surata basyň',
+  doctorsShowAll: 'Ähli lukmanlary görkez',
+  doctorsCollapse: 'Ýygnamak',
 
   // Reviews
   reviewsTitle: 'Hassalaryň ynam beýany',

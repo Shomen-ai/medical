@@ -54,6 +54,8 @@ export default {
   doctorsExperienceLabel: 'Стаж работы',
   doctorsExperienceYears: '{n} лет',
   doctorsModalHint: 'Нажмите на фото, чтобы узнать больше',
+  doctorsShowAll: 'Показать всех врачей',
+  doctorsCollapse: 'Свернуть',
 
   // Reviews
   reviewsTitle: 'Отзывы пациентов',
