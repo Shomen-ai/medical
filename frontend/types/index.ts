@@ -52,3 +52,25 @@ export interface SpecialtyMeta {
   description: string
   color: string
 }
+
+// Отзыв пациента из API (анонимный): рейтинг, текст, дата + имена врача/услуги для отображения.
+export interface ReviewItem {
+  id: string
+  doctor_id: string
+  service_id: string
+  rating: number
+  text: string
+  created_at: string
+  doctor_name?: string
+  specialty_name?: string
+  service_name?: string
+  is_hidden?: boolean
+}
+
+// Завершённый визит пациента, по которому можно оставить отзыв (для формы).
+export interface ReviewableAppt {
+  appointment_id: string
+  doctor_name: string
+  service_name: string
+  starts_at: string
+}

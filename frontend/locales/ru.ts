@@ -57,6 +57,25 @@ export default {
 
   // Reviews
   reviewsTitle: 'Отзывы пациентов',
+  reviewsAll: 'Все отзывы',
+  reviewsAnonymous: 'Анонимный отзыв',
+  reviewsWrite: 'Оставить отзыв',
+  reviewsFormVisit: 'Визит',
+  reviewsFormVisitPick: 'Выберите завершённый визит',
+  reviewsFormRating: 'Оценка',
+  reviewsFormText: 'Ваш отзыв',
+  reviewsSubmit: 'Опубликовать',
+  reviewsThanks: 'Спасибо за отзыв!',
+  reviewsNeedVisit: 'Оставить отзыв можно после завершённого визита',
+  reviewsLoginHint: 'Войдите в кабинет, чтобы оставить отзыв',
+  reviewsError: 'Не удалось отправить отзыв, попробуйте позже',
+  reviewsEmpty: 'Пока нет отзывов',
+  reviewsLoadMore: 'Показать ещё',
+  reviewsFilterAllServices: 'Все услуги',
+  reviewsFilterAllDoctors: 'Все врачи',
+  adminReviews: 'Отзывы',
+  adminReviewHide: 'Скрыть',
+  adminReviewShow: 'Показать',
 
   // Contacts
   contactsTitle: 'Контакты',

@@ -9,7 +9,7 @@ definePageMeta({ layout: 'staff' })
 
 const auth = useAuthStore()
 const router = useRouter()
-const { get, post } = useApi()
+const { get, post, patch } = useApi()
 const { t } = useI18n()
 
 onMounted(() => {
@@ -34,6 +34,10 @@ interface Specialty { id: string; name: string }
 interface DoctorReport {
   doctor_id: string; doctor_name: string; specialty_name: string
   appointments: number; unique_patients: number
+}
+interface AdminReview {
+  id: string; rating: number; text: string; created_at: string
+  doctor_name: string; service_name: string; is_hidden: boolean
 }
 
 // ── Data fetching ────────────────────────────────────────────────────────
@@ -66,6 +70,15 @@ const { data: periodStats, refresh: refreshPeriod } = await useAsyncData(
   { server: false }
 )
 watch(selectedPeriod, () => refreshPeriod())
+
+// ── Reviews moderation ─────────────────────────────────────────────────
+const { data: reviews, refresh: refreshReviews } = await useAsyncData('admin-reviews',
+  () => get<AdminReview[]>('/api/admin/reviews', token.value), { server: false })
+
+const toggleReview = async (r: AdminReview) => {
+  await patch(`/api/admin/reviews/${r.id}`, { hidden: !r.is_hidden }, auth.token!)
+  await refreshReviews()
+}
 
 // ── Per-doctor report (same period selector) ──────────────────────────
 const { data: byDoctor, refresh: refreshByDoctor } = await useAsyncData(
@@ -343,6 +356,36 @@ useHead({ title: t('adminPageTitle') })
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Отзывы (модерация) -->
+      <div>
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{{ t('adminReviews') }}</h2>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
+          <div
+            v-for="r in reviews ?? []"
+            :key="r.id"
+            class="p-4 flex items-start gap-3"
+            :class="r.is_hidden ? 'opacity-50' : ''"
+          >
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <StarRating :model-value="r.rating" readonly size="text-sm" />
+                <span class="text-[11px] text-gray-400 truncate">{{ r.service_name }} · {{ r.doctor_name }}</span>
+              </div>
+              <p class="text-sm text-slate">{{ r.text }}</p>
+            </div>
+            <button
+              type="button"
+              class="text-xs font-semibold px-3 py-1.5 rounded-lg border shrink-0"
+              :class="r.is_hidden ? 'border-primary text-primary' : 'border-red-200 text-red-500'"
+              @click="toggleReview(r)"
+            >
+              {{ r.is_hidden ? t('adminReviewShow') : t('adminReviewHide') }}
+            </button>
+          </div>
+          <div v-if="(reviews ?? []).length === 0" class="p-4 text-sm text-gray-400">{{ t('reviewsEmpty') }}</div>
         </div>
       </div>
 

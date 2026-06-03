@@ -60,6 +60,25 @@ const tk: typeof ru = {
 
   // Reviews
   reviewsTitle: 'Hassalaryň ynam beýany',
+  reviewsAll: 'Ähli synlar',
+  reviewsAnonymous: 'Anonim syn',
+  reviewsWrite: 'Syn galdyrmak',
+  reviewsFormVisit: 'Kabul ediş',
+  reviewsFormVisitPick: 'Tamamlanan kabul edişi saýlaň',
+  reviewsFormRating: 'Baha',
+  reviewsFormText: 'Siziň synyňyz',
+  reviewsSubmit: 'Çap etmek',
+  reviewsThanks: 'Synyňyz üçin sag boluň!',
+  reviewsNeedVisit: 'Syn diňe tamamlanan kabul edişden soň galdyrylyp bilner',
+  reviewsLoginHint: 'Syn galdyrmak üçin hasabyňyza giriň',
+  reviewsError: 'Syn ugratmak başartmady, soňra synanyşyň',
+  reviewsEmpty: 'Häzirlikçe syn ýok',
+  reviewsLoadMore: 'Köpräk görkez',
+  reviewsFilterAllServices: 'Ähli hyzmatlar',
+  reviewsFilterAllDoctors: 'Ähli lukmanlar',
+  adminReviews: 'Synlar',
+  adminReviewHide: 'Gizle',
+  adminReviewShow: 'Görkez',
 
   // Contacts
   contactsTitle: 'Habarlaşmak',
