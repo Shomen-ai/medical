@@ -39,6 +39,20 @@ const STOCK_PHOTOS = [
 
 const photoSrc = (doc: Doctor, index: number) =>
   (doc.photo_url && doc.photo_url.trim()) || STOCK_PHOTOS[index % STOCK_PHOTOS.length]
+
+// Модалка с информацией о враче (открывается по клику на фото).
+const selectedDoctor = ref<Doctor | null>(null)
+const selectedPhoto = ref('')
+
+const openDoctor = (doc: Doctor, index: number) => {
+  selectedDoctor.value = doc
+  selectedPhoto.value = photoSrc(doc, index)
+}
+
+const bookFromModal = (doc: Doctor) => {
+  selectedDoctor.value = null
+  startBooking(doc)
+}
 </script>
 
 <template>
@@ -51,20 +65,29 @@ const photoSrc = (doc: Doctor, index: number) =>
           :key="doc.id"
           class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
         >
-          <!-- Photo with specialty badge bar -->
-          <div class="relative h-36 sm:h-48 overflow-hidden">
+          <!-- Photo with specialty badge bar (clickable → doctor modal) -->
+          <button
+            type="button"
+            class="relative h-36 sm:h-48 overflow-hidden w-full block group/photo cursor-pointer"
+            :aria-label="doc.full_name"
+            @click="openDoctor(doc, i)"
+          >
             <img
               :src="photoSrc(doc, i)"
               :alt="doc.full_name"
-              class="w-full h-full object-cover object-top"
+              class="w-full h-full object-cover object-top transition-transform duration-300 group-hover/photo:scale-105"
             >
+            <!-- Hover hint -->
+            <div class="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors flex items-center justify-center">
+              <span class="opacity-0 group-hover/photo:opacity-100 transition-opacity text-white text-2xl">🔍</span>
+            </div>
             <div
               class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
             >
               {{ tMed(doc.specialty_name) }}
             </div>
-          </div>
+          </button>
           <!-- Info -->
           <div class="p-3 sm:p-4">
             <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
@@ -120,5 +143,13 @@ const photoSrc = (doc: Doctor, index: number) =>
         </div>
       </div>
     </div>
+
+    <!-- Модалка с подробной информацией о враче (специальность, стаж, образование) -->
+    <DoctorModal
+      :doctor="selectedDoctor"
+      :photo="selectedPhoto"
+      @close="selectedDoctor = null"
+      @book="bookFromModal"
+    />
   </section>
 </template>

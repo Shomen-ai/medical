@@ -50,6 +50,10 @@ export default {
   doctorsTitle: 'Наши врачи',
   doctorsExperience: 'Стаж {n} лет',
   doctorsEducation: 'Образование',
+  doctorsSpecialty: 'Специальность',
+  doctorsExperienceLabel: 'Стаж работы',
+  doctorsExperienceYears: '{n} лет',
+  doctorsModalHint: 'Нажмите на фото, чтобы узнать больше',
 
   // Reviews
   reviewsTitle: 'Отзывы пациентов',

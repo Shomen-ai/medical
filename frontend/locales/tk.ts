@@ -53,6 +53,10 @@ const tk: typeof ru = {
   doctorsTitle: 'Lukmanlarymyz',
   doctorsExperience: 'Tejribesi {n} ýyl',
   doctorsEducation: 'Bilim',
+  doctorsSpecialty: 'Hünäri',
+  doctorsExperienceLabel: 'Iş tejribesi',
+  doctorsExperienceYears: '{n} ýyl',
+  doctorsModalHint: 'Has giňişleýin maglumat üçin surata basyň',
 
   // Reviews
   reviewsTitle: 'Hassalaryň ynam beýany',
