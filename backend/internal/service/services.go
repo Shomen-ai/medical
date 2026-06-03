@@ -20,6 +20,7 @@ type Services struct {
 	SMS       *SMSService
 	Admin     *repository.AdminRepo
 	Scheduler *CronScheduler
+	Reviews   *ReviewService
 	Repos     *Repos
 }
 
@@ -30,6 +31,7 @@ type Repos struct {
 	Specialties  *repository.SpecialtyRepo
 	Services     *repository.ServiceRepo
 	Appointments *repository.AppointmentRepo
+	Reviews      *repository.ReviewRepo
 }
 
 // New собирает все сервисы и репозитории BeautyMed на основе подключений к Postgres, Redis и конфига.
@@ -40,6 +42,7 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 		Specialties:  repository.NewSpecialtyRepo(db),
 		Services:     repository.NewServiceRepo(db),
 		Appointments: repository.NewAppointmentRepo(db),
+		Reviews:      repository.NewReviewRepo(db),
 	}
 	adminRepo := repository.NewAdminRepo(db)
 	otp := NewOTPService(rdb)
@@ -55,6 +58,7 @@ func New(db *sqlx.DB, rdb *redis.Client, cfg *config.Config) *Services {
 		SMS:       sms,
 		Admin:     adminRepo,
 		Scheduler: NewCronScheduler(adminRepo, repos.Specialties, repos.Doctors, schedule, sms),
+		Reviews:   NewReviewService(repos),
 		Repos:     repos,
 	}
 }

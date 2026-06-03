@@ -30,6 +30,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 	cabH := handler.NewCabinetHandler(svc)
 	drH := handler.NewDoctorPortalHandler(svc)
 	adminH := handler.NewAdminHandler(svc)
+	revH := handler.NewReviewHandler(svc)
 
 	api := r.Group("/api")
 	{
@@ -49,12 +50,14 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 		api.GET("/doctors/:id", docH.Get)
 		api.GET("/services", svcH.List)
 		api.GET("/services/:id", svcH.Get)
+		api.GET("/reviews", revH.List)
 		api.GET("/doctors/:id/slots", bookH.GetSlots)
 		api.GET("/doctors/:id/available-dates", bookH.GetAvailableDates)
 		api.POST("/promo/check", bookH.CheckPromo)
 
 		// Booking (patient)
 		api.POST("/appointments", patientMw, bookH.Create)
+		api.POST("/reviews", patientMw, revH.Create)
 
 		// Patient cabinet
 		cabinet := api.Group("/cabinet", patientMw)
@@ -65,6 +68,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			cabinet.PATCH("/appointments/:id/reschedule", cabH.Reschedule)
 			cabinet.GET("/profile", cabH.GetProfile)
 			cabinet.PATCH("/profile", cabH.UpdateProfile)
+			cabinet.GET("/reviewable", revH.Reviewable)
 		}
 
 		// Doctor portal
@@ -97,6 +101,8 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			admin.GET("/stats/monthly", adminH.MonthlyStats)
 			admin.GET("/stats/period", adminH.PeriodStats)
 			admin.GET("/stats/by-doctor", adminH.StatsByDoctor)
+			admin.GET("/reviews", revH.AdminList)
+			admin.PATCH("/reviews/:id", revH.AdminSetHidden)
 		}
 	}
 
