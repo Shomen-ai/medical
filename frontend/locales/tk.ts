@@ -281,6 +281,7 @@ const tk: typeof ru = {
   profLoadError: 'Profili ýüklemek başartmady',
   profSaveError: 'Ýatda saklamak başartmady',
   profFullName: 'F.A.A.',
+  profFullNamePlaceholder: 'Babaýew Begenç Mämmedowiç',
   profBirthDate: 'Doglan senesi',
   profGender: 'Jynsy',
   profGenderMale: 'Erkek',

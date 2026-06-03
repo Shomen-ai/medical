@@ -278,6 +278,7 @@ export default {
   profLoadError: 'Не удалось загрузить профиль',
   profSaveError: 'Не удалось сохранить',
   profFullName: 'ФИО',
+  profFullNamePlaceholder: 'Бабаев Бегенч Маммедович',
   profBirthDate: 'Дата рождения',
   profGender: 'Пол',
   profGenderMale: 'Мужской',

@@ -115,7 +115,7 @@ useHead({ title: t('profPageTitle') })
         <input
           v-model="form.full_name"
           type="text"
-          placeholder="Babaýew Begenç Mämmedowiç"
+          :placeholder="t('profFullNamePlaceholder')"
           class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
         >
       </div>
