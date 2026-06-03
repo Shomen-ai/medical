@@ -275,3 +275,27 @@ func (r *AdminRepo) MonthlyStats() ([]model.MonthlyStatPoint, error) {
 		ORDER BY DATE_TRUNC('month', starts_at)`)
 	return pts, err
 }
+
+// MonthlyStatsRange возвращает помесячные метрики за интервал [from, to) — строку на КАЖДЫЙ
+// месяц периода, включая месяцы без записей (через generate_series), для графика по всему периоду.
+func (r *AdminRepo) MonthlyStatsRange(from, to time.Time) ([]model.MonthlyStatPoint, error) {
+	var pts []model.MonthlyStatPoint
+	err := r.db.Select(&pts, `
+		SELECT TO_CHAR(m, 'YYYY-MM') AS month,
+		       COALESCE(c.appointments, 0) AS appointments,
+		       COALESCE(c.revenue, 0)      AS revenue
+		FROM generate_series(
+		         DATE_TRUNC('month', $1::timestamptz),
+		         DATE_TRUNC('month', ($2::timestamptz - INTERVAL '1 day')),
+		         INTERVAL '1 month') AS m
+		LEFT JOIN (
+		    SELECT DATE_TRUNC('month', starts_at) AS mo,
+		           COUNT(*) AS appointments,
+		           COALESCE(SUM(final_price) FILTER (WHERE status = 'completed'), 0) AS revenue
+		    FROM appointments
+		    WHERE starts_at >= $1 AND starts_at < $2
+		    GROUP BY 1
+		) c ON c.mo = m
+		ORDER BY m`, from, to)
+	return pts, err
+}

@@ -330,6 +330,30 @@ func periodRange(period string) (from, to time.Time, ok bool) {
 	return
 }
 
+// resolveReportRange парсит даты «с»/«по» (YYYY-MM-DD) в полузакрытый интервал [from, toExcl).
+// Дефолт — текущий месяц. «По» клампится к сегодняшнему дню (запрет будущих дат). Гарантирует from<=to.
+func resolveReportRange(fromStr, toStr string, now time.Time) (from, toExcl time.Time) {
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	// from: по умолчанию — 1-е число текущего месяца.
+	from = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	if d, err := time.Parse("2006-01-02", fromStr); err == nil {
+		from = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+	}
+	// to: по умолчанию — сегодня; будущее клампим к сегодня.
+	toDay := today
+	if d, err := time.Parse("2006-01-02", toStr); err == nil {
+		toDay = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+	}
+	if toDay.After(today) {
+		toDay = today
+	}
+	if from.After(toDay) {
+		from = toDay
+	}
+	toExcl = toDay.AddDate(0, 0, 1) // «по» включительно
+	return
+}
+
 // Revenue возвращает суммарную выручку клиники за выбранный период.
 // GET /api/admin/revenue?period=week  (day|week|month|quarter|year)
 func (h *AdminHandler) Revenue(c *gin.Context) {
@@ -347,15 +371,10 @@ func (h *AdminHandler) Revenue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"period": period, "from": from, "to": to, "total": total})
 }
 
-// PeriodStats возвращает статистику записей и выручки за выбранный период.
-// GET /api/admin/stats/period?period=month  (day|week|month|quarter|year)
+// PeriodStats возвращает статистику записей и выручки за интервал дат [from, to].
+// GET /api/admin/stats/period?from=2026-01-01&to=2026-06-03  (даты YYYY-MM-DD; «to» не больше сегодня)
 func (h *AdminHandler) PeriodStats(c *gin.Context) {
-	period := c.DefaultQuery("period", "month")
-	from, to, ok := periodRange(period)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period"})
-		return
-	}
+	from, to := resolveReportRange(c.Query("from"), c.Query("to"), time.Now().UTC())
 	s, err := h.svc.Admin.PeriodStats(from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -364,21 +383,16 @@ func (h *AdminHandler) PeriodStats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
-// StatsByDoctor возвращает разбивку приёмов и уникальных пациентов по каждому врачу за период.
-// GET /api/admin/stats/by-doctor?period=month  (day|week|month|quarter|year)
+// StatsByDoctor возвращает разбивку приёмов и уникальных пациентов по каждому врачу за интервал дат.
+// GET /api/admin/stats/by-doctor?from=2026-01-01&to=2026-06-03
 func (h *AdminHandler) StatsByDoctor(c *gin.Context) {
-	period := c.DefaultQuery("period", "month")
-	from, to, ok := periodRange(period)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period"})
-		return
-	}
+	from, to := resolveReportRange(c.Query("from"), c.Query("to"), time.Now().UTC())
 	rows, err := h.svc.Admin.ByDoctorStats(from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"period": period, "from": from, "to": to, "doctors": rows})
+	c.JSON(http.StatusOK, gin.H{"from": from, "to": to, "doctors": rows})
 }
 
 // Stats возвращает общую сводную статистику по клинике за всё время.
@@ -392,10 +406,12 @@ func (h *AdminHandler) Stats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
-// MonthlyStats возвращает разбивку показателей по месяцам для построения графиков.
-// GET /api/admin/stats/monthly
+// MonthlyStats возвращает помесячную разбивку за интервал дат — каждый месяц периода
+// (включая месяцы без записей) для построения графика.
+// GET /api/admin/stats/monthly?from=2026-01-01&to=2026-06-03
 func (h *AdminHandler) MonthlyStats(c *gin.Context) {
-	pts, err := h.svc.Admin.MonthlyStats()
+	from, to := resolveReportRange(c.Query("from"), c.Query("to"), time.Now().UTC())
+	pts, err := h.svc.Admin.MonthlyStatsRange(from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
