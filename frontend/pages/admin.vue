@@ -43,10 +43,10 @@ interface AdminReview {
 // ── Data fetching ────────────────────────────────────────────────────────
 const token = computed(() => auth.token ?? undefined)
 
-const { data: dashboard } = await useAsyncData('admin-dashboard', () =>
+const { data: dashboard, refresh: refreshDashboard } = await useAsyncData('admin-dashboard', () =>
   get<{ kpi: KPI; appointments: Appointment[] }>('/api/admin/dashboard', token.value), { server: false })
 
-const { data: stats } = await useAsyncData('admin-stats', () =>
+const { data: stats, refresh: refreshStats } = await useAsyncData('admin-stats', () =>
   get<Stats>('/api/admin/stats', token.value), { server: false })
 
 // ── Report date range («с/по») ────────────────────────────────────────
@@ -110,8 +110,8 @@ const { data: byDoctor, refresh: refreshByDoctor } = await useAsyncData(
   () => get<{ doctors: DoctorReport[] }>(`/api/admin/stats/by-doctor?${rangeQuery.value}`, token.value),
   { server: false }
 )
-// Изменение диапазона ИЛИ появление токена (auth.init после mount) обновляет все данные отчёта.
-watch([dateFrom, dateTo, token], () => { refreshPeriod(); refreshByDoctor(); refreshMonthly() })
+// Диапазон «с/по» обновляет данные, зависящие от него.
+watch([dateFrom, dateTo], () => { refreshPeriod(); refreshByDoctor(); refreshMonthly() })
 
 const exportDoctorsReport = async () => {
   const rows = byDoctor.value?.doctors ?? []
@@ -139,6 +139,15 @@ const { data: allAppointments, pending: loadingAppts, refresh: refreshAppts } = 
 )
 
 watch([filterDate, filterStatus], () => refreshAppts())
+
+// Появление токена (auth.init выполняется в onMounted — ПОСЛЕ первых фетчей с server:false)
+// перезагружает ВСЕ панели; иначе при жёстком обновлении/прямом заходе они остаются пустыми
+// («СЕГОДНЯ»-карточки, отчёт, статусы записей, таблица записей внизу).
+watch(token, (t) => {
+  if (!t) return
+  refreshDashboard(); refreshStats(); refreshPeriod(); refreshByDoctor()
+  refreshMonthly(); refreshReviews(); refreshAppts()
+})
 
 // ── Schedule generation ────────────────────────────────────────────────
 const schedYear = ref(new Date().getFullYear())
