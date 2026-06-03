@@ -31,12 +31,12 @@ const scrollByCard = (dir: number) => track.value?.scrollBy({ left: dir * 300, b
       <div v-if="items.length" class="relative">
         <button
           type="button" :aria-label="t('back')"
-          class="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-card text-slate hover:text-primary"
+          class="hidden sm:flex absolute -left-7 top-1/2 -translate-y-1/2 z-10 items-center justify-center text-4xl leading-none text-muted hover:text-primary transition-colors"
           @click="scrollByCard(-1)"
         >‹</button>
         <button
           type="button" :aria-label="t('next')"
-          class="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-card text-slate hover:text-primary"
+          class="hidden sm:flex absolute -right-7 top-1/2 -translate-y-1/2 z-10 items-center justify-center text-4xl leading-none text-muted hover:text-primary transition-colors"
           @click="scrollByCard(1)"
         >›</button>
 

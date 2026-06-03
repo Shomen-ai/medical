@@ -19,6 +19,8 @@ export default {
       boxShadow: {
         card:    '0 4px 24px rgba(0, 110, 115, 0.12)',
         'card-lg': '0 6px 32px rgba(0, 0, 0, 0.10)',
+        // Подсветка кликабельной карточки при наведении — тень в primary-цвете.
+        'card-primary': '0 12px 36px -6px rgba(0, 124, 129, 0.45)',
       },
     },
   },

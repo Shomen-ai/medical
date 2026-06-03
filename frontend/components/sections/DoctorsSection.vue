@@ -63,7 +63,7 @@ const bookFromModal = (doc: Doctor) => {
         <div
           v-for="(doc, i) in doctors"
           :key="doc.id"
-          class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-lg transition-shadow"
+          class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-primary transition-shadow"
         >
           <!-- Photo with specialty badge bar (clickable → doctor modal) -->
           <button
@@ -77,10 +77,6 @@ const bookFromModal = (doc: Doctor) => {
               :alt="doc.full_name"
               class="w-full h-full object-cover object-top transition-transform duration-300 group-hover/photo:scale-105"
             >
-            <!-- Hover hint -->
-            <div class="absolute inset-0 bg-black/0 group-hover/photo:bg-black/20 transition-colors flex items-center justify-center">
-              <span class="opacity-0 group-hover/photo:opacity-100 transition-opacity text-white text-2xl">🔍</span>
-            </div>
             <div
               class="absolute bottom-0 inset-x-0 py-1.5 text-center text-white text-[9px] font-bold uppercase tracking-wide"
               style="background: linear-gradient(135deg, #005A5F, #00959D)"
