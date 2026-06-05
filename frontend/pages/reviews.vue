@@ -72,7 +72,7 @@ useHead({ title: () => `${t('reviewsTitle')} — BeautyMed` })
       <NuxtLink to="/" class="text-sm text-primary">{{ t('back') }}</NuxtLink>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate mt-2 mb-6">{{ t('reviewsTitle') }}</h1>
 
-      <ReviewForm class="mb-8" @created="() => refresh()" />
+      <ReviewForm class="mb-8" :doctors="doctors ?? []" :services="services ?? []" @created="() => refresh()" />
 
       <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <select v-model="serviceId" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary bg-white">

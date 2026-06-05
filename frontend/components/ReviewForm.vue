@@ -1,42 +1,30 @@
 <!--
   Файл: components/ReviewForm.vue
-  Назначение: форма написания отзыва — выбор завершённого визита, оценка звёздами и текст.
-  Доступна только авторизованному пациенту; визиты тянутся из /api/cabinet/reviewable.
+  Назначение: форма написания отзыва. Доступна любому авторизованному пациенту;
+  врач и услуга указываются по желанию (для фильтрации на странице отзывов).
 -->
 <script setup lang="ts">
-import type { ReviewableAppt, ReviewItem } from '~/types'
+import type { Doctor, Service, ReviewItem } from '~/types'
 
+const props = defineProps<{ doctors: Doctor[]; services: Service[] }>()
 const emit = defineEmits<{ created: [review: ReviewItem] }>()
 
 const { t } = useI18n()
-const { get, post } = useApi()
+const { post } = useApi()
 const auth = useAuthStore()
 
-const appts = ref<ReviewableAppt[]>([])
-const appointmentId = ref('')
+const doctorId = ref('')
+const serviceId = ref('')
 const rating = ref(0)
 const text = ref('')
 const submitting = ref(false)
 const error = ref('')
 const done = ref(false)
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso)
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`
-}
-
-const loadAppts = async () => {
-  if (!auth.isPatient || !auth.token) return
-  try {
-    appts.value = (await get<ReviewableAppt[]>('/api/cabinet/reviewable', auth.token)) ?? []
-  } catch { /* оставляем пустым */ }
-}
-
-onMounted(() => { auth.init(); loadAppts() })
+onMounted(() => auth.init())
 
 const canSubmit = computed(() =>
-  !!appointmentId.value && rating.value >= 1 && text.value.trim().length >= 3 && !submitting.value)
+  rating.value >= 1 && text.value.trim().length >= 3 && !submitting.value)
 
 const submit = async () => {
   error.value = ''
@@ -44,16 +32,16 @@ const submit = async () => {
   submitting.value = true
   try {
     const review = await post<ReviewItem>('/api/reviews', {
-      appointment_id: appointmentId.value,
       rating: rating.value,
       text: text.value.trim(),
+      doctor_id: doctorId.value,
+      service_id: serviceId.value,
     }, auth.token!)
     done.value = true
-    appointmentId.value = ''; rating.value = 0; text.value = ''
+    doctorId.value = ''; serviceId.value = ''; rating.value = 0; text.value = ''
     emit('created', review)
-  } catch (e: any) {
-    const status = e?.response?.status ?? e?.statusCode
-    error.value = status === 403 ? t('reviewsNeedVisit') : t('reviewsError')
+  } catch {
+    error.value = t('reviewsError')
   } finally {
     submitting.value = false
   }
@@ -65,18 +53,24 @@ const submit = async () => {
     <h3 class="text-lg font-bold text-slate mb-4">{{ t('reviewsWrite') }}</h3>
 
     <p v-if="!auth.isPatient" class="text-sm text-muted">{{ t('reviewsLoginHint') }}</p>
-    <p v-else-if="appts.length === 0 && !done" class="text-sm text-muted">{{ t('reviewsNeedVisit') }}</p>
     <p v-else-if="done" class="text-sm text-primary font-semibold">{{ t('reviewsThanks') }}</p>
 
     <form v-else class="space-y-4" @submit.prevent="submit">
-      <div>
-        <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('reviewsFormVisit') }}</label>
-        <select v-model="appointmentId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
-          <option value="">{{ t('reviewsFormVisitPick') }}</option>
-          <option v-for="a in appts" :key="a.appointment_id" :value="a.appointment_id">
-            {{ a.service_name }} · {{ a.doctor_name }} · {{ formatDate(a.starts_at) }}
-          </option>
-        </select>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('reviewsFormService') }}</label>
+          <select v-model="serviceId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+            <option value="">{{ t('reviewsFormOptional') }}</option>
+            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('reviewsFormDoctor') }}</label>
+          <select v-model="doctorId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+            <option value="">{{ t('reviewsFormOptional') }}</option>
+            <option v-for="d in doctors" :key="d.id" :value="d.id">{{ d.full_name }}</option>
+          </select>
+        </div>
       </div>
 
       <div>

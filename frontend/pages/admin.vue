@@ -124,6 +124,73 @@ const exportDoctorsReport = async () => {
   }])
 }
 
+// ── Расширенный отчёт: один Excel с 4 листами ──────────────────────────
+interface FullReport {
+  by_service: { service_name: string; specialty_name: string; appointments: number; revenue: number }[]
+  by_weekday: { n: number; count: number }[]
+  by_hour: { n: number; count: number }[]
+  ratings_by_doctor: { name: string; avg: number; count: number }[]
+  ratings_by_service: { name: string; avg: number; count: number }[]
+  retention: { month: string; new_patients: number; returning_patients: number }[]
+}
+const exportingFull = ref(false)
+const exportFullReport = async () => {
+  exportingFull.value = true
+  try {
+    const r = await get<FullReport>(`/api/admin/report/full?${rangeQuery.value}`, token.value)
+    const weekdays = t('rfWeekdays').split(',')
+    const monthNamesArr = t('adminMonthShort').split(',')
+    const monthLabel = (ym: string) => {
+      const [y, m] = ym.split('-')
+      return `${monthNamesArr[+m - 1] ?? m} ${y}`
+    }
+    type Row = (string | number)[]
+    const sheets = [
+      {
+        name: t('rfSheetServices'),
+        rows: [
+          [t('reportColSpecialty'), t('rfService'), t('reportColAppointments'), t('rfRevenue')],
+          ...r.by_service.map(s => [s.specialty_name, s.service_name, s.appointments, s.revenue] as Row),
+        ],
+      },
+      {
+        name: t('rfSheetTime'),
+        rows: [
+          [t('rfByWeekday')] as Row,
+          [t('rfWeekday'), t('rfCount')],
+          ...r.by_weekday.map(w => [weekdays[w.n - 1] ?? String(w.n), w.count] as Row),
+          [] as Row,
+          [t('rfByHour')] as Row,
+          [t('rfHour'), t('rfCount')],
+          ...r.by_hour.map(h => [`${String(h.n).padStart(2, '0')}:00`, h.count] as Row),
+        ],
+      },
+      {
+        name: t('rfSheetRatings'),
+        rows: [
+          [t('rfByDoctor')] as Row,
+          [t('reportColDoctor'), t('rfRating'), t('rfReviews')],
+          ...r.ratings_by_doctor.map(x => [x.name, x.avg, x.count] as Row),
+          [] as Row,
+          [t('rfByService')] as Row,
+          [t('rfService'), t('rfRating'), t('rfReviews')],
+          ...r.ratings_by_service.map(x => [x.name, x.avg, x.count] as Row),
+        ],
+      },
+      {
+        name: t('rfSheetRetention'),
+        rows: [
+          [t('rfMonth'), t('rfNew'), t('rfReturning')],
+          ...r.retention.map(x => [monthLabel(x.month), x.new_patients, x.returning_patients] as Row),
+        ],
+      },
+    ]
+    await downloadXlsx(`BeautyMed_report_${dateFrom.value}_${dateTo.value}.xlsx`, sheets)
+  } finally {
+    exportingFull.value = false
+  }
+}
+
 // ── Appointments with date filter ─────────────────────────────────────
 const filterDate = ref('')
 const filterStatus = ref('scheduled')
@@ -379,14 +446,24 @@ useHead({ title: t('adminPageTitle') })
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
           <h2 class="font-semibold text-slate">{{ t('reportAdminTitle') }}</h2>
-          <button
-            type="button"
-            class="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-            style="background: linear-gradient(135deg, #005A5F, #00959D)"
-            @click="exportDoctorsReport"
-          >
-            📊 {{ t('reportExport') }}
-          </button>
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors disabled:opacity-50"
+              :disabled="exportingFull"
+              @click="exportFullReport"
+            >
+              📑 {{ exportingFull ? t('loading') : t('rfExport') }}
+            </button>
+            <button
+              type="button"
+              class="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              style="background: linear-gradient(135deg, #005A5F, #00959D)"
+              @click="exportDoctorsReport"
+            >
+              📊 {{ t('reportExport') }}
+            </button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
