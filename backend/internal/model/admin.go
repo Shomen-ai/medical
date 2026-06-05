@@ -78,6 +78,36 @@ type MonthlyStatPoint struct {
 	Revenue      float64 `db:"revenue"      json:"revenue"`
 }
 
+// ── Модели расширенного отчёта (Excel, листы) ───────────────────────────
+
+// ServiceReportRow — строка отчёта «Выручка по услугам»: приёмы и выручка по услуге.
+type ServiceReportRow struct {
+	ServiceName   string  `db:"service_name"   json:"service_name"`
+	SpecialtyName string  `db:"specialty_name" json:"specialty_name"`
+	Appointments  int     `db:"appointments"   json:"appointments"`
+	Revenue       float64 `db:"revenue"        json:"revenue"`
+}
+
+// TimeBucketRow — число приёмов в корзине времени (n = день недели 1..7 ИЛИ час 0..23).
+type TimeBucketRow struct {
+	N     int `db:"n"     json:"n"`
+	Count int `db:"count" json:"count"`
+}
+
+// RatingRow — средняя оценка и число отзывов по сущности (врач или услуга).
+type RatingRow struct {
+	Name  string  `db:"name"  json:"name"`
+	Avg   float64 `db:"avg"   json:"avg"`
+	Count int     `db:"count" json:"count"`
+}
+
+// RetentionRow — новые и вернувшиеся пациенты за месяц.
+type RetentionRow struct {
+	Month     string `db:"month"              json:"month"`
+	New       int    `db:"new_patients"       json:"new_patients"`
+	Returning int    `db:"returning_patients" json:"returning_patients"`
+}
+
 // AppointmentReminder — минимально достаточные данные для отправки SMS-напоминания за сутки.
 // AppointmentReminder holds the data needed to send a 24h reminder SMS.
 type AppointmentReminder struct {

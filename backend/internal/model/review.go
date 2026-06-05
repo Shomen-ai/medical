@@ -4,13 +4,14 @@ package model
 
 import "time"
 
-// Review — отзыв пациента. user_id/appointment_id хранятся для аудита, но наружу не отдаются.
+// Review — отзыв пациента. Привязка к врачу/услуге/визиту необязательна (отзыв может
+// оставить любой авторизованный пациент). user_id/appointment_id наружу не отдаются.
 type Review struct {
 	ID            string    `db:"id"             json:"id"`
 	UserID        string    `db:"user_id"        json:"-"`
-	AppointmentID string    `db:"appointment_id" json:"-"`
-	DoctorID      string    `db:"doctor_id"      json:"doctor_id"`
-	ServiceID     string    `db:"service_id"     json:"service_id"`
+	AppointmentID *string   `db:"appointment_id" json:"-"`
+	DoctorID      *string   `db:"doctor_id"      json:"doctor_id,omitempty"`
+	ServiceID     *string   `db:"service_id"     json:"service_id,omitempty"`
 	Rating        int       `db:"rating"         json:"rating"`
 	Text          string    `db:"text"           json:"text"`
 	IsHidden      bool      `db:"is_hidden"      json:"is_hidden"`

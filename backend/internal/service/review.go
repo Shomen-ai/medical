@@ -9,12 +9,19 @@ import (
 	"beautymed/internal/model"
 )
 
-// Ошибки валидации/доступа отзывов (хендлер мапит их в 400/403).
+// Ошибки валидации отзывов (хендлер мапит их в 400).
 var (
 	ErrReviewText   = errors.New("review text must be 3..1000 characters")
 	ErrReviewRating = errors.New("rating must be between 1 and 5")
-	ErrNotEligible  = errors.New("a completed visit is required to leave a review")
 )
+
+// emptyToNil превращает пустую строку (врач/услуга не выбраны) в nil → NULL в БД.
+func emptyToNil(s string) *string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	return &s
+}
 
 // ReviewService — сервис отзывов поверх набора репозиториев.
 type ReviewService struct{ repos *Repos }
@@ -36,20 +43,14 @@ func ValidateReviewInput(rating int, text string) (clean string, err error) {
 	return clean, nil
 }
 
-// Create проверяет ввод и право пациента (завершённый визит), затем создаёт отзыв.
-func (s *ReviewService) Create(userID, appointmentID string, rating int, text string) (*model.Review, error) {
+// Create валидирует ввод и создаёт отзыв от любого авторизованного пациента.
+// Врач/услуга указываются по желанию (пустая строка → NULL).
+func (s *ReviewService) Create(userID, doctorID, serviceID string, rating int, text string) (*model.Review, error) {
 	clean, err := ValidateReviewInput(rating, text)
 	if err != nil {
 		return nil, err
 	}
-	doctorID, serviceID, ok, err := s.repos.Reviews.AppointmentForReview(userID, appointmentID)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, ErrNotEligible
-	}
-	return s.repos.Reviews.Create(userID, appointmentID, doctorID, serviceID, rating, clean)
+	return s.repos.Reviews.Create(userID, emptyToNil(doctorID), emptyToNil(serviceID), rating, clean)
 }
 
 // ListPublic — видимые отзывы с фильтрами.

@@ -299,3 +299,93 @@ func (r *AdminRepo) MonthlyStatsRange(from, to time.Time) ([]model.MonthlyStatPo
 		ORDER BY m`, from, to)
 	return pts, err
 }
+
+// ── Расширенный отчёт (4 листа Excel) ────────────────────────────────────
+
+// ReportByService — приёмы и выручка по каждой услуге за интервал [from, to).
+func (r *AdminRepo) ReportByService(from, to time.Time) ([]model.ServiceReportRow, error) {
+	var rows []model.ServiceReportRow
+	err := r.db.Select(&rows, `
+		SELECT sv.name AS service_name, sp.name AS specialty_name,
+		       COUNT(a.id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled'))      AS appointments,
+		       COALESCE(SUM(a.final_price) FILTER (WHERE a.status = 'completed'), 0)        AS revenue
+		FROM services sv
+		JOIN specialties sp ON sp.id = sv.specialty_id
+		LEFT JOIN appointments a ON a.service_id = sv.id AND a.starts_at >= $1 AND a.starts_at < $2
+		GROUP BY sv.id, sv.name, sp.name
+		ORDER BY revenue DESC, appointments DESC`, from, to)
+	return rows, err
+}
+
+// LoadByWeekday — число приёмов по дням недели (n: 1=Пн..7=Вс) за интервал.
+func (r *AdminRepo) LoadByWeekday(from, to time.Time) ([]model.TimeBucketRow, error) {
+	var rows []model.TimeBucketRow
+	err := r.db.Select(&rows, `
+		SELECT EXTRACT(ISODOW FROM starts_at)::int AS n, COUNT(*) AS count
+		FROM appointments
+		WHERE status <> 'cancelled' AND starts_at >= $1 AND starts_at < $2
+		GROUP BY 1 ORDER BY 1`, from, to)
+	return rows, err
+}
+
+// LoadByHour — число приёмов по часам начала (n: 0..23) за интервал.
+func (r *AdminRepo) LoadByHour(from, to time.Time) ([]model.TimeBucketRow, error) {
+	var rows []model.TimeBucketRow
+	err := r.db.Select(&rows, `
+		SELECT EXTRACT(HOUR FROM starts_at)::int AS n, COUNT(*) AS count
+		FROM appointments
+		WHERE status <> 'cancelled' AND starts_at >= $1 AND starts_at < $2
+		GROUP BY 1 ORDER BY 1`, from, to)
+	return rows, err
+}
+
+// RatingsByDoctor — средняя оценка и число отзывов по врачу за интервал (по дате отзыва).
+func (r *AdminRepo) RatingsByDoctor(from, to time.Time) ([]model.RatingRow, error) {
+	var rows []model.RatingRow
+	err := r.db.Select(&rows, `
+		SELECT d.full_name AS name, ROUND(AVG(r.rating)::numeric, 2)::float8 AS avg, COUNT(*) AS count
+		FROM reviews r
+		JOIN doctors d ON d.id = r.doctor_id
+		WHERE r.is_hidden = false AND r.created_at >= $1 AND r.created_at < $2
+		GROUP BY d.id, d.full_name
+		ORDER BY avg DESC, count DESC`, from, to)
+	return rows, err
+}
+
+// RatingsByService — средняя оценка и число отзывов по услуге за интервал.
+func (r *AdminRepo) RatingsByService(from, to time.Time) ([]model.RatingRow, error) {
+	var rows []model.RatingRow
+	err := r.db.Select(&rows, `
+		SELECT sv.name AS name, ROUND(AVG(r.rating)::numeric, 2)::float8 AS avg, COUNT(*) AS count
+		FROM reviews r
+		JOIN services sv ON sv.id = r.service_id
+		WHERE r.is_hidden = false AND r.created_at >= $1 AND r.created_at < $2
+		GROUP BY sv.id, sv.name
+		ORDER BY avg DESC, count DESC`, from, to)
+	return rows, err
+}
+
+// Retention — новые и вернувшиеся пациенты помесячно за интервал. Новый = первый в истории
+// (не отменённый) приём пациента пришёлся на этот месяц; вернувшийся — первый приём был раньше.
+func (r *AdminRepo) Retention(from, to time.Time) ([]model.RetentionRow, error) {
+	var rows []model.RetentionRow
+	err := r.db.Select(&rows, `
+		WITH firsts AS (
+		    SELECT patient_id, MIN(starts_at) AS first_at
+		    FROM appointments WHERE status <> 'cancelled'
+		    GROUP BY patient_id
+		),
+		month_patients AS (
+		    SELECT DISTINCT DATE_TRUNC('month', a.starts_at) AS mo, a.patient_id
+		    FROM appointments a
+		    WHERE a.status <> 'cancelled' AND a.starts_at >= $1 AND a.starts_at < $2
+		)
+		SELECT TO_CHAR(mp.mo, 'YYYY-MM') AS month,
+		       COUNT(*) FILTER (WHERE DATE_TRUNC('month', f.first_at) = mp.mo) AS new_patients,
+		       COUNT(*) FILTER (WHERE DATE_TRUNC('month', f.first_at) < mp.mo) AS returning_patients
+		FROM month_patients mp
+		JOIN firsts f ON f.patient_id = mp.patient_id
+		GROUP BY mp.mo
+		ORDER BY mp.mo`, from, to)
+	return rows, err
+}

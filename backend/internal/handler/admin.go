@@ -406,6 +406,53 @@ func (h *AdminHandler) Stats(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
+// FullReport возвращает данные для расширенного Excel-отчёта (4 листа) за интервал дат:
+// выручка по услугам, загрузка по времени, рейтинги, новые/вернувшиеся пациенты.
+// GET /api/admin/report/full?from=2026-01-01&to=2026-06-03
+func (h *AdminHandler) FullReport(c *gin.Context) {
+	from, to := resolveReportRange(c.Query("from"), c.Query("to"), time.Now().UTC())
+	a := h.svc.Admin
+	byService, err := a.ReportByService(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	byWeekday, err := a.LoadByWeekday(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	byHour, err := a.LoadByHour(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ratingsDoctor, err := a.RatingsByDoctor(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ratingsService, err := a.RatingsByService(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	retention, err := a.Retention(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"from": from, "to": to,
+		"by_service":         byService,
+		"by_weekday":         byWeekday,
+		"by_hour":            byHour,
+		"ratings_by_doctor":  ratingsDoctor,
+		"ratings_by_service": ratingsService,
+		"retention":          retention,
+	})
+}
+
 // MonthlyStats возвращает помесячную разбивку за интервал дат — каждый месяц периода
 // (включая месяцы без записей) для построения графика.
 // GET /api/admin/stats/monthly?from=2026-01-01&to=2026-06-03

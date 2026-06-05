@@ -17,12 +17,16 @@ type ReviewRepo struct{ db *sqlx.DB }
 // NewReviewRepo создаёт ReviewRepo на базе пула sqlx.
 func NewReviewRepo(db *sqlx.DB) *ReviewRepo { return &ReviewRepo{db} }
 
+// LEFT JOIN — отзыв может быть без привязки к врачу/услуге (тогда имена пустые).
 const reviewSelect = `
-	SELECT r.*, d.full_name AS doctor_name, s.name AS specialty_name, sv.name AS service_name
+	SELECT r.*,
+	       COALESCE(d.full_name, '') AS doctor_name,
+	       COALESCE(s.name, '')      AS specialty_name,
+	       COALESCE(sv.name, '')     AS service_name
 	FROM reviews r
-	JOIN doctors d     ON d.id  = r.doctor_id
-	JOIN specialties s ON s.id  = d.specialty_id
-	JOIN services sv   ON sv.id = r.service_id`
+	LEFT JOIN doctors d     ON d.id  = r.doctor_id
+	LEFT JOIN specialties s ON s.id  = d.specialty_id
+	LEFT JOIN services sv   ON sv.id = r.service_id`
 
 // ListPublic возвращает видимые отзывы (не скрытые), опционально фильтруя по врачу и услуге,
 // новые сверху, с присоединёнными именами врача/специальности/услуги.
@@ -78,14 +82,14 @@ func (r *ReviewRepo) AppointmentForReview(userID, appointmentID string) (doctorI
 	return row.DoctorID, row.ServiceID, true, nil
 }
 
-// Create вставляет новый отзыв и возвращает его с заполненными id/created_at.
-func (r *ReviewRepo) Create(userID, appointmentID, doctorID, serviceID string, rating int, text string) (*model.Review, error) {
+// Create вставляет новый отзыв (врач/услуга — опционально, nil → NULL) и возвращает его.
+func (r *ReviewRepo) Create(userID string, doctorID, serviceID *string, rating int, text string) (*model.Review, error) {
 	var rv model.Review
 	err := r.db.Get(&rv, `
-		INSERT INTO reviews (user_id, appointment_id, doctor_id, service_id, rating, text)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO reviews (user_id, doctor_id, service_id, rating, text)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, user_id, appointment_id, doctor_id, service_id, rating, text, is_hidden, created_at`,
-		userID, appointmentID, doctorID, serviceID, rating, text)
+		userID, doctorID, serviceID, rating, text)
 	return &rv, err
 }
 

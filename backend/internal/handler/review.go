@@ -56,24 +56,24 @@ func (h *ReviewHandler) Reviewable(c *gin.Context) {
 	c.JSON(http.StatusOK, as)
 }
 
-// Create создаёт отзыв от лица аутентифицированного пациента.
-// POST /api/reviews  body: {"appointment_id":"uuid","rating":5,"text":"..."}
+// Create создаёт отзыв от лица любого аутентифицированного пациента.
+// POST /api/reviews  body: {"rating":5,"text":"...","doctor_id":"","service_id":""}
+// doctor_id/service_id — опциональны (для фильтрации на странице отзывов).
 func (h *ReviewHandler) Create(c *gin.Context) {
 	userID := c.GetString("user_id")
 	var req struct {
-		AppointmentID string `json:"appointment_id" binding:"required"`
-		Rating        int    `json:"rating"         binding:"required"`
-		Text          string `json:"text"           binding:"required"`
+		Rating    int    `json:"rating"     binding:"required"`
+		Text      string `json:"text"       binding:"required"`
+		DoctorID  string `json:"doctor_id"`
+		ServiceID string `json:"service_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	rv, err := h.svc.Reviews.Create(userID, req.AppointmentID, req.Rating, req.Text)
+	rv, err := h.svc.Reviews.Create(userID, req.DoctorID, req.ServiceID, req.Rating, req.Text)
 	if err != nil {
 		switch {
-		case errors.Is(err, service.ErrNotEligible):
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		case errors.Is(err, service.ErrReviewRating), errors.Is(err, service.ErrReviewText):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		default:

@@ -101,6 +101,7 @@ func New(svc *service.Services, cfg *config.Config) *gin.Engine {
 			admin.GET("/stats/monthly", adminH.MonthlyStats)
 			admin.GET("/stats/period", adminH.PeriodStats)
 			admin.GET("/stats/by-doctor", adminH.StatsByDoctor)
+			admin.GET("/report/full", adminH.FullReport)
 			admin.GET("/reviews", revH.AdminList)
 			admin.PATCH("/reviews/:id", revH.AdminSetHidden)
 		}
