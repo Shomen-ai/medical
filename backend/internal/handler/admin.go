@@ -412,6 +412,36 @@ func (h *AdminHandler) Stats(c *gin.Context) {
 func (h *AdminHandler) FullReport(c *gin.Context) {
 	from, to := resolveReportRange(c.Query("from"), c.Query("to"), time.Now().UTC())
 	a := h.svc.Admin
+	summary, err := a.ReportSummary(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	bySpecialty, err := a.ReportBySpecialty(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	byDoctor, err := a.ReportByDoctorFull(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	daily, err := a.DailyStats(from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	genderRows, err := a.DemographicsGender()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ageRows, err := a.DemographicsAge()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	byService, err := a.ReportByService(from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -444,12 +474,18 @@ func (h *AdminHandler) FullReport(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"from": from, "to": to,
+		"summary":            summary,
 		"by_service":         byService,
+		"by_specialty":       bySpecialty,
+		"by_doctor":          byDoctor,
+		"daily":              daily,
 		"by_weekday":         byWeekday,
 		"by_hour":            byHour,
 		"ratings_by_doctor":  ratingsDoctor,
 		"ratings_by_service": ratingsService,
 		"retention":          retention,
+		"gender":             genderRows,
+		"age":                ageRows,
 	})
 }
 

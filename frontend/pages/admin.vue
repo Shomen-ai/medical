@@ -113,25 +113,20 @@ const { data: byDoctor, refresh: refreshByDoctor } = await useAsyncData(
 // Диапазон «с/по» обновляет данные, зависящие от него.
 watch([dateFrom, dateTo], () => { refreshPeriod(); refreshByDoctor(); refreshMonthly() })
 
-const exportDoctorsReport = async () => {
-  const rows = byDoctor.value?.doctors ?? []
-  await downloadXlsx(`BeautyMed_doctors_${dateFrom.value}_${dateTo.value}.xlsx`, [{
-    name: t('reportAdminSheet'),
-    rows: [
-      [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('reportColUniquePatients')],
-      ...rows.map(d => [d.doctor_name, d.specialty_name, d.appointments, d.unique_patients]),
-    ],
-  }])
-}
-
-// ── Расширенный отчёт: один Excel с 4 листами ──────────────────────────
+// ── Расширенный отчёт: один Excel с несколькими листами ────────────────
 interface FullReport {
+  summary: { total: number; completed: number; scheduled: number; cancelled: number; rescheduled: number; revenue: number; unique_patients: number }
   by_service: { service_name: string; specialty_name: string; appointments: number; revenue: number }[]
+  by_specialty: { specialty_name: string; appointments: number; unique_patients: number; revenue: number }[]
+  by_doctor: { doctor_name: string; specialty_name: string; appointments: number; unique_patients: number; revenue: number; rating: number }[]
+  daily: { day: string; appointments: number; revenue: number }[]
   by_weekday: { n: number; count: number }[]
   by_hour: { n: number; count: number }[]
   ratings_by_doctor: { name: string; avg: number; count: number }[]
   ratings_by_service: { name: string; avg: number; count: number }[]
   retention: { month: string; new_patients: number; returning_patients: number }[]
+  gender: { label: string; count: number }[]
+  age: { label: string; count: number }[]
 }
 const exportingFull = ref(false)
 const exportFullReport = async () => {
@@ -140,48 +135,114 @@ const exportFullReport = async () => {
     const r = await get<FullReport>(`/api/admin/report/full?${rangeQuery.value}`, token.value)
     const weekdays = t('rfWeekdays').split(',')
     const monthNamesArr = t('adminMonthShort').split(',')
-    const monthLabel = (ym: string) => {
-      const [y, m] = ym.split('-')
-      return `${monthNamesArr[+m - 1] ?? m} ${y}`
-    }
+    const dmy = (iso: string) => { const [y, m, d] = iso.split('-'); return `${d}.${m}.${y}` }
+    const monthLabel = (ym: string) => { const [y, m] = ym.split('-'); return `${monthNamesArr[+m - 1] ?? m} ${y}` }
+    const periodStr = `${dmy(dateFrom.value)} — ${dmy(dateTo.value)}`
+    const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0)
+    const s = r.summary
     type Row = (string | number)[]
+
     const sheets = [
+      // 1. Сводка
       {
-        name: t('rfSheetServices'),
+        name: t('rfSheetSummary'),
+        mergeTitleRow: true,
+        cols: [34, 18],
+        decimal: [], money: [1],
         rows: [
-          [t('reportColSpecialty'), t('rfService'), t('reportColAppointments'), t('rfRevenue')],
-          ...r.by_service.map(s => [s.specialty_name, s.service_name, s.appointments, s.revenue] as Row),
+          [`${t('rfSheetSummary').toUpperCase()} · ${periodStr}`] as Row,
+          [] as Row,
+          [t('rfMetric'), t('rfValue')] as Row,
+          [t('rfTotalAppts'), s.total],
+          [t('statusCompleted'), s.completed],
+          [t('statusScheduled'), s.scheduled],
+          [t('statusCancelled'), s.cancelled],
+          [t('adminStatPatients'), s.unique_patients],
+          [t('rfRevenueTmt'), s.revenue],
+          [t('rfAvgCheck'), s.completed ? Math.round(s.revenue / s.completed) : 0],
+          [t('rfCompletionRate'), `${pct(s.completed, s.total)}%`],
+          [t('rfCancelRate'), `${pct(s.cancelled, s.total)}%`],
         ],
       },
+      // 2. По услугам
       {
-        name: t('rfSheetTime'),
+        name: t('rfSheetServices'), mergeTitleRow: true, cols: [22, 34, 12, 16], money: [3],
         rows: [
-          [t('rfByWeekday')] as Row,
-          [t('rfWeekday'), t('rfCount')],
+          [t('rfSheetServices').toUpperCase()] as Row, [] as Row,
+          [t('reportColSpecialty'), t('rfService'), t('reportColAppointments'), t('rfRevenue')],
+          ...r.by_service.map(x => [x.specialty_name, x.service_name, x.appointments, x.revenue] as Row),
+        ],
+      },
+      // 3. По специальностям
+      {
+        name: t('rfSheetSpecialty'), mergeTitleRow: true, cols: [26, 12, 14, 16], money: [3],
+        rows: [
+          [t('rfSheetSpecialty').toUpperCase()] as Row, [] as Row,
+          [t('reportColSpecialty'), t('reportColAppointments'), t('adminStatPatients'), t('rfRevenue')],
+          ...r.by_specialty.map(x => [x.specialty_name, x.appointments, x.unique_patients, x.revenue] as Row),
+        ],
+      },
+      // 4. По врачам
+      {
+        name: t('rfSheetDoctors'), mergeTitleRow: true, cols: [24, 24, 12, 14, 16, 12], money: [4], decimal: [5],
+        rows: [
+          [t('rfSheetDoctors').toUpperCase()] as Row, [] as Row,
+          [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('adminStatPatients'), t('rfRevenue'), t('rfRating')],
+          ...r.by_doctor.map(x => [x.doctor_name, x.specialty_name, x.appointments, x.unique_patients, x.revenue, x.rating] as Row),
+        ],
+      },
+      // 5. Динамика по дням
+      {
+        name: t('rfSheetDaily'), mergeTitleRow: true, cols: [16, 12, 16], money: [2],
+        rows: [
+          [t('rfSheetDaily').toUpperCase()] as Row, [] as Row,
+          [t('rfDate'), t('reportColAppointments'), t('rfRevenue')],
+          ...r.daily.map(x => [dmy(x.day), x.appointments, x.revenue] as Row),
+        ],
+      },
+      // 6. Загрузка по времени
+      {
+        name: t('rfSheetTime'), mergeTitleRow: true, cols: [18, 12],
+        rows: [
+          [t('rfSheetTime').toUpperCase()] as Row, [] as Row,
+          [t('rfByWeekday')] as Row, [t('rfWeekday'), t('rfCount')],
           ...r.by_weekday.map(w => [weekdays[w.n - 1] ?? String(w.n), w.count] as Row),
           [] as Row,
-          [t('rfByHour')] as Row,
-          [t('rfHour'), t('rfCount')],
+          [t('rfByHour')] as Row, [t('rfHour'), t('rfCount')],
           ...r.by_hour.map(h => [`${String(h.n).padStart(2, '0')}:00`, h.count] as Row),
         ],
       },
+      // 7. Рейтинги
       {
-        name: t('rfSheetRatings'),
+        name: t('rfSheetRatings'), mergeTitleRow: true, cols: [28, 14, 12], decimal: [1],
         rows: [
-          [t('rfByDoctor')] as Row,
-          [t('reportColDoctor'), t('rfRating'), t('rfReviews')],
+          [t('rfSheetRatings').toUpperCase()] as Row, [] as Row,
+          [t('rfByDoctor')] as Row, [t('reportColDoctor'), t('rfRating'), t('rfReviews')],
           ...r.ratings_by_doctor.map(x => [x.name, x.avg, x.count] as Row),
           [] as Row,
-          [t('rfByService')] as Row,
-          [t('rfService'), t('rfRating'), t('rfReviews')],
+          [t('rfByService')] as Row, [t('rfService'), t('rfRating'), t('rfReviews')],
           ...r.ratings_by_service.map(x => [x.name, x.avg, x.count] as Row),
         ],
       },
+      // 8. Новые и повторные
       {
-        name: t('rfSheetRetention'),
+        name: t('rfSheetRetention'), mergeTitleRow: true, cols: [18, 16, 18],
         rows: [
+          [t('rfSheetRetention').toUpperCase()] as Row, [] as Row,
           [t('rfMonth'), t('rfNew'), t('rfReturning')],
           ...r.retention.map(x => [monthLabel(x.month), x.new_patients, x.returning_patients] as Row),
+        ],
+      },
+      // 9. Демография
+      {
+        name: t('rfSheetDemographics'), mergeTitleRow: true, cols: [18, 12],
+        rows: [
+          [t('rfSheetDemographics').toUpperCase()] as Row, [] as Row,
+          [t('rfByGender')] as Row, [t('rfGender'), t('rfCount')],
+          ...r.gender.map(x => [x.label, x.count] as Row),
+          [] as Row,
+          [t('rfByAge')] as Row, [t('rfAge'), t('rfCount')],
+          ...r.age.map(x => [x.label, x.count] as Row),
         ],
       },
     ]
@@ -446,24 +507,15 @@ useHead({ title: t('adminPageTitle') })
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
           <h2 class="font-semibold text-slate">{{ t('reportAdminTitle') }}</h2>
-          <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors disabled:opacity-50"
-              :disabled="exportingFull"
-              @click="exportFullReport"
-            >
-              📑 {{ exportingFull ? t('loading') : t('rfExport') }}
-            </button>
-            <button
-              type="button"
-              class="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-              style="background: linear-gradient(135deg, #005A5F, #00959D)"
-              @click="exportDoctorsReport"
-            >
-              📊 {{ t('reportExport') }}
-            </button>
-          </div>
+          <button
+            type="button"
+            class="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            style="background: linear-gradient(135deg, #005A5F, #00959D)"
+            :disabled="exportingFull"
+            @click="exportFullReport"
+          >
+            📑 {{ exportingFull ? t('loading') : t('rfExport') }}
+          </button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">

@@ -389,3 +389,104 @@ func (r *AdminRepo) Retention(from, to time.Time) ([]model.RetentionRow, error) 
 		ORDER BY mp.mo`, from, to)
 	return rows, err
 }
+
+// ReportSummary — сводные KPI за интервал.
+func (r *AdminRepo) ReportSummary(from, to time.Time) (*model.ReportSummary, error) {
+	var s model.ReportSummary
+	err := r.db.Get(&s, `
+		SELECT COUNT(*) AS total,
+		       COUNT(*) FILTER (WHERE status='completed')   AS completed,
+		       COUNT(*) FILTER (WHERE status='scheduled')   AS scheduled,
+		       COUNT(*) FILTER (WHERE status='cancelled')   AS cancelled,
+		       COUNT(*) FILTER (WHERE status='rescheduled') AS rescheduled,
+		       COALESCE(SUM(final_price) FILTER (WHERE status='completed'), 0) AS revenue,
+		       COUNT(DISTINCT patient_id) AS unique_patients
+		FROM appointments
+		WHERE starts_at >= $1 AND starts_at < $2`, from, to)
+	return &s, err
+}
+
+// ReportBySpecialty — приёмы/пациенты/выручка по специальности за интервал.
+func (r *AdminRepo) ReportBySpecialty(from, to time.Time) ([]model.SpecialtyReportRow, error) {
+	var rows []model.SpecialtyReportRow
+	err := r.db.Select(&rows, `
+		SELECT sp.name AS specialty_name,
+		       COUNT(a.id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled'))                  AS appointments,
+		       COUNT(DISTINCT a.patient_id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled')) AS unique_patients,
+		       COALESCE(SUM(a.final_price) FILTER (WHERE a.status='completed'), 0)                      AS revenue
+		FROM specialties sp
+		LEFT JOIN services sv     ON sv.specialty_id = sp.id
+		LEFT JOIN appointments a  ON a.service_id = sv.id AND a.starts_at >= $1 AND a.starts_at < $2
+		GROUP BY sp.id, sp.name
+		ORDER BY revenue DESC, appointments DESC`, from, to)
+	return rows, err
+}
+
+// ReportByDoctorFull — по врачу: приёмы, уникальные пациенты, выручка и средняя оценка (за всё время).
+func (r *AdminRepo) ReportByDoctorFull(from, to time.Time) ([]model.DoctorFullRow, error) {
+	var rows []model.DoctorFullRow
+	err := r.db.Select(&rows, `
+		SELECT d.full_name AS doctor_name, sp.name AS specialty_name,
+		       COUNT(a.id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled'))                  AS appointments,
+		       COUNT(DISTINCT a.patient_id) FILTER (WHERE a.status NOT IN ('cancelled','rescheduled')) AS unique_patients,
+		       COALESCE(SUM(a.final_price) FILTER (WHERE a.status='completed'), 0)                      AS revenue,
+		       COALESCE((SELECT ROUND(AVG(rv.rating)::numeric, 2)::float8 FROM reviews rv
+		                 WHERE rv.doctor_id = d.id AND rv.is_hidden = false), 0)                        AS rating
+		FROM doctors d
+		JOIN specialties sp ON sp.id = d.specialty_id
+		LEFT JOIN appointments a ON a.doctor_id = d.id AND a.starts_at >= $1 AND a.starts_at < $2
+		WHERE d.is_active = true
+		GROUP BY d.id, d.full_name, sp.name
+		ORDER BY revenue DESC, appointments DESC`, from, to)
+	return rows, err
+}
+
+// DailyStats — приёмы и выручка по каждому дню периода (включая дни без записей).
+func (r *AdminRepo) DailyStats(from, to time.Time) ([]model.DailyRow, error) {
+	var rows []model.DailyRow
+	err := r.db.Select(&rows, `
+		SELECT TO_CHAR(g::date, 'YYYY-MM-DD') AS day,
+		       COALESCE(c.appointments, 0) AS appointments,
+		       COALESCE(c.revenue, 0)      AS revenue
+		FROM generate_series($1::date, ($2::date - 1), INTERVAL '1 day') AS g
+		LEFT JOIN (
+		    SELECT starts_at::date AS dt, COUNT(*) AS appointments,
+		           COALESCE(SUM(final_price) FILTER (WHERE status='completed'), 0) AS revenue
+		    FROM appointments WHERE starts_at >= $1 AND starts_at < $2
+		    GROUP BY 1
+		) c ON c.dt = g::date
+		ORDER BY g`, from, to)
+	return rows, err
+}
+
+// DemographicsGender — распределение пациентов по полу (все пациенты клиники).
+func (r *AdminRepo) DemographicsGender() ([]model.LabelCountRow, error) {
+	var rows []model.LabelCountRow
+	err := r.db.Select(&rows, `
+		SELECT CASE LOWER(COALESCE(NULLIF(gender, ''), '?'))
+		         WHEN 'm' THEN 'Мужчины' WHEN 'f' THEN 'Женщины' ELSE 'Не указан' END AS label,
+		       COUNT(*) AS count
+		FROM users
+		GROUP BY 1 ORDER BY count DESC`)
+	return rows, err
+}
+
+// DemographicsAge — распределение пациентов по возрастным группам.
+func (r *AdminRepo) DemographicsAge() ([]model.LabelCountRow, error) {
+	var rows []model.LabelCountRow
+	err := r.db.Select(&rows, `
+		WITH ages AS (
+		    SELECT DATE_PART('year', AGE(birth_date))::int AS age
+		    FROM users WHERE birth_date IS NOT NULL
+		)
+		SELECT g.label, COALESCE(COUNT(a.age), 0) AS count
+		FROM (VALUES (1,'до 18'),(2,'18–30'),(3,'31–45'),(4,'46–60'),(5,'60+')) AS g(ord, label)
+		LEFT JOIN ages a ON
+		     (g.ord=1 AND a.age < 18) OR
+		     (g.ord=2 AND a.age BETWEEN 18 AND 30) OR
+		     (g.ord=3 AND a.age BETWEEN 31 AND 45) OR
+		     (g.ord=4 AND a.age BETWEEN 46 AND 60) OR
+		     (g.ord=5 AND a.age > 60)
+		GROUP BY g.ord, g.label ORDER BY g.ord`)
+	return rows, err
+}

@@ -108,6 +108,48 @@ type RetentionRow struct {
 	Returning int    `db:"returning_patients" json:"returning_patients"`
 }
 
+// ReportSummary — сводные показатели за период (лист «Сводка»).
+type ReportSummary struct {
+	Total          int     `db:"total"           json:"total"`
+	Completed      int     `db:"completed"       json:"completed"`
+	Scheduled      int     `db:"scheduled"       json:"scheduled"`
+	Cancelled      int     `db:"cancelled"       json:"cancelled"`
+	Rescheduled    int     `db:"rescheduled"     json:"rescheduled"`
+	Revenue        float64 `db:"revenue"         json:"revenue"`
+	UniquePatients int     `db:"unique_patients" json:"unique_patients"`
+}
+
+// SpecialtyReportRow — приёмы/выручка/пациенты по специальности.
+type SpecialtyReportRow struct {
+	SpecialtyName  string  `db:"specialty_name"  json:"specialty_name"`
+	Appointments   int     `db:"appointments"    json:"appointments"`
+	UniquePatients int     `db:"unique_patients" json:"unique_patients"`
+	Revenue        float64 `db:"revenue"         json:"revenue"`
+}
+
+// DoctorFullRow — строка отчёта по врачу: приёмы, пациенты, выручка, средняя оценка.
+type DoctorFullRow struct {
+	DoctorName     string  `db:"doctor_name"     json:"doctor_name"`
+	SpecialtyName  string  `db:"specialty_name"  json:"specialty_name"`
+	Appointments   int     `db:"appointments"    json:"appointments"`
+	UniquePatients int     `db:"unique_patients" json:"unique_patients"`
+	Revenue        float64 `db:"revenue"         json:"revenue"`
+	Rating         float64 `db:"rating"          json:"rating"`
+}
+
+// DailyRow — приёмы и выручка за один день периода.
+type DailyRow struct {
+	Day          string  `db:"day"          json:"day"`
+	Appointments int     `db:"appointments" json:"appointments"`
+	Revenue      float64 `db:"revenue"      json:"revenue"`
+}
+
+// LabelCountRow — пара «подпись → количество» (демография: пол, возрастные группы).
+type LabelCountRow struct {
+	Label string `db:"label" json:"label"`
+	Count int    `db:"count" json:"count"`
+}
+
 // AppointmentReminder — минимально достаточные данные для отправки SMS-напоминания за сутки.
 // AppointmentReminder holds the data needed to send a 24h reminder SMS.
 type AppointmentReminder struct {
