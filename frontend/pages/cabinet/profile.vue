@@ -44,6 +44,16 @@ const error = ref('')
 
 const toInputDate = (iso: string | null) => iso ? iso.slice(0, 10) : ''
 
+// Самая поздняя допустимая дата рождения = сегодня минус 18 лет.
+// Закрывает и будущие даты (новорождённые), и возраст младше 18.
+const maxBirthDate = computed(() => {
+  const d = new Date()
+  const y = d.getFullYear() - 18
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+})
+
 const loadProfile = async () => {
   if (!auth.token) return
   loading.value = true
@@ -67,6 +77,11 @@ onMounted(loadProfile)
 
 const save = async () => {
   if (!auth.token) return
+  // Дата рождения не может быть в будущем и пациенту должно быть не меньше 18 лет.
+  if (form.birth_date && form.birth_date > maxBirthDate.value) {
+    error.value = t('profBirthDateError')
+    return
+  }
   saving.value = true
   saved.value = false
   error.value = ''
@@ -126,8 +141,15 @@ useHead({ title: t('profPageTitle') })
           <input
             v-model="form.birth_date"
             type="date"
+            :max="maxBirthDate"
             class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
           >
+          <p
+            v-if="form.birth_date && form.birth_date > maxBirthDate"
+            class="text-xs text-red-500 mt-1"
+          >
+            {{ t('profBirthDateError') }}
+          </p>
         </div>
         <div>
           <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profGender') }}</label>

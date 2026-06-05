@@ -323,6 +323,7 @@ const tk: typeof ru = {
   profFullName: 'F.A.A.',
   profFullNamePlaceholder: 'Babaýew Begenç Mämmedowiç',
   profBirthDate: 'Doglan senesi',
+  profBirthDateError: 'Doglan senesi geljekde bolup bilmez; hassa 18 ýaşdan kiçi bolmaly däl',
   profGender: 'Jynsy',
   profGenderMale: 'Erkek',
   profGenderFemale: 'Aýal',

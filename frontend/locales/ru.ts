@@ -320,6 +320,7 @@ export default {
   profFullName: 'ФИО',
   profFullNamePlaceholder: 'Бабаев Бегенч Маммедович',
   profBirthDate: 'Дата рождения',
+  profBirthDateError: 'Дата рождения не может быть в будущем; пациенту должно быть не меньше 18 лет',
   profGender: 'Пол',
   profGenderMale: 'Мужской',
   profGenderFemale: 'Женский',

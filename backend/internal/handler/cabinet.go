@@ -182,9 +182,15 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 		u.Email = req.Email
 	}
 	if req.BirthDate != nil && *req.BirthDate != "" {
-		if t, err := time.Parse("2006-01-02", *req.BirthDate); err == nil {
-			u.BirthDate = &t
+		d, ok := validBirthDate(*req.BirthDate, time.Now().UTC())
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "birth_date must be in the past and the patient must be at least 18 years old"})
+			return
 		}
+		u.BirthDate = &d
+	} else if req.BirthDate != nil {
+		// Пустая строка — сброс даты рождения.
+		u.BirthDate = nil
 	}
 	if req.Gender != nil {
 		// Принимаем только 'm', 'f' либо пустую строку (=сброс).
@@ -224,4 +230,21 @@ func (h *CabinetHandler) validateSlot(doctorID, serviceID string, newStart time.
 		}
 	}
 	return errors.New("selected slot is not available")
+}
+
+// validBirthDate парсит дату рождения (YYYY-MM-DD) и проверяет, что она не в будущем и
+// что на момент now пациенту исполнилось не меньше 18 лет. Возвращает (дата, ok).
+// Чистая функция — покрыта unit-тестами.
+func validBirthDate(s string, now time.Time) (time.Time, bool) {
+	d, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return time.Time{}, false
+	}
+	// Граница: самая поздняя допустимая дата рождения — ровно «now минус 18 лет».
+	// Будущие даты и возраст < 18 (включая новорождённых) оказываются позже границы.
+	eighteenAgo := now.AddDate(-18, 0, 0)
+	if d.After(eighteenAgo) {
+		return time.Time{}, false
+	}
+	return d, true
 }
