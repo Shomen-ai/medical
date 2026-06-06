@@ -47,6 +47,12 @@ INSERT INTO doctors (id, full_name, specialty_id, phone, bio, experience_years) 
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Staff (логин в портал) ──────────────────────────────────────────
+-- Гарантируем наличие колонок логина: на свежей БД таблица staff (миграция 001)
+-- создаётся без них, поэтому добавляем здесь идемпотентно (на проде — no-op).
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS username      varchar(50);
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS password_hash text;
+CREATE UNIQUE INDEX IF NOT EXISTS staff_username_key ON staff (username);
+
 -- bcrypt-хеш = bcrypt('doctor123', cost=10) — копия из существующих doctor1..doctor8.
 INSERT INTO staff (doctor_id, phone, role, username, password_hash, is_active) VALUES
   ('22222222-0001-0000-0000-000000000009', '+99365100009', 'doctor',
