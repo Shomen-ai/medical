@@ -25,6 +25,9 @@ interface Profile {
   address: string | null
   id_doc_number: string | null
   id_doc_issued_by: string | null
+  id_doc_type?: string | null
+  id_doc_issued_at?: string | null
+  id_doc_valid_until?: string | null
 }
 
 const form = reactive({
@@ -35,6 +38,9 @@ const form = reactive({
   address: '',
   id_doc_number: '',
   id_doc_issued_by: '',
+  id_doc_type: 'domestic' as 'domestic' | 'international',
+  id_doc_issued_at: '',
+  id_doc_valid_until: '',
 })
 
 const loading = ref(true)
@@ -43,6 +49,12 @@ const saved = ref(false)
 const error = ref('')
 
 const toInputDate = (iso: string | null) => iso ? iso.slice(0, 10) : ''
+
+// Сегодня (YYYY-MM-DD) — для :max даты выдачи (не может быть в будущем).
+const todayStr = computed(() => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})
 
 // Самая поздняя допустимая дата рождения = сегодня минус 18 лет.
 // Закрывает и будущие даты (новорождённые), и возраст младше 18.
@@ -66,6 +78,9 @@ const loadProfile = async () => {
     form.address = p.address ?? ''
     form.id_doc_number = p.id_doc_number ?? ''
     form.id_doc_issued_by = p.id_doc_issued_by ?? ''
+    form.id_doc_type = (p.id_doc_type === 'international' ? 'international' : 'domestic')
+    form.id_doc_issued_at = toInputDate(p.id_doc_issued_at ?? null)
+    form.id_doc_valid_until = toInputDate(p.id_doc_valid_until ?? null)
   } catch {
     error.value = t('profLoadError')
   } finally {
@@ -96,6 +111,9 @@ const save = async () => {
         address: form.address.trim() || null,
         id_doc_number: form.id_doc_number.trim() || null,
         id_doc_issued_by: form.id_doc_issued_by.trim() || null,
+        id_doc_type: form.id_doc_type,
+        id_doc_issued_at: form.id_doc_type === 'international' ? (form.id_doc_issued_at || null) : null,
+        id_doc_valid_until: form.id_doc_type === 'international' ? (form.id_doc_valid_until || null) : null,
       },
       auth.token
     )
@@ -190,6 +208,21 @@ useHead({ title: t('profPageTitle') })
       <div class="pt-3 border-t border-border">
         <div class="text-sm font-semibold text-slate mb-3">{{ t('profIdDoc') }}</div>
 
+        <!-- Тип документа -->
+        <div class="mb-4">
+          <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profIdDocType') }}</label>
+          <div class="flex items-center gap-4">
+            <label class="inline-flex items-center gap-1.5 text-sm text-slate cursor-pointer">
+              <input v-model="form.id_doc_type" type="radio" value="domestic" class="accent-primary">
+              {{ t('profIdDocDomestic') }}
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-sm text-slate cursor-pointer">
+              <input v-model="form.id_doc_type" type="radio" value="international" class="accent-primary">
+              {{ t('profIdDocInternational') }}
+            </label>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profPassportNumber') }}</label>
@@ -207,6 +240,26 @@ useHead({ title: t('profPageTitle') })
               v-model="form.id_doc_issued_by"
               type="text"
               :placeholder="t('profIssuedByPlaceholder')"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
+            >
+          </div>
+          <!-- Доп. поля только для загранпаспорта -->
+          <div v-if="form.id_doc_type === 'international'">
+            <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profIssuedAt') }}</label>
+            <input
+              v-model="form.id_doc_issued_at"
+              type="date"
+              :lang="locale"
+              :max="todayStr"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
+            >
+          </div>
+          <div v-if="form.id_doc_type === 'international'">
+            <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profValidUntil') }}</label>
+            <input
+              v-model="form.id_doc_valid_until"
+              type="date"
+              :lang="locale"
               class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
             >
           </div>

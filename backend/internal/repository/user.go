@@ -43,11 +43,15 @@ func (r *UserRepo) Update(u *model.User) error {
 		    email             = $3,
 		    gender            = $4,
 		    address           = $5,
-		    id_doc_number     = $6,
-		    id_doc_issued_by  = $7
-		WHERE id = $8`,
+		    id_doc_number      = $6,
+		    id_doc_issued_by   = $7,
+		    id_doc_type        = $8,
+		    id_doc_issued_at   = $9,
+		    id_doc_valid_until = $10
+		WHERE id = $11`,
 		u.FullName, u.BirthDate, u.Email,
 		u.Gender, u.Address, u.IDDocNumber, u.IDDocIssuedBy,
+		u.IDDocType, u.IDDocIssuedAt, u.IDDocValidUntil,
 		u.ID)
 	return err
 }

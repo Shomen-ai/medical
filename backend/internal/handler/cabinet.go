@@ -163,13 +163,16 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	var req struct {
-		FullName      string  `json:"full_name"`
-		Email         *string `json:"email"`
-		BirthDate     *string `json:"birth_date"`
-		Gender        *string `json:"gender"`
-		Address       *string `json:"address"`
-		IDDocNumber   *string `json:"id_doc_number"`
-		IDDocIssuedBy *string `json:"id_doc_issued_by"`
+		FullName        string  `json:"full_name"`
+		Email           *string `json:"email"`
+		BirthDate       *string `json:"birth_date"`
+		Gender          *string `json:"gender"`
+		Address         *string `json:"address"`
+		IDDocNumber     *string `json:"id_doc_number"`
+		IDDocIssuedBy   *string `json:"id_doc_issued_by"`
+		IDDocType       *string `json:"id_doc_type"`
+		IDDocIssuedAt   *string `json:"id_doc_issued_at"`
+		IDDocValidUntil *string `json:"id_doc_valid_until"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -210,6 +213,21 @@ func (h *CabinetHandler) UpdateProfile(c *gin.Context) {
 	if req.IDDocIssuedBy != nil {
 		u.IDDocIssuedBy = req.IDDocIssuedBy
 	}
+	// Тип удостоверения: только внутренний/загран; для внутреннего срок/дата выдачи сбрасываются.
+	if req.IDDocType != nil {
+		if *req.IDDocType == "international" {
+			u.IDDocType = "international"
+		} else {
+			u.IDDocType = "domestic"
+		}
+	}
+	if u.IDDocType == "international" {
+		u.IDDocIssuedAt = parseDatePtr(req.IDDocIssuedAt)
+		u.IDDocValidUntil = parseDatePtr(req.IDDocValidUntil)
+	} else {
+		u.IDDocIssuedAt = nil
+		u.IDDocValidUntil = nil
+	}
 	if err := h.svc.Repos.Users.Update(u); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -247,4 +265,16 @@ func validBirthDate(s string, now time.Time) (time.Time, bool) {
 		return time.Time{}, false
 	}
 	return d, true
+}
+
+// parseDatePtr парсит дату YYYY-MM-DD в *time.Time; пустая/некорректная строка → nil.
+func parseDatePtr(s *string) *time.Time {
+	if s == nil || *s == "" {
+		return nil
+	}
+	d, err := time.Parse("2006-01-02", *s)
+	if err != nil {
+		return nil
+	}
+	return &d
 }
