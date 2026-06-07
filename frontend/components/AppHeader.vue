@@ -7,19 +7,31 @@ const config = useRuntimeConfig()
 const auth = useAuthStore()
 const booking = useBookingStore()
 const router = useRouter()
+const { get } = useApi()
 const { locale, setLocale, t } = useI18n()
 
 const showLogin = ref(false)
+const patientName = ref('')
 
-// Краткая роль вошедшего пользователя для индикатора в шапке.
-const roleLabel = computed(() => {
+// Что показывать в индикаторе: пациенту — его ФИО (если заполнено), персоналу — роль.
+const identityLabel = computed(() => {
+  if (auth.isPatient) return patientName.value || t('headerRolePatient')
   if (auth.isAdmin) return t('headerRoleAdmin')
   if (auth.isDoctor) return t('headerRoleDoctor')
-  if (auth.isPatient) return t('headerRolePatient')
   return ''
 })
 
-onMounted(() => auth.init())
+// Подгружаем ФИО пациента (в токене его нет) для отображения в шапке.
+const loadPatientName = async () => {
+  if (!auth.isPatient || !auth.token) { patientName.value = ''; return }
+  try {
+    const p = await get<{ full_name?: string }>('/api/cabinet/profile', auth.token)
+    patientName.value = (p.full_name ?? '').trim()
+  } catch { patientName.value = '' }
+}
+
+onMounted(() => { auth.init(); loadPatientName() })
+watch(() => auth.token, loadPatientName)
 
 const handleCabinetClick = () => {
   if (auth.isLoggedIn) {
@@ -90,14 +102,14 @@ const handleCabinetClick = () => {
         >
           {{ auth.isLoggedIn ? t('cabinet') : t('signIn') }}
         </button>
-        <!-- Индикатор «вошли как …» справа от кнопки кабинета -->
+        <!-- Справа от кнопки кабинета: ФИО пациента (или роль для персонала) -->
         <span
           v-if="auth.isLoggedIn"
-          class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-muted whitespace-nowrap"
+          class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate whitespace-nowrap max-w-[180px] truncate"
           :title="t('headerLoggedIn')"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          {{ roleLabel }}
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+          {{ identityLabel }}
         </span>
       </div>
     </div>

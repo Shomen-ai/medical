@@ -6,7 +6,7 @@
 const auth = useAuthStore()
 const router = useRouter()
 const { get, patch } = useApi()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -156,13 +156,7 @@ useHead({ title: t('profPageTitle') })
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profBirthDate') }}</label>
-          <input
-            v-model="form.birth_date"
-            type="date"
-            :lang="locale"
-            :max="maxBirthDate"
-            class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-          >
+          <DateField v-model="form.birth_date" :max="maxBirthDate" />
           <p
             v-if="form.birth_date && form.birth_date > maxBirthDate"
             class="text-xs text-red-500 mt-1"
@@ -246,22 +240,11 @@ useHead({ title: t('profPageTitle') })
           <!-- Доп. поля только для загранпаспорта -->
           <div v-if="form.id_doc_type === 'international'">
             <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profIssuedAt') }}</label>
-            <input
-              v-model="form.id_doc_issued_at"
-              type="date"
-              :lang="locale"
-              :max="todayStr"
-              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-            >
+            <DateField v-model="form.id_doc_issued_at" :max="todayStr" />
           </div>
           <div v-if="form.id_doc_type === 'international'">
             <label class="text-xs font-semibold text-slate block mb-1.5">{{ t('profValidUntil') }}</label>
-            <input
-              v-model="form.id_doc_valid_until"
-              type="date"
-              :lang="locale"
-              class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
-            >
+            <DateField v-model="form.id_doc_valid_until" />
           </div>
         </div>
       </div>

@@ -128,6 +128,8 @@ export default {
   staffRoleDoctor: 'Кабинет врача',
   staffRoleDefault: 'Кабинет',
   headerLoggedIn: 'Вы вошли',
+  dateFieldPlaceholder: 'Выберите дату',
+  dateFieldClear: 'Очистить',
   headerRolePatient: 'Пациент',
   headerRoleDoctor: 'Врач',
   headerRoleAdmin: 'Администратор',

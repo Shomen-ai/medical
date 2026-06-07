@@ -131,6 +131,8 @@ const tk: typeof ru = {
   staffRoleDoctor: 'Lukman hasaby',
   staffRoleDefault: 'Hasap',
   headerLoggedIn: 'Siz girdiňiz',
+  dateFieldPlaceholder: 'Senäni saýlaň',
+  dateFieldClear: 'Arassalamak',
   headerRolePatient: 'Hassa',
   headerRoleDoctor: 'Lukman',
   headerRoleAdmin: 'Administrator',

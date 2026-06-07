@@ -10,7 +10,7 @@ definePageMeta({ layout: 'staff' })
 const auth = useAuthStore()
 const router = useRouter()
 const { get, post, patch } = useApi()
-const { t, tMed, locale } = useI18n()
+const { t, tMed } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -420,26 +420,13 @@ useHead({ title: t('adminPageTitle') })
           <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">{{ t('adminStats') }}</h2>
           <div class="flex flex-wrap items-end gap-3">
             <!-- Период «с / по» (дата «по» не может быть больше сегодня) -->
-            <div>
+            <div class="w-40">
               <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateFrom') }}</label>
-              <input
-                v-model="dateFrom"
-                type="date"
-                :lang="locale"
-                :max="todayStr"
-                class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
-              >
+              <DateField v-model="dateFrom" :max="todayStr" />
             </div>
-            <div>
+            <div class="w-40">
               <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateTo') }}</label>
-              <input
-                v-model="dateTo"
-                type="date"
-                :lang="locale"
-                :min="dateFrom"
-                :max="todayStr"
-                class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
-              >
+              <DateField v-model="dateTo" :min="dateFrom" :max="todayStr" />
             </div>
             <!-- Пресеты-«быстрый выбор» (заполняют поля выше) -->
             <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
@@ -619,13 +606,8 @@ useHead({ title: t('adminPageTitle') })
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
           <h2 class="font-semibold text-slate">{{ t('adminAppts') }}</h2>
-          <div class="flex gap-2">
-            <input
-              v-model="filterDate"
-              type="date"
-              :lang="locale"
-              class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
-            >
+          <div class="flex gap-2 items-start">
+            <div class="w-40"><DateField v-model="filterDate" /></div>
             <select v-model="filterStatus" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary">
               <option value="">{{ t('adminAllStatuses') }}</option>
               <option value="scheduled">{{ t('statusScheduled') }}</option>
