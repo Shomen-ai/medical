@@ -6,7 +6,7 @@
 import { DoctorsKey } from '~/composables/injectionKeys'
 
 const booking = useBookingStore()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 const doctors = inject(DoctorsKey, computed(() => []))
 
 const filteredDoctors = computed(() =>
@@ -32,7 +32,7 @@ const filteredDoctors = computed(() =>
           <span v-else class="text-lg">👩‍⚕️</span>
         </div>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-slate truncate">{{ doc.full_name }}</div>
+          <div class="text-sm font-medium text-slate truncate">{{ tMed(doc.full_name) }}</div>
           <div class="text-xs text-muted">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
         </div>
         <span v-if="booking.doctorId === doc.id" class="text-primary text-sm">✓</span>

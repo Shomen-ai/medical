@@ -81,7 +81,7 @@ useHead({ title: () => `${t('reviewsTitle')} — BeautyMed` })
         </select>
         <select v-model="doctorId" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary bg-white">
           <option value="">{{ t('reviewsFilterAllDoctors') }}</option>
-          <option v-for="d in doctors ?? []" :key="d.id" :value="d.id">{{ d.full_name }}</option>
+          <option v-for="d in doctors ?? []" :key="d.id" :value="d.id">{{ tMed(d.full_name) }}</option>
         </select>
       </div>
 
@@ -92,7 +92,7 @@ useHead({ title: () => `${t('reviewsTitle')} — BeautyMed` })
           <div class="pt-3 border-t border-border">
             <div class="text-xs font-bold text-slate">{{ t('reviewsAnonymous') }}</div>
             <div class="flex items-center justify-between mt-0.5">
-              <span class="text-[11px] text-muted truncate">{{ tMed(r.service_name) }} · {{ r.doctor_name }}</span>
+              <span class="text-[11px] text-muted truncate">{{ tMed(r.service_name) }} · {{ tMed(r.doctor_name) }}</span>
               <span class="text-[11px] text-muted shrink-0 ml-2">{{ formatDate(r.created_at) }}</span>
             </div>
           </div>

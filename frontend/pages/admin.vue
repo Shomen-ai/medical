@@ -140,6 +140,11 @@ const exportFullReport = async () => {
     const periodStr = `${dmy(dateFrom.value)} — ${dmy(dateTo.value)}`
     const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0)
     const s = r.summary
+    // Подписи демографии: коды из бэкенда → локализованный текст.
+    const genderLabel: Record<string, string> = { m: t('rfGenderM'), f: t('rfGenderF'), unknown: t('rfGenderUnknown') }
+    const ageLabel: Record<string, string> = {
+      lt18: t('rfAgeLt18'), '18_30': t('rfAge1830'), '31_45': t('rfAge3145'), '46_60': t('rfAge4660'), gt60: t('rfAgeGt60'),
+    }
     type Row = (string | number)[]
 
     const sheets = [
@@ -188,7 +193,7 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetDoctors').toUpperCase()] as Row, [] as Row,
           [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('adminStatPatients'), t('rfRevenue'), t('rfRating')],
-          ...r.by_doctor.map(x => [x.doctor_name, tMed(x.specialty_name), x.appointments, x.unique_patients, x.revenue, x.rating] as Row),
+          ...r.by_doctor.map(x => [tMed(x.doctor_name), tMed(x.specialty_name), x.appointments, x.unique_patients, x.revenue, x.rating] as Row),
         ],
       },
       // 5. Динамика по дням
@@ -218,7 +223,7 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetRatings').toUpperCase()] as Row, [] as Row,
           [t('rfByDoctor')] as Row, [t('reportColDoctor'), t('rfRating'), t('rfReviews')],
-          ...r.ratings_by_doctor.map(x => [x.name, x.avg, x.count] as Row),
+          ...r.ratings_by_doctor.map(x => [tMed(x.name), x.avg, x.count] as Row),
           [] as Row,
           [t('rfByService')] as Row, [t('rfService'), t('rfRating'), t('rfReviews')],
           ...r.ratings_by_service.map(x => [tMed(x.name), x.avg, x.count] as Row),
@@ -239,10 +244,10 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetDemographics').toUpperCase()] as Row, [] as Row,
           [t('rfByGender')] as Row, [t('rfGender'), t('rfCount')],
-          ...r.gender.map(x => [x.label, x.count] as Row),
+          ...r.gender.map(x => [genderLabel[x.label] ?? x.label, x.count] as Row),
           [] as Row,
           [t('rfByAge')] as Row, [t('rfAge'), t('rfCount')],
-          ...r.age.map(x => [x.label, x.count] as Row),
+          ...r.age.map(x => [ageLabel[x.label] ?? x.label, x.count] as Row),
         ],
       },
     ]
@@ -522,7 +527,7 @@ useHead({ title: t('adminPageTitle') })
                 :key="d.doctor_id"
                 class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
               >
-                <td class="px-5 py-3 font-medium text-slate">{{ d.doctor_name }}</td>
+                <td class="px-5 py-3 font-medium text-slate">{{ tMed(d.doctor_name) }}</td>
                 <td class="px-5 py-3 text-gray-500">{{ tMed(d.specialty_name) }}</td>
                 <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.appointments }}</td>
                 <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.unique_patients }}</td>
@@ -545,7 +550,7 @@ useHead({ title: t('adminPageTitle') })
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
                 <StarRating :model-value="r.rating" readonly size="text-sm" />
-                <span class="text-[11px] text-gray-400 truncate">{{ tMed(r.service_name) }} · {{ r.doctor_name }}</span>
+                <span class="text-[11px] text-gray-400 truncate">{{ tMed(r.service_name) }} · {{ tMed(r.doctor_name) }}</span>
               </div>
               <p class="text-sm text-slate">{{ r.text }}</p>
             </div>
@@ -570,7 +575,7 @@ useHead({ title: t('adminPageTitle') })
             <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('adminSpecialty') }}</label>
             <select v-model="schedSpecialty" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
               <option value="">{{ t('adminSelectPlaceholder') }}</option>
-              <option v-for="sp in specialties" :key="sp.id" :value="sp.id">{{ sp.name }}</option>
+              <option v-for="sp in specialties" :key="sp.id" :value="sp.id">{{ tMed(sp.name) }}</option>
             </select>
           </div>
           <div>
@@ -643,7 +648,7 @@ useHead({ title: t('adminPageTitle') })
                   <div class="text-xs text-gray-400">{{ apt.patient_phone }}</div>
                 </td>
                 <td class="px-5 py-3">
-                  <div class="text-slate">{{ apt.doctor_name }}</div>
+                  <div class="text-slate">{{ tMed(apt.doctor_name) }}</div>
                   <div class="text-xs text-gray-400">{{ tMed(apt.service_name) }}</div>
                 </td>
                 <td class="px-5 py-3 text-slate whitespace-nowrap">{{ formatDateTime(apt.starts_at) }}</td>

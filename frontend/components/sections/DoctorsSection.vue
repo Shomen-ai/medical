@@ -96,7 +96,7 @@ const collapsible = computed(() => props.doctors.length > 4)
               </div>
               <!-- Info -->
               <div class="p-3 sm:p-4">
-                <div class="text-sm font-bold text-slate leading-snug mb-1">{{ doc.full_name }}</div>
+                <div class="text-sm font-bold text-slate leading-snug mb-1">{{ tMed(doc.full_name) }}</div>
                 <div class="text-xs text-muted mb-1.5">{{ t('doctorsExperience', { n: doc.experience_years }) }}</div>
                 <div
                   v-if="doc.education"

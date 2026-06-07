@@ -121,6 +121,55 @@ const medicalTk: Record<string, string> = {
     'Myrat Garryýew adyndaky Türkmenistanyň döwlet lukmançylyk uniwersiteti, 2015; estetiki lukmançylyk',
   'İstanbul Üniversitesi (Стамбул, Турция), 2010; нитевой лифтинг и эстетическая хирургия':
     'Stambul uniwersiteti (Stambul, Türkiýe), 2010; sapakly lifting we estetiki hirurgiýa',
+
+  // Имена врачей (миграции 006+013) — туркменская латиница; ключи строго совпадают с RU из БД
+  'Айна Атаева': 'Aýna Ataýewa',
+  'Аман Гулиев': 'Aman Gulyýew',
+  'Атамурад Курбанов': 'Atamyrat Gurbanow',
+  'Бегенч Реджепов': 'Begenç Rejepow',
+  'Дженнет Овезова': 'Jennet Öwezowa',
+  'Кемал Розыев': 'Kemal Rozyýew',
+  'Майса Бердыева': 'Maýsa Berdiýewa',
+  'Мердан Аннаев': 'Merdan Annaýew',
+  'Меретгелди Назаров': 'Meretgeldi Nazarow',
+  'Мухамметгулы Овезов': 'Muhammetguly Öwezow',
+  'Огулбике Гельдыева': 'Ogulbike Geldiýewa',
+  'Огулджемал Гулиева': 'Oguljemal Gulyýewa',
+  'Сапарбай Ходжаев': 'Saparbaý Hojaýew',
+  'Сельби Атаева': 'Selbi Ataýewa',
+  'Якуб Бердыев': 'Ýakup Berdiýew',
+
+  // Био врачей (миграции 006+013) — ключи строго совпадают с RU из БД
+  'Косметолог-эстетист. Уходовые процедуры, пилинги, чистки лица.':
+    'Kosmetolog-estetist. Ideg prosedyralary, pilingler, ýüz arassalaýyşy.',
+  'Врач-косметолог. Аппаратная косметология, инъекционные методики, комплексное омоложение.':
+    'Lukman-kosmetolog. Apparat kosmetologiýasy, sanjym usullary, toplumlaýyn ýaşartma.',
+  'Врач эстетической медицины. Нитевой лифтинг, объёмное моделирование лица.':
+    'Estetiki lukmançylyk lukmany. Sapakly lifting, ýüzüň göwrümli modellemegi.',
+  'Эстетический медик-хирург. Нитевой лифтинг, коррекция асимметрии лица.':
+    'Estetiki lukman-hirurg. Sapakly lifting, ýüzüň asimmetriýasyny düzetmek.',
+  'Врач-трихолог. Мезотерапия волосистой части головы, диагностика выпадения волос.':
+    'Lukman-triholog. Kelle derisiniň mezoterapiýasy, saç düşmeginiň diagnostikasy.',
+  'Врач-дерматолог. Удаление новообразований радиоволновым методом, лечение бородавок и папиллом.':
+    'Lukman-dermatolog. Täze döremeleri radiotolkun usuly bilen aýyrmak, siňňil we papillomalary bejermek.',
+  'Дерматолог. Диагностика и лечение акне, экземы, псориаза. Дерматоскопия.':
+    'Dermatolog. Akne, ekzema, psoriazyň diagnostikasy we bejergisi. Dermatoskopiýa.',
+  'Трихолог. Диагностика выпадения волос, плазмолифтинг волосистой части головы.':
+    'Triholog. Saç düşmeginiň diagnostikasy, kelle derisiniň plazmoliftingi.',
+  'Врач-дерматолог. Лечение акне, розацеа, дерматитов. Удаление новообразований.':
+    'Lukman-dermatolog. Akne, rozasea, dermatitleri bejermek. Täze döremeleri aýyrmak.',
+  'Врач-косметолог. Аппаратные методики (RF-лифтинг, фотоомоложение), коррекция возрастных изменений.':
+    'Lukman-kosmetolog. Apparat usullary (RF-lifting, fotoýaşartma), ýaşa degişli üýtgemeleri düzetmek.',
+  'Дерматолог. Диагностика и лечение кожных заболеваний, консультации по уходу.':
+    'Dermatolog. Deri keselleriniň diagnostikasy we bejergisi, ideg boýunça maslahatlar.',
+  'Врач эстетической медицины. Биоармирование, объёмное моделирование скул и подбородка.':
+    'Estetiki lukmançylyk lukmany. Bioarmirleme, ýaňaklaryň we eňegiň göwrümli modellemegi.',
+  'Сертифицированный косметолог. Контурная пластика, биоревитализация, ботулотерапия.':
+    'Sertifikatlaşdyrylan kosmetolog. Konturly plastika, biorewitalizasiýa, botuloterapiýa.',
+  'Косметолог-эстетист. Карбокситерапия, мезотерапия лица, программы anti-age.':
+    'Kosmetolog-estetist. Karboksiterapiýa, ýüz mezoterapiýasy, anti-age programmalary.',
+  'Трихолог, дерматолог. PRP-терапия, лечение заболеваний кожи головы.':
+    'Triholog, dermatolog. PRP-terapiýa, kelle derisiniň kesellerini bejermek.',
 }
 
 // Словарь медицинских терминов по локалям: ru — тождество (исходные названия), tk — переводы.

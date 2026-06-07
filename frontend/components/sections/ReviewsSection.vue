@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import type { ReviewItem } from '~/types'
 
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 const { get } = useApi()
 
 const { data: reviews } = await useAsyncData('home-reviews', () =>
@@ -52,7 +52,7 @@ const scrollByCard = (dir: number) => track.value?.scrollBy({ left: dir * 300, b
             <div class="pt-3 border-t border-border">
               <div class="text-xs font-bold text-slate">{{ t('reviewsAnonymous') }}</div>
               <div class="flex items-center justify-between mt-0.5">
-                <span class="text-[11px] text-muted truncate">{{ r.service_name }} · {{ r.doctor_name }}</span>
+                <span class="text-[11px] text-muted truncate">{{ tMed(r.service_name) }} · {{ tMed(r.doctor_name) }}</span>
                 <span class="text-[11px] text-muted shrink-0 ml-2">{{ formatDate(r.created_at) }}</span>
               </div>
             </div>

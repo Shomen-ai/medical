@@ -40,11 +40,20 @@ const viewDate = ref(initMonth())
 watch(() => props.modelValue, () => { viewDate.value = initMonth() })
 watch(open, (v) => { if (v) viewDate.value = initMonth() })
 
-const monthLabel = computed(() => {
-  const months = t('monthsList').split(',')
-  return `${months[viewDate.value.getMonth()]} ${viewDate.value.getFullYear()}`
+const monthOptions = computed(() => t('monthsList').split(','))
+
+// Диапазон годов для быстрого выбора: по min/max, иначе ±разумно вокруг текущего.
+const yearOptions = computed(() => {
+  const cur = new Date().getFullYear()
+  const minY = props.min ? Number(props.min.slice(0, 4)) : cur - 100
+  const maxY = props.max ? Number(props.max.slice(0, 4)) : cur + 10
+  const years: number[] = []
+  for (let y = maxY; y >= minY; y--) years.push(y)
+  return years
 })
 
+const setMonth = (m: number) => { const d = new Date(viewDate.value); d.setDate(1); d.setMonth(m); viewDate.value = d }
+const setYear = (y: number) => { const d = new Date(viewDate.value); d.setDate(1); d.setFullYear(y); viewDate.value = d }
 const prevMonth = () => { const d = new Date(viewDate.value); d.setMonth(d.getMonth() - 1); viewDate.value = d }
 const nextMonth = () => { const d = new Date(viewDate.value); d.setMonth(d.getMonth() + 1); viewDate.value = d }
 
@@ -93,10 +102,23 @@ const clear = () => { emit('update:modelValue', ''); open.value = false }
       <!-- фон для закрытия по клику вне -->
       <div class="fixed inset-0 z-40" @click="open = false" />
       <div class="absolute z-50 mt-1 w-64 bg-white border border-border rounded-xl shadow-xl p-3">
-        <div class="flex items-center justify-between mb-2">
-          <button type="button" class="text-muted hover:text-primary px-2 text-lg leading-none" @click="prevMonth">‹</button>
-          <span class="text-sm font-semibold text-slate">{{ monthLabel }}</span>
-          <button type="button" class="text-muted hover:text-primary px-2 text-lg leading-none" @click="nextMonth">›</button>
+        <div class="flex items-center gap-1 mb-2">
+          <button type="button" class="text-muted hover:text-primary px-1 text-lg leading-none" @click="prevMonth">‹</button>
+          <select
+            :value="viewDate.getMonth()"
+            class="flex-1 text-sm font-semibold text-slate bg-transparent outline-none cursor-pointer rounded px-1 py-0.5 hover:bg-gray-50"
+            @change="setMonth(Number(($event.target as HTMLSelectElement).value))"
+          >
+            <option v-for="(m, i) in monthOptions" :key="i" :value="i">{{ m }}</option>
+          </select>
+          <select
+            :value="viewDate.getFullYear()"
+            class="text-sm font-semibold text-slate bg-transparent outline-none cursor-pointer rounded px-1 py-0.5 hover:bg-gray-50"
+            @change="setYear(Number(($event.target as HTMLSelectElement).value))"
+          >
+            <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
+          </select>
+          <button type="button" class="text-muted hover:text-primary px-1 text-lg leading-none" @click="nextMonth">›</button>
         </div>
         <div class="grid grid-cols-7 text-center mb-1">
           <div v-for="d in t('docWeekdays').split(',')" :key="d" class="text-[10px] text-muted py-1">{{ d }}</div>

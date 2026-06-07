@@ -64,7 +64,7 @@ onUnmounted(() => {
               class="absolute bottom-0 inset-x-0 px-5 pt-10 pb-4"
               style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent)"
             >
-              <h2 class="text-xl font-extrabold text-white leading-tight">{{ doctor.full_name }}</h2>
+              <h2 class="text-xl font-extrabold text-white leading-tight">{{ tMed(doctor.full_name) }}</h2>
             </div>
           </div>
 

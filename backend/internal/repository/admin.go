@@ -459,19 +459,21 @@ func (r *AdminRepo) DailyStats(from, to time.Time) ([]model.DailyRow, error) {
 	return rows, err
 }
 
-// DemographicsGender — распределение пациентов по полу (все пациенты клиники).
+// DemographicsGender — распределение пациентов по полу. Возвращает код пола (m/f/unknown);
+// человекочитаемая подпись формируется на фронте через i18n.
 func (r *AdminRepo) DemographicsGender() ([]model.LabelCountRow, error) {
 	var rows []model.LabelCountRow
 	err := r.db.Select(&rows, `
 		SELECT CASE LOWER(COALESCE(NULLIF(gender, ''), '?'))
-		         WHEN 'm' THEN 'Мужчины' WHEN 'f' THEN 'Женщины' ELSE 'Не указан' END AS label,
+		         WHEN 'm' THEN 'm' WHEN 'f' THEN 'f' ELSE 'unknown' END AS label,
 		       COUNT(*) AS count
 		FROM users
 		GROUP BY 1 ORDER BY count DESC`)
 	return rows, err
 }
 
-// DemographicsAge — распределение пациентов по возрастным группам.
+// DemographicsAge — распределение пациентов по возрастным группам. Возвращает код группы
+// (lt18/18_30/31_45/46_60/gt60); подпись формируется на фронте через i18n.
 func (r *AdminRepo) DemographicsAge() ([]model.LabelCountRow, error) {
 	var rows []model.LabelCountRow
 	err := r.db.Select(&rows, `
@@ -480,7 +482,7 @@ func (r *AdminRepo) DemographicsAge() ([]model.LabelCountRow, error) {
 		    FROM users WHERE birth_date IS NOT NULL
 		)
 		SELECT g.label, COALESCE(COUNT(a.age), 0) AS count
-		FROM (VALUES (1,'до 18'),(2,'18–30'),(3,'31–45'),(4,'46–60'),(5,'60+')) AS g(ord, label)
+		FROM (VALUES (1,'lt18'),(2,'18_30'),(3,'31_45'),(4,'46_60'),(5,'gt60')) AS g(ord, label)
 		LEFT JOIN ages a ON
 		     (g.ord=1 AND a.age < 18) OR
 		     (g.ord=2 AND a.age BETWEEN 18 AND 30) OR

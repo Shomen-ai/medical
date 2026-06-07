@@ -211,7 +211,7 @@ useHead({ title: t('cabPageTitle') })
       >
         <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="font-semibold text-slate">{{ apt.doctor_name }}</div>
+            <div class="font-semibold text-slate">{{ tMed(apt.doctor_name) }}</div>
             <div class="text-sm text-muted mt-0.5">{{ tMed(apt.service_name) }}</div>
           </div>
           <span

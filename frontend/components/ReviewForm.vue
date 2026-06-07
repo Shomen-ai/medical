@@ -68,7 +68,7 @@ const submit = async () => {
           <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('reviewsFormDoctor') }}</label>
           <select v-model="doctorId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
             <option value="">{{ t('reviewsFormOptional') }}</option>
-            <option v-for="d in doctors" :key="d.id" :value="d.id">{{ d.full_name }}</option>
+            <option v-for="d in doctors" :key="d.id" :value="d.id">{{ tMed(d.full_name) }}</option>
           </select>
         </div>
       </div>
