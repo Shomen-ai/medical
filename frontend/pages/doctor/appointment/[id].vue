@@ -9,7 +9,7 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const { get, patch } = useApi()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 
 const appointmentId = computed(() => route.params.id as string)
 
@@ -161,7 +161,7 @@ useHead({ title: t('recPageTitle') })
             <div>
               <div class="text-xl font-bold text-slate">{{ appointment.patient_name || t('recNoName') }}</div>
               <div class="text-sm text-muted mt-0.5">{{ appointment.patient_phone }}</div>
-              <div class="text-sm text-slate mt-2">{{ appointment.service_name }}</div>
+              <div class="text-sm text-slate mt-2">{{ tMed(appointment.service_name) }}</div>
               <div class="text-sm text-muted">{{ formattedDateTime }}</div>
             </div>
             <span

@@ -12,9 +12,10 @@ today.setHours(0, 0, 0, 0)
 
 const viewDate = ref(new Date(today.getFullYear(), today.getMonth(), 1))
 
-const monthLabel = computed(() =>
-  viewDate.value.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
-)
+const monthLabel = computed(() => {
+  const months = t('monthsList').split(',')
+  return `${months[viewDate.value.getMonth()]} ${viewDate.value.getFullYear()}`
+})
 
 const prevMonth = () => {
   const d = new Date(viewDate.value)

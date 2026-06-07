@@ -10,7 +10,7 @@ definePageMeta({ layout: 'staff' })
 const auth = useAuthStore()
 const router = useRouter()
 const { get, post, patch } = useApi()
-const { t } = useI18n()
+const { t, tMed, locale } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -170,7 +170,7 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetServices').toUpperCase()] as Row, [] as Row,
           [t('reportColSpecialty'), t('rfService'), t('reportColAppointments'), t('rfRevenue')],
-          ...r.by_service.map(x => [x.specialty_name, x.service_name, x.appointments, x.revenue] as Row),
+          ...r.by_service.map(x => [tMed(x.specialty_name), tMed(x.service_name), x.appointments, x.revenue] as Row),
         ],
       },
       // 3. По специальностям
@@ -179,7 +179,7 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetSpecialty').toUpperCase()] as Row, [] as Row,
           [t('reportColSpecialty'), t('reportColAppointments'), t('adminStatPatients'), t('rfRevenue')],
-          ...r.by_specialty.map(x => [x.specialty_name, x.appointments, x.unique_patients, x.revenue] as Row),
+          ...r.by_specialty.map(x => [tMed(x.specialty_name), x.appointments, x.unique_patients, x.revenue] as Row),
         ],
       },
       // 4. По врачам
@@ -188,7 +188,7 @@ const exportFullReport = async () => {
         rows: [
           [t('rfSheetDoctors').toUpperCase()] as Row, [] as Row,
           [t('reportColDoctor'), t('reportColSpecialty'), t('reportColAppointments'), t('adminStatPatients'), t('rfRevenue'), t('rfRating')],
-          ...r.by_doctor.map(x => [x.doctor_name, x.specialty_name, x.appointments, x.unique_patients, x.revenue, x.rating] as Row),
+          ...r.by_doctor.map(x => [x.doctor_name, tMed(x.specialty_name), x.appointments, x.unique_patients, x.revenue, x.rating] as Row),
         ],
       },
       // 5. Динамика по дням
@@ -221,7 +221,7 @@ const exportFullReport = async () => {
           ...r.ratings_by_doctor.map(x => [x.name, x.avg, x.count] as Row),
           [] as Row,
           [t('rfByService')] as Row, [t('rfService'), t('rfRating'), t('rfReviews')],
-          ...r.ratings_by_service.map(x => [x.name, x.avg, x.count] as Row),
+          ...r.ratings_by_service.map(x => [tMed(x.name), x.avg, x.count] as Row),
         ],
       },
       // 8. Новые и повторные
@@ -425,6 +425,7 @@ useHead({ title: t('adminPageTitle') })
               <input
                 v-model="dateFrom"
                 type="date"
+                :lang="locale"
                 :max="todayStr"
                 class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
               >
@@ -434,6 +435,7 @@ useHead({ title: t('adminPageTitle') })
               <input
                 v-model="dateTo"
                 type="date"
+                :lang="locale"
                 :min="dateFrom"
                 :max="todayStr"
                 class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
@@ -476,7 +478,7 @@ useHead({ title: t('adminPageTitle') })
         </div>
 
         <div v-if="stats?.top_service" class="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 text-sm text-gray-600">
-          {{ t('adminTopService') }} <span class="font-semibold text-slate">{{ stats.top_service }}</span>
+          {{ t('adminTopService') }} <span class="font-semibold text-slate">{{ tMed(stats.top_service) }}</span>
         </div>
       </div>
 
@@ -534,7 +536,7 @@ useHead({ title: t('adminPageTitle') })
                 class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
               >
                 <td class="px-5 py-3 font-medium text-slate">{{ d.doctor_name }}</td>
-                <td class="px-5 py-3 text-gray-500">{{ d.specialty_name }}</td>
+                <td class="px-5 py-3 text-gray-500">{{ tMed(d.specialty_name) }}</td>
                 <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.appointments }}</td>
                 <td class="px-5 py-3 text-center text-slate font-semibold">{{ d.unique_patients }}</td>
               </tr>
@@ -556,7 +558,7 @@ useHead({ title: t('adminPageTitle') })
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
                 <StarRating :model-value="r.rating" readonly size="text-sm" />
-                <span class="text-[11px] text-gray-400 truncate">{{ r.service_name }} · {{ r.doctor_name }}</span>
+                <span class="text-[11px] text-gray-400 truncate">{{ tMed(r.service_name) }} · {{ r.doctor_name }}</span>
               </div>
               <p class="text-sm text-slate">{{ r.text }}</p>
             </div>
@@ -621,6 +623,7 @@ useHead({ title: t('adminPageTitle') })
             <input
               v-model="filterDate"
               type="date"
+              :lang="locale"
               class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary"
             >
             <select v-model="filterStatus" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-primary">
@@ -659,7 +662,7 @@ useHead({ title: t('adminPageTitle') })
                 </td>
                 <td class="px-5 py-3">
                   <div class="text-slate">{{ apt.doctor_name }}</div>
-                  <div class="text-xs text-gray-400">{{ apt.service_name }}</div>
+                  <div class="text-xs text-gray-400">{{ tMed(apt.service_name) }}</div>
                 </td>
                 <td class="px-5 py-3 text-slate whitespace-nowrap">{{ formatDateTime(apt.starts_at) }}</td>
                 <td class="px-5 py-3 text-slate font-semibold">{{ formatMoney(apt.final_price) }}</td>

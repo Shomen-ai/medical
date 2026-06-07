@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import type { ReviewItem, Doctor, Service } from '~/types'
 
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 const { get } = useApi()
 
 const doctorId = ref('')
@@ -77,7 +77,7 @@ useHead({ title: () => `${t('reviewsTitle')} — BeautyMed` })
       <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <select v-model="serviceId" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary bg-white">
           <option value="">{{ t('reviewsFilterAllServices') }}</option>
-          <option v-for="s in services ?? []" :key="s.id" :value="s.id">{{ s.name }}</option>
+          <option v-for="s in services ?? []" :key="s.id" :value="s.id">{{ tMed(s.name) }}</option>
         </select>
         <select v-model="doctorId" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary bg-white">
           <option value="">{{ t('reviewsFilterAllDoctors') }}</option>
@@ -92,7 +92,7 @@ useHead({ title: () => `${t('reviewsTitle')} — BeautyMed` })
           <div class="pt-3 border-t border-border">
             <div class="text-xs font-bold text-slate">{{ t('reviewsAnonymous') }}</div>
             <div class="flex items-center justify-between mt-0.5">
-              <span class="text-[11px] text-muted truncate">{{ r.service_name }} · {{ r.doctor_name }}</span>
+              <span class="text-[11px] text-muted truncate">{{ tMed(r.service_name) }} · {{ r.doctor_name }}</span>
               <span class="text-[11px] text-muted shrink-0 ml-2">{{ formatDate(r.created_at) }}</span>
             </div>
           </div>

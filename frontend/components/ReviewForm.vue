@@ -9,7 +9,7 @@ import type { Doctor, Service, ReviewItem } from '~/types'
 const props = defineProps<{ doctors: Doctor[]; services: Service[] }>()
 const emit = defineEmits<{ created: [review: ReviewItem] }>()
 
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 const { post } = useApi()
 const auth = useAuthStore()
 
@@ -61,7 +61,7 @@ const submit = async () => {
           <label class="text-xs font-semibold text-gray-500 block mb-1">{{ t('reviewsFormService') }}</label>
           <select v-model="serviceId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
             <option value="">{{ t('reviewsFormOptional') }}</option>
-            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+            <option v-for="s in services" :key="s.id" :value="s.id">{{ tMed(s.name) }}</option>
           </select>
         </div>
         <div class="flex-1">

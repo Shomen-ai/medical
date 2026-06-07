@@ -6,7 +6,7 @@
 const auth = useAuthStore()
 const router = useRouter()
 const { get, patch } = useApi()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -212,7 +212,7 @@ useHead({ title: t('cabPageTitle') })
         <div class="flex items-start justify-between gap-4">
           <div>
             <div class="font-semibold text-slate">{{ apt.doctor_name }}</div>
-            <div class="text-sm text-muted mt-0.5">{{ apt.service_name }}</div>
+            <div class="text-sm text-muted mt-0.5">{{ tMed(apt.service_name) }}</div>
           </div>
           <span
             class="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"

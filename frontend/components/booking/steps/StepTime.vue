@@ -35,7 +35,8 @@ watch([() => booking.date, () => booking.doctorId], fetchSlots, { immediate: tru
 const formattedDate = computed(() => {
   if (!booking.date) return ''
   const [y, m, d] = booking.date.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  const months = t('monthsList').split(',')
+  return `${d} ${months[m - 1]} ${y}`
 })
 </script>
 

@@ -8,7 +8,7 @@ definePageMeta({ layout: 'staff' })
 const auth = useAuthStore()
 const router = useRouter()
 const { get } = useApi()
-const { t } = useI18n()
+const { t, tMed } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -209,7 +209,7 @@ const generateReport = async () => {
         rows: [
           [t('reportColTime'), t('reportColPatient'), t('reportColPhone'), t('reportColService'), t('reportColStatus')],
           ...(todayAppts ?? []).map(a => [
-            formatTime(a.starts_at), a.patient_name || '—', a.patient_phone, a.service_name, statusLabel.value[a.status] ?? a.status,
+            formatTime(a.starts_at), a.patient_name || '—', a.patient_phone, tMed(a.service_name), statusLabel.value[a.status] ?? a.status,
           ]),
         ],
       },
@@ -376,7 +376,7 @@ useHead({ title: t('docPageTitle') })
                   <div>
                     <div class="font-semibold text-slate">{{ apt.patient_name || t('docNoName') }}</div>
                     <div class="text-sm text-gray-400">{{ apt.patient_phone }}</div>
-                    <div class="text-sm text-gray-500 mt-0.5">{{ apt.service_name }}</div>
+                    <div class="text-sm text-gray-500 mt-0.5">{{ tMed(apt.service_name) }}</div>
                   </div>
                 </div>
                 <div class="flex flex-col items-end gap-2">
