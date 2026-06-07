@@ -427,11 +427,11 @@ useHead({ title: t('adminPageTitle') })
             <!-- Период «с / по» (дата «по» не может быть больше сегодня) -->
             <div class="w-40">
               <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateFrom') }}</label>
-              <DateField v-model="dateFrom" :max="todayStr" />
+              <DateField v-model="dateFrom" />
             </div>
             <div class="w-40">
               <label class="text-[11px] font-semibold text-gray-500 block mb-1">{{ t('adminDateTo') }}</label>
-              <DateField v-model="dateTo" :min="dateFrom" :max="todayStr" />
+              <DateField v-model="dateTo" :min="dateFrom" />
             </div>
             <!-- Пресеты-«быстрый выбор» (заполняют поля выше) -->
             <div class="flex gap-1 bg-gray-100 rounded-xl p-1">

@@ -339,13 +339,10 @@ func resolveReportRange(fromStr, toStr string, now time.Time) (from, toExcl time
 	if d, err := time.Parse("2006-01-02", fromStr); err == nil {
 		from = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
 	}
-	// to: по умолчанию — сегодня; будущее клампим к сегодня.
+	// to: по умолчанию — сегодня. Ограничение на будущее снято — диапазон отчёта свободный.
 	toDay := today
 	if d, err := time.Parse("2006-01-02", toStr); err == nil {
 		toDay = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
-	}
-	if toDay.After(today) {
-		toDay = today
 	}
 	if from.After(toDay) {
 		from = toDay

@@ -58,7 +58,7 @@ const nextMonth = () => {
 // ── Stats ────────────────────────────────────────────────────────────
 const token = computed(() => auth.token ?? undefined)
 
-const { data: stats } = await useAsyncData('doctor-stats', () =>
+const { data: stats, refresh: refreshStats } = await useAsyncData('doctor-stats', () =>
   get<DoctorStats>('/api/doctor/stats', token.value), { server: false })
 
 // ── Schedule for month ───────────────────────────────────────────────
@@ -69,6 +69,9 @@ const { data: schedule, refresh: refreshSchedule } = await useAsyncData(
 )
 
 watch([viewYear, viewMonth], () => refreshSchedule())
+// Токен появляется в onMounted (auth.init) — ПОСЛЕ первых фетчей с server:false. Без этого
+// расписание/статистика остаются пустыми при жёстком обновлении/прямом заходе.
+watch(token, (t) => { if (t) { refreshStats(); refreshSchedule() } })
 
 // All scheduled days sorted ascending
 const workDays = computed(() =>

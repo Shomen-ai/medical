@@ -25,10 +25,11 @@ func TestResolveReportRange_Valid(t *testing.T) {
 	assert.Equal(t, d(2026, 5, 21), toExcl)
 }
 
-func TestResolveReportRange_FutureToClamped(t *testing.T) {
+func TestResolveReportRange_FutureToAllowed(t *testing.T) {
 	now := d(2026, 6, 15)
 	_, toExcl := resolveReportRange("2026-01-01", "2026-12-31", now)
-	assert.Equal(t, d(2026, 6, 16), toExcl) // «по» в будущем → сегодня
+	// Ограничение на будущее снято: «по» сохраняется как есть (+1 день, т.к. интервал [from,to)).
+	assert.Equal(t, d(2027, 1, 1), toExcl)
 }
 
 func TestResolveReportRange_FromAfterTo(t *testing.T) {
