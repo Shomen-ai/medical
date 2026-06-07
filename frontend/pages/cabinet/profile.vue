@@ -6,7 +6,7 @@
 const auth = useAuthStore()
 const router = useRouter()
 const { get, patch } = useApi()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 onMounted(() => {
   auth.init()
@@ -141,6 +141,7 @@ useHead({ title: t('profPageTitle') })
           <input
             v-model="form.birth_date"
             type="date"
+            :lang="locale"
             :max="maxBirthDate"
             class="w-full border border-border rounded-lg px-3 py-2 text-sm text-slate outline-none focus:border-primary"
           >

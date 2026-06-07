@@ -11,6 +11,14 @@ const { locale, setLocale, t } = useI18n()
 
 const showLogin = ref(false)
 
+// Краткая роль вошедшего пользователя для индикатора в шапке.
+const roleLabel = computed(() => {
+  if (auth.isAdmin) return t('headerRoleAdmin')
+  if (auth.isDoctor) return t('headerRoleDoctor')
+  if (auth.isPatient) return t('headerRolePatient')
+  return ''
+})
+
 onMounted(() => auth.init())
 
 const handleCabinetClick = () => {
@@ -82,6 +90,15 @@ const handleCabinetClick = () => {
         >
           {{ auth.isLoggedIn ? t('cabinet') : t('signIn') }}
         </button>
+        <!-- Индикатор «вошли как …» справа от кнопки кабинета -->
+        <span
+          v-if="auth.isLoggedIn"
+          class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-muted whitespace-nowrap"
+          :title="t('headerLoggedIn')"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          {{ roleLabel }}
+        </span>
       </div>
     </div>
   </header>

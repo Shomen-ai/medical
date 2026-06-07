@@ -246,6 +246,7 @@ const formattedDate = computed(() => {
               :placeholder="t('confirmPhonePlaceholder')"
               :disabled="booking.otpSent"
               class="flex-1 min-w-0 px-2 py-2.5 text-sm text-slate outline-none disabled:bg-gray-50"
+              @beforeinput="blockNonDigitBeforeInput"
               @input="onPhoneInput"
             >
           </div>

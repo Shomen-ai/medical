@@ -127,6 +127,10 @@ export default {
   staffRoleAdmin: 'Кабинет администратора',
   staffRoleDoctor: 'Кабинет врача',
   staffRoleDefault: 'Кабинет',
+  headerLoggedIn: 'Вы вошли',
+  headerRolePatient: 'Пациент',
+  headerRoleDoctor: 'Врач',
+  headerRoleAdmin: 'Администратор',
   logout: 'Выйти',
 
   // Doctor portal

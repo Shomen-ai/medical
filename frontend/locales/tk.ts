@@ -130,6 +130,10 @@ const tk: typeof ru = {
   staffRoleAdmin: 'Administrator hasaby',
   staffRoleDoctor: 'Lukman hasaby',
   staffRoleDefault: 'Hasap',
+  headerLoggedIn: 'Siz girdiňiz',
+  headerRolePatient: 'Hassa',
+  headerRoleDoctor: 'Lukman',
+  headerRoleAdmin: 'Administrator',
   logout: 'Çykmak',
 
   // Doctor portal

@@ -71,6 +71,7 @@ const handleVerify = async () => {
               :placeholder="t('confirmPhonePlaceholder')"
               class="flex-1 min-w-0 px-2 py-2.5 text-sm focus:outline-none"
               @keydown.enter="handleSendOTP"
+              @beforeinput="blockNonDigitBeforeInput"
               @input="onPhoneInput"
             >
           </div>

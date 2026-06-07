@@ -33,6 +33,13 @@ export function formatTmPhone(raw: string): string {
   return nationalDigits(raw)
 }
 
+// Гард на beforeinput: не даёт вставить буквы/знаки (ни с клавиатуры, ни вставкой) —
+// если вставляемый текст содержит не-цифру, ввод отменяется. Backspace/Delete (data=null)
+// проходят. Вешается на @beforeinput поля номера. Дополняет formatTmPhone на @input.
+export function blockNonDigitBeforeInput(e: InputEvent): void {
+  if (e.data && /\D/.test(e.data)) e.preventDefault()
+}
+
 // Валидирует номер: корректен только туркменский (8 национальных цифр,
 // при наличии кода страны — ровно 993). Российские +7 и прочие отвергаются.
 export function validatePhone(raw: string): PhoneCheck {
