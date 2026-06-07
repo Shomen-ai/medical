@@ -33,6 +33,12 @@ const initMonth = () => {
     const [y, m] = props.modelValue.split('-').map(Number)
     return new Date(y, m - 1, 1)
   }
+  // Пусто: открываем на месяце/годе верхней границы (для даты рождения это 2008 = сегодня−18),
+  // чтобы не листать от текущего года; иначе — текущий месяц.
+  if (props.max) {
+    const [y, m] = props.max.split('-').map(Number)
+    return new Date(y, m - 1, 1)
+  }
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), 1)
 }
