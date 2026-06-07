@@ -116,6 +116,7 @@ const handleVerify = async () => {
             maxlength="6"
             class="w-full border border-border rounded-xl px-4 py-2.5 text-sm mb-4 text-center tracking-[0.5em] focus:outline-none focus:border-primary"
             @keydown.enter="handleVerify"
+            @beforeinput="blockNonDigitBeforeInput"
           >
           <div v-if="auth.error" class="text-xs text-red-500 mb-3">{{ auth.error }}</div>
           <button

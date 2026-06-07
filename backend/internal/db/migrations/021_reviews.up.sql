@@ -20,9 +20,9 @@ INSERT INTO reviews (user_id, appointment_id, doctor_id, service_id, rating, tex
 SELECT a.patient_id, a.id, a.doctor_id, a.service_id,
        (4 + (row_number() OVER (ORDER BY a.starts_at DESC)) % 2)::smallint,
        CASE (row_number() OVER (ORDER BY a.starts_at DESC)) % 3
-         WHEN 0 THEN 'Очень довольна результатом, врач внимательный. Спасибо клинике!'
-         WHEN 1 THEN 'Записалась онлайн за пару минут, приём прошёл отлично. Рекомендую.'
-         ELSE 'Профессиональный подход и приятная атмосфера. Обязательно вернусь.'
+         WHEN 0 THEN 'Netijeden örän razy, lukman üns berýär. Klinika sag boluň!'
+         WHEN 1 THEN 'Birnäçe minutda onlaýn ýazyldym, kabul ediş ajaýyp geçdi. Maslahat berýärin.'
+         ELSE 'Hünär çemeleşmesi we ýakymly gurşaw. Hökman gaýdyp gelerin.'
        END
 FROM appointments a
 WHERE a.status = 'completed'

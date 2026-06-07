@@ -287,6 +287,7 @@ const formattedDate = computed(() => {
             maxlength="6"
             placeholder="123456"
             class="w-full border border-border rounded-lg px-4 py-2.5 text-sm text-slate outline-none focus:border-primary tracking-widest text-center"
+            @beforeinput="blockNonDigitBeforeInput"
           >
           <div v-if="bookingError" class="text-xs text-red-500 mt-1">{{ bookingError }}</div>
         </div>

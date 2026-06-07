@@ -73,18 +73,31 @@ const periods = computed(() => [
   { key: 'quarter', label: t('adminPeriodQuarter') },
   { key: 'year',    label: t('adminPeriodYear') },
 ])
+// Пресет выставляет ВЕСЬ промежуток: начало и конец периода (месяц = 1-е … последнее число и т.п.).
 const applyPreset = (key: string) => {
   const n = new Date()
-  let from: Date
+  let from: Date, to: Date
   switch (key) {
-    case 'day':     from = new Date(n.getFullYear(), n.getMonth(), n.getDate()); break
-    case 'week':    { const off = (n.getDay() + 6) % 7; from = new Date(n.getFullYear(), n.getMonth(), n.getDate() - off); break }
-    case 'quarter': from = new Date(n.getFullYear(), Math.floor(n.getMonth() / 3) * 3, 1); break
-    case 'year':    from = new Date(n.getFullYear(), 0, 1); break
-    default:        from = new Date(n.getFullYear(), n.getMonth(), 1) // month
+    case 'day':
+      from = new Date(n.getFullYear(), n.getMonth(), n.getDate()); to = from; break
+    case 'week': {
+      const off = (n.getDay() + 6) % 7
+      from = new Date(n.getFullYear(), n.getMonth(), n.getDate() - off)
+      to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 6); break
+    }
+    case 'quarter': {
+      const q = Math.floor(n.getMonth() / 3)
+      from = new Date(n.getFullYear(), q * 3, 1)
+      to = new Date(n.getFullYear(), q * 3 + 3, 0); break // 0-й день след. квартала = последний день
+    }
+    case 'year':
+      from = new Date(n.getFullYear(), 0, 1); to = new Date(n.getFullYear(), 11, 31); break
+    default: // month
+      from = new Date(n.getFullYear(), n.getMonth(), 1)
+      to = new Date(n.getFullYear(), n.getMonth() + 1, 0) // последний день месяца
   }
   dateFrom.value = fmtDate(from)
-  dateTo.value = todayStr
+  dateTo.value = fmtDate(to)
 }
 // «с» не должно быть больше «по».
 watch(dateFrom, (v) => { if (v > dateTo.value) dateTo.value = v })

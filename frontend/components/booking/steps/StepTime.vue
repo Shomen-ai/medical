@@ -29,7 +29,8 @@ const fetchSlots = async () => {
   }
 }
 
-watch([() => booking.date, () => booking.doctorId], fetchSlots, { immediate: true })
+// Следим и за услугой: при её смене длительность/слоты меняются — иначе время «не подгружается».
+watch([() => booking.date, () => booking.doctorId, () => booking.serviceId], fetchSlots, { immediate: true })
 
 // booking.date is "YYYY-MM-DD" — format to Russian locale without timezone issues
 const formattedDate = computed(() => {
