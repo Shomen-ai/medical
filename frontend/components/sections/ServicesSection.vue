@@ -91,7 +91,7 @@ const bookFromService = (svc: Service) => {
             <button
               type="button"
               class="text-xs font-semibold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
-              @click="booking.openModal(activeSpecialty ?? undefined)"
+              @click="bookFromService(svc)"
             >
               {{ t('bookShort') }}
             </button>
